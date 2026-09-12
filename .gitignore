@@ -1,0 +1,24 @@
+# Datos reales y copias de seguridad: nunca al repositorio
+datos_gimnasio.xlsx
+*.xlsx
+!plantillas/*.xlsx
+backups/
+~$*
+
+# Secretos y configuración local
+config.toml
+*.env
+credentials*.json
+
+# Salidas generadas
+salidas/
+*.pdf
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+build/
+dist/
+*.spec
