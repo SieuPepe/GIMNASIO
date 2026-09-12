@@ -501,6 +501,7 @@ TABLAS: tuple[Tabla, ...] = (
             Columna("Enlace_Form_Prefill", Tipo.TEXTO, ancho=55),
             Columna("F_Recordatorio", Tipo.FECHA, ancho=16),
             Columna("Respondido_SN", Tipo.BOOL, ancho=14),
+            Columna("Quiere_Cita", Tipo.TEXTO, ancho=14),
             Columna("Error", Tipo.TEXTO_LARGO, ancho=45),
         ),
     ),

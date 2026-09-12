@@ -17,8 +17,8 @@ comunicación automatizada por correo con los usuarios.
 
 ## Estado
 
-**Fases 0 a 4 implementadas:** cimientos, usuarios, catálogo de ejercicios,
-valoración física y planificación con cálculo de cargas.
+**Fases 0 a 5 implementadas:** cimientos, usuarios, ejercicios, valoración
+física, planificación y comunicación por correo.
 
 | Fase | Contenido | Estado |
 |---|---|---|
@@ -27,7 +27,7 @@ valoración física y planificación con cálculo de cargas.
 | 2 | Catálogo de ejercicios, con 127 de partida | Hecha |
 | 3 | Valoración física, protocolos, baremos e informe en PDF | Hecha |
 | 4 | Planificación en árbol, cargas, asignaciones y PDF | Hecha |
-| 5 | Correo, formularios y cola de revisión | Pendiente |
+| 5 | Correo, formularios, cola de revisión y modo vacaciones | Hecha |
 | 6 | Panel de alertas completo | Pendiente |
 | 7 | Módulo de IA | Pendiente |
 
@@ -45,16 +45,10 @@ Copy-Item config.ejemplo.toml config.toml; Copy-Item .env.ejemplo .env
 # 3. Crear el libro de datos vacío (29 hojas + hoja de esquema)
 python herramientas/crear_libro.py
 
-# 4. Cargar el catálogo inicial de ejercicios
-python herramientas/importar_ejercicios.py
+# 4. Cargar todos los datos iniciales: ejercicios, valoración, plantillas y correos
+python herramientas/preparar_datos.py
 
-# 5. Cargar pruebas, baremos y protocolos de valoración
-python herramientas/importar_valoracion.py
-
-# 6. Crear las plantillas de macrociclo de partida
-python herramientas/crear_plantillas.py
-
-# 7. Arrancar
+# 5. Arrancar
 python -m zeu
 ```
 

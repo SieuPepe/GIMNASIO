@@ -17,15 +17,14 @@ from .comunes import avisar_error
 from .vista_ejercicios import VistaEjercicios
 from .vista_inicio import VistaInicio
 from .vista_asignaciones import VistaAsignaciones
+from .vista_correo import VistaCorreo
 from .vista_programas import VistaProgramas
 from .vista_valoraciones import VistaValoraciones
 from .vista_usuarios import VistaUsuarios
 
 # Secciones previstas. Las que no tienen vista aún quedan desactivadas, para que
 # se vea hacia dónde va la aplicación.
-PENDIENTES = [
-    ("Correo", "Fase 5"),
-]
+PENDIENTES: list[tuple[str, str]] = []
 
 
 class VentanaPrincipal(QMainWindow):
@@ -74,18 +73,20 @@ class VentanaPrincipal(QMainWindow):
         self.vista_valoraciones = VistaValoraciones(self.repo, self.cfg, self.guardar)
         self.vista_programas = VistaProgramas(self.repo, self.guardar)
         self.vista_asignaciones = VistaAsignaciones(self.repo, self.cfg, self.guardar)
+        self.vista_correo = VistaCorreo(self.repo, self.cfg, self.guardar)
         self.paginas.addWidget(self.vista_inicio)
         self.paginas.addWidget(self.vista_usuarios)
         self.paginas.addWidget(self.vista_ejercicios)
         self.paginas.addWidget(self.vista_valoraciones)
         self.paginas.addWidget(self.vista_programas)
         self.paginas.addWidget(self.vista_asignaciones)
+        self.paginas.addWidget(self.vista_correo)
 
         grupo = QButtonGroup(self)
         grupo.setExclusive(True)
         for indice, texto in enumerate(
                 ("Inicio", "Usuarios", "Ejercicios", "Valoraciones",
-                 "Programas", "Asignaciones")):
+                 "Programas", "Asignaciones", "Correo")):
             boton = QPushButton(texto)
             boton.setCheckable(True)
             boton.clicked.connect(lambda _=False, i=indice: self._ir(i))
