@@ -31,10 +31,9 @@ def main() -> int:
         print(f"Copia de seguridad previa: {copia}")
 
     mod_libro.crear(ruta, sobreescribir=sobreescribir)
-    l = mod_libro.Libro(ruta, cfg.datos.backups, cfg.datos.copias_a_conservar)
-    l.cargar()
-    semillas.sembrar(l)
-    l.guardar(forzar=True)
+    libro = mod_libro.abrir(ruta, cfg.datos.backups, cfg.datos.copias_a_conservar)
+    semillas.sembrar(libro)
+    libro.guardar(forzar=True)
     print(f"Libro creado: {ruta}")
     print(f"  {len(mod_libro.TABLAS)} hojas + _ESQUEMA")
     return 0

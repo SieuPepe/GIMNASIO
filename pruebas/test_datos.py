@@ -133,6 +133,98 @@ class Persistencia(Base):
         self.libro.guardar(forzar=True)
 
 
+class Migracion(Base):
+    """Un libro creado con una versión anterior se actualiza sin perder datos."""
+
+    def _envejecer(self, quitar: dict[str, list[str]]) -> None:
+        from openpyxl import load_workbook
+        libro = load_workbook(self.ruta)
+        for hoja, columnas in quitar.items():
+            pagina = libro[hoja]
+            for nombre in columnas:
+                posicion = [c.value for c in pagina[1]].index(nombre) + 1
+                pagina.delete_cols(posicion)
+        libro.save(self.ruta)
+        libro.close()
+
+    def test_detecta_lo_que_falta(self):
+        self.libro.guardar()
+        self._envejecer({"T_CAT_TESTS": ["Calculada_SN", "Decimales"]})
+        self.assertEqual(ml.revisar(self.ruta),
+                         {"T_CAT_TESTS": ["Calculada_SN", "Decimales"]})
+
+    def test_cargar_avisa_en_vez_de_reventar(self):
+        self.libro.guardar()
+        self._envejecer({"T_COLA_MAIL": ["Quiere_Cita"]})
+        with self.assertRaises(ml.EsquemaDesactualizado) as caso:
+            ml.Libro(self.ruta, self.backups).cargar()
+        self.assertIn("T_COLA_MAIL", caso.exception.faltan)
+
+    def test_migrar_conserva_los_datos(self):
+        uid = self.alta_ana()
+        self.repo.insertar("T_OBJETIVOS", {
+            "ID_Usuario": uid, "F_Registro": date(2026, 5, 4), "Tipo": "FUERZA",
+            "Descripcion": "Mejorar la sentadilla", "Estado": "ACTIVO"})
+        self.libro.guardar()
+        self._envejecer({"T_CAT_TESTS": ["Calculada_SN", "Decimales"],
+                         "T_COLA_MAIL": ["Quiere_Cita"]})
+
+        cambios = ml.migrar(self.ruta, self.backups)
+        self.assertEqual(len(cambios), 3)
+
+        otro = ml.Libro(self.ruta, self.backups)
+        otro.cargar()
+        repo = Repositorio(otro)
+        usuario = repo.obtener("T_USUARIOS", uid)
+        self.assertEqual(usuario["Nombre"], "Ana")
+        self.assertEqual(usuario["F_Nacimiento"], date(1985, 3, 12))
+        self.assertEqual(repo.listar("T_OBJETIVOS")[0]["Descripcion"],
+                         "Mejorar la sentadilla")
+
+    def test_migrar_hace_copia_previa(self):
+        self.libro.guardar()
+        self._envejecer({"T_COLA_MAIL": ["Quiere_Cita"]})
+        ml.migrar(self.ruta, self.backups)
+        self.assertTrue(list(self.backups.glob("*previo*.xlsx")))
+
+    def test_migrar_dos_veces_no_hace_nada_la_segunda(self):
+        self.libro.guardar()
+        self._envejecer({"T_COLA_MAIL": ["Quiere_Cita"]})
+        self.assertEqual(len(ml.migrar(self.ruta, self.backups)), 1)
+        self.assertEqual(ml.migrar(self.ruta, self.backups), [])
+
+    def test_no_migra_con_el_libro_abierto_en_excel(self):
+        self.libro.guardar()
+        self._envejecer({"T_COLA_MAIL": ["Quiere_Cita"]})
+        bloqueo = self.ruta.parent / f"~${self.ruta.name}"
+        bloqueo.write_text("")
+        with self.assertRaises(ml.LibroBloqueado):
+            ml.migrar(self.ruta, self.backups)
+        bloqueo.unlink()
+
+    def test_abrir_migra_por_su_cuenta(self):
+        uid = self.alta_ana()
+        self.libro.guardar()
+        self._envejecer({"T_CAT_TESTS": ["Decimales"]})
+        libro = ml.abrir(self.ruta, self.backups)
+        self.assertEqual(Repositorio(libro).obtener("T_USUARIOS", uid)["Nombre"], "Ana")
+
+    def test_las_columnas_de_mas_no_se_tocan(self):
+        """Si alguien añade una columna suya al Excel, se respeta."""
+        from openpyxl import load_workbook
+        self.libro.guardar()
+        libro = load_workbook(self.ruta)
+        hoja = libro["T_USUARIOS"]
+        hoja.cell(row=1, column=hoja.max_column + 1, value="Mi_Columna")
+        libro.save(self.ruta)
+        libro.close()
+        self._envejecer({"T_COLA_MAIL": ["Quiere_Cita"]})
+        ml.migrar(self.ruta, self.backups)
+        libro = load_workbook(self.ruta)
+        self.assertIn("Mi_Columna", [c.value for c in libro["T_USUARIOS"][1]])
+        libro.close()
+
+
 class Cribado(unittest.TestCase):
     def test_tension_se_clasifica_por_el_criterio_europeo(self):
         self.assertEqual(srv.clasificar_tension(118, 76)[0], "OPTIMA")

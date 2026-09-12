@@ -54,6 +54,21 @@ python -m zeu
 
 Las pruebas se lanzan con `python -m unittest discover -s pruebas`.
 
+### Al actualizar a una versión nueva
+
+Si el libro de datos se creó con una versión anterior, le pueden faltar hojas o
+columnas. **No hay que rehacer nada ni se pierde ningún dato:** la aplicación lo
+detecta al arrancar y ofrece actualizarlo, haciendo copia de seguridad antes.
+También se puede hacer a mano:
+
+```powershell
+python herramientas/migrar_libro.py --revisar   # dice qué falta, sin tocar nada
+python herramientas/migrar_libro.py             # lo aplica
+```
+
+Las herramientas de línea de comandos lo hacen por su cuenta, así que
+`preparar_datos.py` funciona igual sobre un libro antiguo.
+
 ## Estructura del código
 
 ```

@@ -28,9 +28,29 @@ def main() -> int:
             "Créalo ejecutando:\n    python herramientas/crear_libro.py")
         return 1
 
-    libro = mod_libro.Libro(cfg.datos.libro, cfg.datos.backups, cfg.datos.copias_a_conservar)
+    libro = mod_libro.Libro(cfg.datos.libro, cfg.datos.backups,
+                            cfg.datos.copias_a_conservar)
     try:
         libro.cargar()
+    except mod_libro.EsquemaDesactualizado as desfase:
+        # El libro se creó con una versión anterior. No hay que rehacer nada:
+        # se añade lo que falta conservando los datos, con copia previa.
+        respuesta = QMessageBox.question(
+            None, "El libro es de una versión anterior",
+            f"Al libro le falta {desfase.resumen()} que esta versión necesita.\n\n"
+            "Se pueden añadir sin tocar tus datos, y antes se hace una copia de "
+            "seguridad.\n\n¿Actualizarlo ahora?",
+            QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
+        if respuesta != QMessageBox.Yes:
+            return 1
+        try:
+            cambios = mod_libro.migrar(cfg.datos.libro, cfg.datos.backups)
+            libro.cargar()
+        except Exception as error:
+            registro.exception("No se ha podido actualizar el libro")
+            QMessageBox.critical(None, "No se ha podido actualizar", str(error))
+            return 1
+        registro.info("Libro actualizado: %s", ", ".join(cambios))
     except Exception as error:
         registro.exception("No se ha podido cargar el libro")
         QMessageBox.critical(None, "No se ha podido abrir el libro", str(error))

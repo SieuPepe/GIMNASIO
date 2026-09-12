@@ -11,7 +11,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from zeu.datos.libro import Libro                          # noqa: E402
+from zeu.datos.libro import abrir                          # noqa: E402
 from zeu.datos.repositorio import Repositorio              # noqa: E402
 from zeu.nucleo import config, log                         # noqa: E402
 from zeu.servicios.importacion import importar_ejercicios  # noqa: E402
@@ -33,8 +33,7 @@ def main() -> int:
         print(f"No existe el libro {cfg.datos.libro}. Créalo con herramientas/crear_libro.py")
         return 1
 
-    libro = Libro(cfg.datos.libro, cfg.datos.backups, cfg.datos.copias_a_conservar)
-    libro.cargar()
+    libro = abrir(cfg.datos.libro, cfg.datos.backups, cfg.datos.copias_a_conservar)
     resultado = importar_ejercicios(Repositorio(libro), ruta_csv, actualizar=actualizar)
 
     for aviso in resultado.avisos:

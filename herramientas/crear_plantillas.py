@@ -9,7 +9,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from zeu.datos import plantillas                     # noqa: E402
-from zeu.datos.libro import Libro                    # noqa: E402
+from zeu.datos.libro import abrir                    # noqa: E402
 from zeu.datos.repositorio import Repositorio        # noqa: E402
 from zeu.nucleo import config, log                   # noqa: E402
 
@@ -21,8 +21,7 @@ def main() -> int:
         print(f"No existe el libro {cfg.datos.libro}.")
         return 1
 
-    libro = Libro(cfg.datos.libro, cfg.datos.backups, cfg.datos.copias_a_conservar)
-    libro.cargar()
+    libro = abrir(cfg.datos.libro, cfg.datos.backups, cfg.datos.copias_a_conservar)
     repo = Repositorio(libro)
     if not repo.listar("T_EJERCICIOS"):
         print("El catálogo de ejercicios está vacío. Impórtalo primero:")

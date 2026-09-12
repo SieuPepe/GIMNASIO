@@ -1,10 +1,15 @@
 # ZEU — dependencias
-openpyxl==3.1.5      # el libro Excel como base de datos
-PySide6==6.11.2      # interfaz (Qt oficial, licencia LGPL)
+#
+# Se indican versiones mínimas, no exactas: así pip resuelve la rueda que
+# corresponda a tu versión de Python en Windows. Entre paréntesis, la versión
+# con la que se ha probado.
 
-# Previstas en fases posteriores, aún sin usar:
-# reportlab          # informes y programas en PDF
-# matplotlib         # radar de valoración y gráficas de evolución
+openpyxl>=3.1        # el libro Excel como base de datos      (probado 3.1.5)
+PySide6>=6.6         # interfaz (Qt oficial, licencia LGPL)    (probado 6.11.2)
+reportlab>=4.0       # informes y programas en PDF             (probado 5.0.1)
+matplotlib>=3.8      # radar de valoración y gráficas          (probado 3.11.2)
+
+# Previstas en la fase 7, aún sin usar:
 # requests           # API de Ollama
-# gspread            # respuestas de Google Forms
+# gspread            # respuestas de Google Forms por API
 # google-auth

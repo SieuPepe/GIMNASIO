@@ -36,6 +36,30 @@ class LibroModificadoFuera(Exception):
     """El libro cambió en disco desde que lo cargamos."""
 
 
+class EsquemaDesactualizado(Exception):
+    """Al libro le faltan hojas o columnas que el programa sí espera.
+
+    Pasa cuando el libro se creó con una versión anterior. No es un error del
+    usuario ni hay que rehacer nada: se migra añadiendo lo que falta.
+    """
+
+    def __init__(self, faltan: dict[str, list[str]]):
+        self.faltan = faltan
+        partes = [f"{hoja}: {', '.join(columnas) if columnas else 'la hoja entera'}"
+                  for hoja, columnas in faltan.items()]
+        super().__init__("Al libro le falta — " + " · ".join(partes))
+
+    def resumen(self) -> str:
+        hojas = [h for h, c in self.faltan.items() if not c]
+        columnas = sum(len(c) for c in self.faltan.values())
+        partes = []
+        if hojas:
+            partes.append(f"{len(hojas)} hojas")
+        if columnas:
+            partes.append(f"{columnas} columnas")
+        return " y ".join(partes) or "nada"
+
+
 # --- Conversión de valores ---------------------------------------------------
 
 def a_celda(valor, columna: Columna):
@@ -188,19 +212,15 @@ class Libro:
                 f"No existe el libro {self.ruta}. Créalo con herramientas/crear_libro.py"
             )
         libro = load_workbook(self.ruta, data_only=True)
-        faltan = [t.nombre for t in TABLAS if t.nombre not in libro.sheetnames]
-        if faltan:
+        pendiente = _que_falta(libro)
+        if pendiente:
             libro.close()
-            raise ValueError("Al libro le faltan hojas: " + ", ".join(faltan))
+            raise EsquemaDesactualizado(pendiente)
 
         self.filas = {}
         for tabla in TABLAS:
             hoja = libro[tabla.nombre]
             cabeceras = [c.value for c in hoja[1]]
-            ausentes = [c for c in tabla.nombres_columnas if c not in cabeceras]
-            if ausentes:
-                libro.close()
-                raise ValueError(f"A {tabla.nombre} le faltan columnas: {', '.join(ausentes)}")
             indice = {nombre: i for i, nombre in enumerate(cabeceras)}
             registros: list[dict] = []
             for fila in hoja.iter_rows(min_row=2, values_only=True):
@@ -266,3 +286,113 @@ class Libro:
         os.replace(temporal, self.ruta)     # atómico dentro del mismo volumen
         self._mtime = self.ruta.stat().st_mtime
         _log.info("Libro guardado en %s", self.ruta)
+
+
+# --- Migración del esquema ---------------------------------------------------
+
+def _que_falta(libro: Workbook) -> dict[str, list[str]]:
+    """Hojas y columnas que el esquema espera y el libro no tiene.
+
+    Una hoja ausente se devuelve con la lista vacía; una hoja presente, con las
+    columnas que le falten. Las columnas de más no se tocan: pueden ser tuyas.
+    """
+    faltan: dict[str, list[str]] = {}
+    for tabla in TABLAS:
+        if tabla.nombre not in libro.sheetnames:
+            faltan[tabla.nombre] = []
+            continue
+        cabeceras = [c.value for c in libro[tabla.nombre][1]]
+        ausentes = [c for c in tabla.nombres_columnas if c not in cabeceras]
+        if ausentes:
+            faltan[tabla.nombre] = ausentes
+    return faltan
+
+
+def revisar(ruta: Path) -> dict[str, list[str]]:
+    libro = load_workbook(Path(ruta), read_only=False)
+    try:
+        return _que_falta(libro)
+    finally:
+        libro.close()
+
+
+def migrar(ruta: Path, carpeta_backups: Path | None = None) -> list[str]:
+    """Añade al libro las hojas y columnas que falten, sin tocar los datos.
+
+    Las columnas nuevas se añaden al final de la cabecera, que es donde no
+    molestan: la aplicación lee por nombre, no por posición.
+    """
+    ruta = Path(ruta)
+    if esta_abierto_en_excel(ruta):
+        raise LibroBloqueado(
+            "El libro está abierto en Excel. Ciérralo para poder actualizarlo.")
+
+    libro = load_workbook(ruta)
+    pendiente = _que_falta(libro)
+    if not pendiente:
+        libro.close()
+        return []
+
+    if carpeta_backups:
+        carpeta_backups = Path(carpeta_backups)
+        carpeta_backups.mkdir(parents=True, exist_ok=True)
+        marca = datetime.now().strftime("%Y%m%d_%H%M%S")
+        shutil.copy2(ruta, carpeta_backups / f"{ruta.stem}_previo_{marca}{ruta.suffix}")
+
+    hecho: list[str] = []
+    for nombre, columnas in pendiente.items():
+        tabla = next(t for t in TABLAS if t.nombre == nombre)
+        if not columnas:
+            _formatear_hoja(libro.create_sheet(nombre), tabla)
+            hecho.append(f"hoja {nombre} creada")
+            continue
+        hoja = libro[nombre]
+        cabeceras = [c.value for c in hoja[1]]
+        for columna in columnas:
+            definicion = tabla.columna(columna)
+            posicion = len(cabeceras) + 1
+            celda = hoja.cell(row=1, column=posicion, value=columna)
+            celda.fill = PatternFill("solid", fgColor=AZUL)
+            celda.font = Font(bold=True, color="FFFFFF", size=10)
+            celda.alignment = Alignment(horizontal="center", vertical="center",
+                                        wrap_text=True)
+            hoja.column_dimensions[get_column_letter(posicion)].width = definicion.ancho
+            if definicion.tipo is Tipo.BOOL:
+                dv = DataValidation(type="list", formula1='"SI,NO"', allow_blank=True)
+                hoja.add_data_validation(dv)
+                dv.add(f"{get_column_letter(posicion)}2:{get_column_letter(posicion)}5000")
+            elif definicion.tipo is Tipo.LISTA:
+                opciones = ",".join(definicion.opciones)
+                if len(opciones) <= 250:
+                    dv = DataValidation(type="list", formula1=f'"{opciones}"',
+                                        allow_blank=True)
+                    hoja.add_data_validation(dv)
+                    dv.add(f"{get_column_letter(posicion)}2:"
+                           f"{get_column_letter(posicion)}5000")
+            cabeceras.append(columna)
+            hecho.append(f"{nombre}.{columna}")
+
+    if "_ESQUEMA" in libro.sheetnames:
+        del libro["_ESQUEMA"]
+    _hoja_esquema(libro)
+
+    temporal = ruta.with_suffix(ruta.suffix + ".tmp")
+    libro.save(temporal)
+    os.replace(temporal, ruta)
+    _log.info("Libro migrado: %s", ", ".join(hecho))
+    return hecho
+
+
+def abrir(ruta: Path, carpeta_backups: Path, copias_a_conservar: int = 30,
+          migrar_si_hace_falta: bool = True) -> Libro:
+    """Carga el libro, actualizando antes su esquema si se quedó atrás."""
+    libro = Libro(ruta, carpeta_backups, copias_a_conservar)
+    try:
+        libro.cargar()
+    except EsquemaDesactualizado:
+        if not migrar_si_hace_falta:
+            raise
+        cambios = migrar(ruta, carpeta_backups)
+        _log.info("Esquema actualizado antes de abrir: %d cambios", len(cambios))
+        libro.cargar()
+    return libro

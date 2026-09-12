@@ -8,7 +8,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from zeu.datos.libro import Libro                            # noqa: E402
+from zeu.datos.libro import abrir                            # noqa: E402
 from zeu.datos.repositorio import Repositorio                # noqa: E402
 from zeu.nucleo import config, log                           # noqa: E402
 from zeu.servicios.importacion import importar_valoracion    # noqa: E402
@@ -25,8 +25,7 @@ def main() -> int:
         print(f"No existe el libro {cfg.datos.libro}.")
         return 1
 
-    libro = Libro(cfg.datos.libro, cfg.datos.backups, cfg.datos.copias_a_conservar)
-    libro.cargar()
+    libro = abrir(cfg.datos.libro, cfg.datos.backups, cfg.datos.copias_a_conservar)
     resultados = importar_valoracion(Repositorio(libro), carpeta, actualizar=actualizar)
 
     hubo_cambios = False
