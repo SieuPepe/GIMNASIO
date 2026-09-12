@@ -1,14 +1,16 @@
 # Datos reales y copias de seguridad: nunca al repositorio
-datos_gimnasio.xlsx
 *.xlsx
-!plantillas/*.xlsx
+*.xlsx.tmp
 backups/
 ~$*
 
-# Secretos y configuración local
-config.toml
+# Secretos y configuración local: solo se versionan los .ejemplo
+.env
 *.env
+!.env.ejemplo
+config.toml
 credentials*.json
+secretos/
 
 # Salidas generadas
 salidas/
@@ -16,6 +18,9 @@ salidas/
 
 # Ficheros de marca: sí se versionan
 !assets/marca/**
+
+# Registros de la aplicación
+logs/
 
 # Python
 __pycache__/

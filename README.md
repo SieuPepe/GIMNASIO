@@ -17,8 +17,54 @@ comunicación automatizada por correo con los usuarios.
 
 ## Estado
 
-Fase de diseño. No hay código todavía. La documentación de `docs/` es el
-contrato a validar antes de programar.
+**Fases 0 y 1 implementadas:** cimientos y gestión de usuarios.
+
+| Fase | Contenido | Estado |
+|---|---|---|
+| 0 | Libro de datos, capa de acceso, copias de seguridad, configuración | Hecha |
+| 1 | Usuarios, objetivos, salud y cribado PAR-Q+, disponibilidad | Hecha |
+| 2 | Catálogo de ejercicios | Pendiente |
+| 3 | Valoración física e informe en PDF | Pendiente |
+| 4 | Planificación, cargas y PDF del programa | Pendiente |
+| 5 | Correo, formularios y cola de revisión | Pendiente |
+| 6 | Panel de alertas completo | Pendiente |
+| 7 | Módulo de IA | Pendiente |
+
+## Puesta en marcha
+
+Requiere **Python 3.11 o superior** en Windows.
+
+```powershell
+# 1. Dependencias (mejor dentro de un entorno virtual)
+python -m venv .venv; .\.venv\Scripts\Activate.ps1; pip install -r requirements.txt
+
+# 2. Configuración: copiar las plantillas y ajustarlas
+Copy-Item config.ejemplo.toml config.toml; Copy-Item .env.ejemplo .env
+
+# 3. Crear el libro de datos vacío (29 hojas + hoja de esquema)
+python herramientas/crear_libro.py
+
+# 4. Arrancar
+python -m zeu
+```
+
+Las pruebas se lanzan con `python -m unittest discover -s pruebas`.
+
+## Estructura del código
+
+```
+zeu/
+├── nucleo/     Configuración, credenciales, registro y fechas
+├── datos/      Esquema del libro, acceso a Excel y repositorio
+├── servicios/  Lógica de negocio
+├── ui/         Ventanas (PySide6). No toca openpyxl nunca
+herramientas/   Utilidades de línea de comandos
+pruebas/        Pruebas automáticas
+```
+
+Regla que no se rompe: **la interfaz nunca accede al Excel directamente**. Todo
+pasa por `datos/`, de modo que cambiar el almacenamiento sería reescribir una
+sola carpeta.
 
 ## Documentación
 

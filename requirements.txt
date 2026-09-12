@@ -1,0 +1,10 @@
+# ZEU — dependencias
+openpyxl==3.1.5      # el libro Excel como base de datos
+PySide6==6.11.2      # interfaz (Qt oficial, licencia LGPL)
+
+# Previstas en fases posteriores, aún sin usar:
+# reportlab          # informes y programas en PDF
+# matplotlib         # radar de valoración y gráficas de evolución
+# requests           # API de Ollama
+# gspread            # respuestas de Google Forms
+# google-auth
