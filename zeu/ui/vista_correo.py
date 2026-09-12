@@ -22,8 +22,10 @@ from ..servicios import correo as srv_correo
 from ..servicios import respuestas as srv_respuestas
 from . import estilo
 from .comunes import avisar_error, confirmar, etiqueta
+from .dialogo_plantillas import DialogoPlantillas
 
 COLUMNAS = ["ID", "Usuario", "Tipo", "Programado", "Estado", "Aviso"]
+ESTADO_VISIBLE = {"BORRADOR": "Borrador", "REVISADO": "Aprobado", "ERROR": "Sin enviar"}
 NOMBRE_PLANTILLA = {
     "CONSENTIMIENTO": "Consentimiento", "BIENVENIDA": "Bienvenida",
     "CHECKIN_MITAD": "Check-in de mitad", "ENCUESTA_T14": "Encuesta T-14",
@@ -59,6 +61,10 @@ class VistaCorreo(QWidget):
         importar.setProperty("plano", True)
         importar.clicked.connect(self.importar_respuestas)
         superior.addWidget(importar)
+        plantillas = QPushButton("Plantillas de correo…")
+        plantillas.setProperty("plano", True)
+        plantillas.clicked.connect(self.editar_plantillas)
+        superior.addWidget(plantillas)
         probar = QPushButton("Probar la conexión de correo")
         probar.setProperty("plano", True)
         probar.clicked.connect(self.probar_conexion)
@@ -134,10 +140,14 @@ class VistaCorreo(QWidget):
         envios = srv.pendientes(self.repo)
         retrasados = {e["ID_Envio"] for e in srv.con_retraso(self.repo)}
         aprobados = [e for e in envios if e.get("Estado") == "REVISADO"]
-        self.contador.setText(
-            f"{len(envios)} correos pendientes · {len(aprobados)} aprobados"
-            f" · {len(retrasados)} con retraso"
-            if envios else "No hay nada pendiente de enviar.")
+        con_error = [e for e in envios if e.get("Estado") == "ERROR"]
+        partes = [f"{len(envios)} correos pendientes", f"{len(aprobados)} aprobados"]
+        if retrasados:
+            partes.append(f"{len(retrasados)} con retraso")
+        if con_error:
+            partes.append(f"{len(con_error)} sin enviar por un error")
+        self.contador.setText(" · ".join(partes) if envios
+                              else "No hay nada pendiente de enviar.")
 
         estado = srv.estado_vacaciones(self.repo)
         if estado.activo:
@@ -159,13 +169,17 @@ class VistaCorreo(QWidget):
                 NOMBRE_PLANTILLA.get(envio.get("Codigo_Plantilla"),
                                      envio.get("Codigo_Plantilla") or ""),
                 formatear(envio.get("F_Programada")),
-                "Aprobado" if envio.get("Estado") == "REVISADO" else "Borrador",
-                "con retraso" if con_retraso else "",
+                ESTADO_VISIBLE.get(envio.get("Estado"), envio.get("Estado") or ""),
+                (envio.get("Error") or "")[:60] if envio.get("Error")
+                else ("con retraso" if con_retraso else ""),
             ]
             for columna, texto in enumerate(valores):
                 item = QTableWidgetItem(texto)
                 item.setData(Qt.UserRole, envio["ID_Envio"])
-                if con_retraso:
+                if envio.get("Error"):
+                    item.setForeground(QColor(estilo.ALERTA))
+                    item.setToolTip(envio["Error"])
+                elif con_retraso:
                     item.setForeground(QColor(estilo.BAJO))
                 self.tabla.setItem(fila, columna, item)
         self.tabla.blockSignals(False)
@@ -230,7 +244,8 @@ class VistaCorreo(QWidget):
         if not identificador:
             return
         self.guardar_nota()
-        self.repo.actualizar("T_COLA_MAIL", identificador, {"Estado": "REVISADO"})
+        self.repo.actualizar("T_COLA_MAIL", identificador,
+                             {"Estado": "REVISADO", "Error": ""})
         if self.guardar():
             self.refrescar()
 
@@ -314,6 +329,11 @@ class VistaCorreo(QWidget):
             self.repo.actualizar("T_COLA_MAIL", identificador, {"Estado": "CANCELADO"})
             if self.guardar():
                 self.refrescar()
+
+    def editar_plantillas(self) -> None:
+        DialogoPlantillas(self.repo, self).exec()
+        self.guardar()
+        self.refrescar()
 
     def probar_conexion(self) -> None:
         correcto, mensaje = srv_correo.probar_conexion(self.cfg)

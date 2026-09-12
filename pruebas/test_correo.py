@@ -241,6 +241,38 @@ class Envio(Base):
         self.assertTrue(envio["Cuerpo_Final"])
         self.assertEqual(len(self.enviador.enviados), 1)
 
+    def test_lo_que_no_esta_listo_no_se_pierde_de_la_bandeja(self):
+        """Faltar una URL no es un fallo de envío: el borrador sigue ahí."""
+        plantilla = next(p for p in self.repo.listar("T_PLANTILLAS_MAIL")
+                         if p["Codigo"] == "CONSENTIMIENTO")
+        self.repo.actualizar("T_PLANTILLAS_MAIL", plantilla["ID_Plantilla"],
+                             {"URL_Form": ""})
+        identificador = self._usuario(consentido=False)
+        envio_id = self._borrador(identificador, "CONSENTIMIENTO")
+
+        resultado = srv.enviar(self.repo, self.cfg, self.enviador, [envio_id])
+        self.assertEqual(resultado.enviados, [])
+        envio = self.repo.obtener("T_COLA_MAIL", envio_id)
+        self.assertEqual(envio["Estado"], "BORRADOR")      # sigue donde estaba
+        self.assertIn("formulario", envio["Error"])        # con el motivo anotado
+        self.assertIn(envio_id, [e["ID_Envio"] for e in srv.pendientes(self.repo)])
+
+        # Arreglada la causa, se envía sin rehacer nada
+        self.repo.actualizar("T_PLANTILLAS_MAIL", plantilla["ID_Plantilla"],
+                             {"URL_Form": "https://f/v?e1={{id_usuario}}"})
+        self.assertEqual(srv.enviar(self.repo, self.cfg, self.enviador,
+                                    [envio_id]).enviados, [envio_id])
+
+    def test_un_correo_en_error_sigue_a_la_vista(self):
+        class Roto(srv_correo.Enviador):
+            def enviar(self, *_args, **_kwargs):
+                raise RuntimeError("servidor caído")
+
+        identificador = self._usuario()
+        envio_id = self._borrador(identificador, "CONSENTIMIENTO")
+        srv.enviar(self.repo, self.cfg, Roto(), [envio_id])
+        self.assertIn(envio_id, [e["ID_Envio"] for e in srv.pendientes(self.repo)])
+
     def test_un_fallo_de_envio_deja_el_correo_en_error(self):
         class Roto(srv_correo.Enviador):
             def enviar(self, *_args, **_kwargs):
@@ -301,6 +333,24 @@ class ModoVacaciones(Base):
                                              self.enviador, self.hoy)
         self.assertEqual(len(resultado.enviados), 2)
         self.assertTrue(any("tope" in m for _, m in resultado.omitidos))
+
+    def test_no_reintenta_solo_lo_que_ya_fallo(self):
+        """Sin nadie delante, reintentar a ciegas repetiría el error a diario."""
+        class Roto(srv_correo.Enviador):
+            def enviar(self, *_args, **_kwargs):
+                raise RuntimeError("servidor caído")
+
+        self._activar("2027-01-15")
+        identificador = self._usuario()
+        envio_id = self.repo.insertar("T_COLA_MAIL", {
+            "ID_Usuario": identificador, "Codigo_Plantilla": "CONSENTIMIENTO",
+            "F_Generado": datetime.now(), "F_Programada": self.hoy,
+            "Estado": "BORRADOR"})
+        srv.enviar(self.repo, self.cfg, Roto(), [envio_id])
+        resultado = srv.enviar_en_vacaciones(self.repo, self.cfg,
+                                             self.enviador, self.hoy)
+        self.assertEqual(resultado.enviados, [])
+        self.assertTrue(any("revises" in m for _, m in resultado.omitidos))
 
     def test_queda_constancia_de_lo_que_salio_sin_supervision(self):
         self._activar("2027-01-15")

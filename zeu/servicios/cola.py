@@ -21,7 +21,9 @@ from . import usuarios as srv_usuarios
 
 _log = log.obtener("servicios.cola")
 
-ESTADOS_ABIERTOS = ("BORRADOR", "REVISADO")
+# ERROR también está abierto: un correo que no ha salido tiene que seguir a la
+# vista para poder arreglar la causa y reintentarlo, no desaparecer.
+ESTADOS_ABIERTOS = ("BORRADOR", "REVISADO", "ERROR")
 
 
 # --- Contexto del correo -----------------------------------------------------
@@ -105,8 +107,8 @@ def comprobar(repo: Repositorio, cfg: Config, envio: dict) -> list[str]:
     if plantilla and "{{enlace_form}}" in (plantilla.get("Cuerpo_HTML") or ""):
         if not (plantilla.get("URL_Form") or "").strip():
             problemas.append(
-                f"La plantilla {plantilla['Codigo']} lleva un enlace a formulario "
-                "pero no tiene URL configurada")
+                f"La plantilla {plantilla['Codigo']} lleva un botón a un "
+                "formulario y no tiene URL. Pégala en «Plantillas de correo»")
         elif envio["ID_Usuario"] not in html:
             problemas.append("El enlace del formulario no lleva el identificador")
     return problemas
@@ -266,8 +268,11 @@ def enviar(repo: Repositorio, cfg: Config, enviador: srv_correo.Enviador,
 
         problemas = comprobar(repo, cfg, envio)
         if problemas:
+            # Que falte configurar algo no es un fallo de envío: el correo no
+            # estaba listo. Se deja como estaba, con el motivo anotado, para
+            # arreglar la causa y volver a darle sin rehacer nada.
             repo.actualizar("T_COLA_MAIL", identificador,
-                            {"Estado": "ERROR", "Error": "; ".join(problemas)})
+                            {"Error": "; ".join(problemas)})
             resultado.fallidos.append((identificador, "; ".join(problemas)))
             continue
 
@@ -343,6 +348,12 @@ def enviar_en_vacaciones(repo: Repositorio, cfg: Config,
     elegidos, omitidos = [], []
     for envio in pendientes(repo):
         if envio.get("F_Programada") and envio["F_Programada"] > hoy:
+            continue
+        if envio.get("Estado") == "ERROR":
+            # Sin nadie delante, reintentar a ciegas lo que ya falló solo
+            # repetiría el error todos los días.
+            omitidos.append((envio["ID_Envio"],
+                             "quedó en error: necesita que lo revises"))
             continue
         if envio.get("Codigo_Plantilla") not in aptas:
             omitidos.append((envio["ID_Envio"],
