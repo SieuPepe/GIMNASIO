@@ -285,6 +285,40 @@ class Envio(Base):
         self.assertEqual(self.repo.obtener("T_COLA_MAIL", envio_id)["Estado"], "ERROR")
 
 
+class Adjuntos(Base):
+    def test_la_bienvenida_lleva_la_hoja_de_entrenamiento(self):
+        """El cuerpo dice «te adjunto la hoja»: tiene que ir de verdad."""
+        identificador = self._usuario()
+        asignacion = self._asignar(identificador)
+        envio_id = self.repo.insertar("T_COLA_MAIL", {
+            "ID_Usuario": identificador, "ID_Asignacion": asignacion,
+            "Codigo_Plantilla": "BIENVENIDA", "F_Generado": datetime.now(),
+            "Estado": "BORRADOR"})
+        resultado = srv.enviar(self.repo, self.cfg, self.enviador, [envio_id])
+        self.assertEqual(resultado.enviados, [envio_id])
+        adjuntos = self.enviador.enviados[0]["adjuntos"]
+        self.assertEqual(len(adjuntos), 1)
+        self.assertTrue(adjuntos[0].exists())
+        self.assertGreater(adjuntos[0].stat().st_size, 5_000)
+
+    def test_los_demas_correos_no_llevan_adjunto(self):
+        identificador = self._usuario()
+        envio_id = self.repo.insertar("T_COLA_MAIL", {
+            "ID_Usuario": identificador, "Codigo_Plantilla": "CONSENTIMIENTO",
+            "F_Generado": datetime.now(), "Estado": "BORRADOR"})
+        srv.enviar(self.repo, self.cfg, self.enviador, [envio_id])
+        self.assertEqual(self.enviador.enviados[0]["adjuntos"], [])
+
+    def test_se_adjunta_el_primer_microciclo(self):
+        identificador = self._usuario()
+        asignacion = self._asignar(identificador)
+        semanas = srv_programas.semanas_de(self.repo, asignacion)
+        primeras = [s for s in semanas if s.id_micro == semanas[0].id_micro]
+        envio = {"Codigo_Plantilla": "BIENVENIDA", "ID_Asignacion": asignacion}
+        ruta = srv.adjuntos_para(self.repo, self.cfg, envio)[0]
+        self.assertIn(f"s{primeras[0].numero:02d}", ruta.name)
+
+
 class ModoVacaciones(Base):
     def _activar(self, caducidad: str) -> None:
         for fila in self.repo.libro.filas["T_CONFIG"]:

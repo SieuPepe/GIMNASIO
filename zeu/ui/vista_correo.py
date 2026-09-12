@@ -311,16 +311,20 @@ class VistaCorreo(QWidget):
         envio = self.repo.obtener("T_COLA_MAIL", identificador) or {}
         try:
             asunto, html = srv.montar(self.repo, self.cfg, envio)
+            documentos = srv.adjuntos_para(self.repo, self.cfg, envio)
             enviador = self._enviador()
             if not enviador:
                 return
-            enviador.enviar(enviador.remitente, f"[PRUEBA] {asunto}", html)
+            enviador.enviar(enviador.remitente, f"[PRUEBA] {asunto}", html, documentos)
         except Exception as error:
             avisar_error(self, "No se ha podido enviar la prueba", error)
             return
-        QMessageBox.information(self, "Prueba enviada",
-                                "Te lo has enviado a ti mismo. Revísalo antes de "
-                                "mandárselo al usuario.")
+        QMessageBox.information(
+            self, "Prueba enviada",
+            "Te lo has enviado a ti mismo"
+            + (f", con {len(documentos)} documento(s) adjunto(s)." if documentos
+               else ".")
+            + "\nRevísalo antes de mandárselo al usuario.")
 
     def cancelar(self) -> None:
         identificador = self.seleccionado()

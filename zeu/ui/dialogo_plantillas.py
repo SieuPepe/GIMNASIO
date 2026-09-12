@@ -20,17 +20,7 @@ NOMBRES = {
     "AGRADECIMIENTO": "Agradecimiento por responder",
 }
 AYUDA = (
-    "Para que un correo pueda llevar su botón, necesita la <b>URL de respuesta "
-    "prerrellenada</b> del formulario de Google:<br><br>"
-    "1. En el formulario, menú <b>⋮ → Obtener enlace prerrellenado</b>.<br>"
-    "2. Escribe <code>USUARIO</code> en el campo oculto del identificador de "
-    "usuario y <code>ENVIO</code> en el del envío, y pulsa <b>Obtener enlace</b>.<br>"
-    "3. Copia la URL y <b>sustituye</b> en ella <code>USUARIO</code> por "
-    "<code>{{id_usuario}}</code> y <code>ENVIO</code> por <code>{{id_envio}}</code>.<br><br>"
-    "Queda algo así:<br><code>https://docs.google.com/forms/d/e/XXXX/viewform?"
-    "usp=pp_url&amp;entry.111={{id_usuario}}&amp;entry.222={{id_envio}}</code><br><br>"
-    "Así cada usuario recibe su enlace y la respuesta queda atada a su envío sin "
-    "que él tenga que identificarse."
+    "Para que un correo pueda llevar su botón, necesita la <b>URL prerrellenada</b> del formulario de Google:<br><br>1. En el formulario, menú <b>⋮</b> (arriba a la derecha) → <b>Rellenar previamente el formulario</b>. En versiones anteriores se llamaba «Obtener enlace prerrellenado».<br>2. Se abre el formulario en modo relleno: escribe <code>USUARIO</code> en el campo del identificador de usuario y <code>ENVIO</code> en el del envío.<br>3. Abajo, <b>Obtener enlace</b> y luego <b>Copiar enlace</b>.<br>4. Pega aquí la URL y <b>sustituye</b> en ella <code>USUARIO</code> por <code>{{id_usuario}}</code> y <code>ENVIO</code> por <code>{{id_envio}}</code>.<br><br>Queda algo así:<br><code>https://docs.google.com/forms/d/e/XXXX/viewform?usp=pp_url&amp;entry.111={{id_usuario}}&amp;entry.222={{id_envio}}</code><br><br>Así cada usuario recibe su enlace y la respuesta queda atada a su envío sin que él tenga que identificarse."
 )
 
 

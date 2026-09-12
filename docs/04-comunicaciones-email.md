@@ -87,7 +87,9 @@ datos reales automáticamente.
 ### Identificación del que responde (clave)
 
 El formulario incluye un campo **oculto prerrellenado** con el `ID_Usuario` y el
-`ID_Envio`. Se consigue con la URL de "respuesta prerrellenada" de Google Forms:
+`ID_Envio`. Se consigue con la URL prerrellenada de Google Forms (menú **⋮ → Rellenar
+previamente el formulario**; en versiones anteriores, «Obtener enlace
+prerrellenado»):
 
 ```
 https://docs.google.com/forms/d/e/XXXX/viewform?usp=pp_url&entry.123456789=USR-0042&entry.987654321=ENV-0311

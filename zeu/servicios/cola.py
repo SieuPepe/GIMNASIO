@@ -233,6 +233,35 @@ def con_retraso(repo: Repositorio, hoy: date | None = None) -> list[dict]:
             if e.get("F_Programada") and e["F_Programada"] < hoy]
 
 
+# --- Adjuntos ----------------------------------------------------------------
+
+# Plantillas cuyo texto promete un documento. Si el correo lo dice, tiene que ir.
+CON_ADJUNTO = ("BIENVENIDA",)
+
+
+def adjuntos_para(repo: Repositorio, cfg: Config, envio: dict) -> list[Path]:
+    """Los documentos que acompañan a este correo, generados al vuelo."""
+    if envio.get("Codigo_Plantilla") not in CON_ADJUNTO:
+        return []
+    id_asignacion = envio.get("ID_Asignacion")
+    if not id_asignacion:
+        return []
+
+    from . import informes
+
+    semanas = srv_programas.semanas_de(repo, id_asignacion)
+    if not semanas:
+        return []
+    # «Las primeras semanas» es el primer microciclo entero, que es lo que el
+    # usuario va a hacer ahora; como mucho seis, para que no sea un tocho.
+    primero = semanas[0].id_micro
+    del_primer_micro = [s.numero for s in semanas if s.id_micro == primero]
+    return [informes.generar_programa(repo, cfg, id_asignacion,
+                                      desde=del_primer_micro[0],
+                                      hasta=min(del_primer_micro[-1],
+                                                del_primer_micro[0] + 5))]
+
+
 # --- Envío -------------------------------------------------------------------
 
 @dataclass
@@ -278,8 +307,18 @@ def enviar(repo: Repositorio, cfg: Config, enviador: srv_correo.Enviador,
 
         asunto, html = montar(repo, cfg, envio)
         try:
-            enviador.enviar(usuario["Email"], asunto, html,
-                            (adjuntos or {}).get(identificador))
+            documentos = (adjuntos or {}).get(identificador)
+            if documentos is None:
+                documentos = adjuntos_para(repo, cfg, envio)
+        except Exception as error:
+            # El cuerpo promete la hoja de entrenamiento: mejor no enviar un
+            # correo que dice «te adjunto» sin adjuntar nada.
+            motivo = f"no se ha podido generar el documento adjunto: {error}"
+            repo.actualizar("T_COLA_MAIL", identificador, {"Error": motivo})
+            resultado.fallidos.append((identificador, motivo))
+            continue
+        try:
+            enviador.enviar(usuario["Email"], asunto, html, documentos)
         except Exception as error:
             repo.actualizar("T_COLA_MAIL", identificador,
                             {"Estado": "ERROR", "Error": str(error)})
