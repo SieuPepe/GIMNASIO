@@ -65,8 +65,11 @@ class VistaInicio(QWidget):
                 # se destruye al volver al bucle de eventos y se queda pintado.
                 anterior.setParent(None)
                 anterior.deleteLater()
+        ejercicios = [e for e in self.repo.listar("T_EJERCICIOS") if e.get("Activo_SN")]
         tarjetas = [
             (str(len(activos)), "usuarios activos", estilo.AZUL),
+            (str(len(ejercicios)), "ejercicios en el catálogo",
+             estilo.AZUL if ejercicios else estilo.BAJO),
             (str(len(sin_consentimiento)), "sin consentimiento registrado",
              estilo.BAJO if sin_consentimiento else estilo.BUENO),
             (str(len(sin_cribado)), "sin cribado de salud",
@@ -90,6 +93,9 @@ class VistaInicio(QWidget):
             lineas.append("Requieren informe médico antes de esfuerzo máximo: " + ", ".join(
                 f"{u.get('Nombre')} {u.get('Apellidos') or ''}".strip()
                 for u in requieren_informe[:6]))
+        if not ejercicios:
+            lineas.append("El catálogo de ejercicios está vacío: impórtalo desde "
+                          "«Ejercicios → Importar desde CSV…» antes de crear programas.")
         self.pendientes.setText("\n".join(lineas) if lineas else "")
         self.pendientes.setVisible(bool(lineas))
 

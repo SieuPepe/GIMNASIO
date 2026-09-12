@@ -10,6 +10,7 @@ medias. Las estimaciones son de esfuerzo relativo, no de calendario.
 - Ventana principal vacía con su navegación.
 
 **Resultado:** el libro existe y la aplicación arranca. Sin esto nada más es posible.
+**Hecha.**
 
 ## Fase 1 — Usuarios
 - Ficha de usuario: alta, edición, búsqueda, listado.
@@ -18,6 +19,7 @@ medias. Las estimaciones son de esfuerzo relativo, no de calendario.
 
 **Resultado:** ya se puede meter la cartera de usuarios real. Utilizable desde el
 primer día, y los datos que se metan ahora sirven para todo lo demás.
+**Hecha.**
 
 ## Fase 2 — Catálogo de ejercicios
 - Catálogo con patrón, grupo, material, nivel, incremento de carga, vídeo.
@@ -27,6 +29,7 @@ primer día, y los datos que se metan ahora sirven para todo lo demás.
   editable. El entrenador revisa, quita y añade.
 
 **Resultado:** la base sin la cual los programas serían texto libre.
+**Hecha.** 127 ejercicios de partida. Detalle en [13](13-catalogo-ejercicios.md).
 
 ## Fase 3 — Valoración física
 - Catálogo de test, **protocolos (plantillas de valoración)** y baremos editables.

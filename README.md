@@ -17,13 +17,13 @@ comunicación automatizada por correo con los usuarios.
 
 ## Estado
 
-**Fases 0 y 1 implementadas:** cimientos y gestión de usuarios.
+**Fases 0, 1 y 2 implementadas:** cimientos, usuarios y catálogo de ejercicios.
 
 | Fase | Contenido | Estado |
 |---|---|---|
 | 0 | Libro de datos, capa de acceso, copias de seguridad, configuración | Hecha |
 | 1 | Usuarios, objetivos, salud y cribado PAR-Q+, disponibilidad | Hecha |
-| 2 | Catálogo de ejercicios | Pendiente |
+| 2 | Catálogo de ejercicios, con 127 de partida | Hecha |
 | 3 | Valoración física e informe en PDF | Pendiente |
 | 4 | Planificación, cargas y PDF del programa | Pendiente |
 | 5 | Correo, formularios y cola de revisión | Pendiente |
@@ -44,7 +44,10 @@ Copy-Item config.ejemplo.toml config.toml; Copy-Item .env.ejemplo .env
 # 3. Crear el libro de datos vacío (29 hojas + hoja de esquema)
 python herramientas/crear_libro.py
 
-# 4. Arrancar
+# 4. Cargar el catálogo inicial de ejercicios
+python herramientas/importar_ejercicios.py
+
+# 5. Arrancar
 python -m zeu
 ```
 
@@ -59,6 +62,7 @@ zeu/
 ├── servicios/  Lógica de negocio
 ├── ui/         Ventanas (PySide6). No toca openpyxl nunca
 herramientas/   Utilidades de línea de comandos
+datos_iniciales/  Catálogo de ejercicios de partida (CSV)
 pruebas/        Pruebas automáticas
 ```
 
@@ -82,3 +86,4 @@ sola carpeta.
 | [10 — Decisiones abiertas](docs/10-decisiones-abiertas.md) | Lo que falta por decidir |
 | [11 — Anexo de baremos](docs/11-anexo-baremos.md) | Tablas de referencia por sexo y edad de cada prueba |
 | [12 — Identidad de marca](docs/12-marca.md) | Nombre, lema, paleta y ficheros del logotipo |
+| [13 — Catálogo de ejercicios](docs/13-catalogo-ejercicios.md) | Vocabularios, formato del CSV y lo que da el catálogo |
