@@ -341,3 +341,138 @@ def generar(repo: Repositorio, cfg: Config, id_valoracion: str,
 
         documento.build(partes, onFirstPage=pie, onLaterPages=pie)
     return destino
+
+
+# --- Programa de entrenamiento ----------------------------------------------
+
+def _cabecera_marca(cfg: Config, estilos: dict, derecha: str) -> Table:
+    logo = estilo.ruta_logo()
+    izquierda = (Image(str(logo), width=34 * mm, height=16 * mm, kind="proportional")
+                 if logo and logo.exists()
+                 else Paragraph(f"<b>{cfg.negocio.nombre_comercial}</b>", estilos["titulo"]))
+    tabla = Table([[izquierda, Paragraph(derecha, estilos["subtitulo"])]],
+                  colWidths=[100 * mm, 74 * mm])
+    tabla.setStyle(TableStyle([("ALIGN", (1, 0), (1, 0), "RIGHT"),
+                               ("VALIGN", (0, 0), (-1, -1), "MIDDLE")]))
+    return tabla
+
+
+def generar_programa(repo: Repositorio, cfg: Config, id_asignacion: str,
+                     desde: int = 1, hasta: int | None = None,
+                     destino: Path | None = None) -> Path:
+    """Hoja de entrenamiento del usuario, con las cargas ya resueltas en kilos."""
+    from . import programas as srv_prog
+
+    asignacion = repo.obtener("T_ASIGNACIONES", id_asignacion)
+    if not asignacion:
+        raise KeyError(id_asignacion)
+    usuario = repo.obtener("T_USUARIOS", asignacion["ID_Usuario"]) or {}
+    macro = repo.obtener("T_CICLOS", asignacion["ID_Ciclo"]) or {}
+    nombre = " ".join(x for x in (usuario.get("Nombre"), usuario.get("Apellidos")) if x)
+    estilos = _estilos()
+
+    semanas = srv_prog.semanas_de(repo, id_asignacion)
+    hasta = hasta or len(semanas)
+    elegidas = [s for s in semanas if desde <= s.numero <= hasta]
+
+    if destino is None:
+        carpeta = Path(cfg.datos.libro).parent / "salidas" / "programas"
+        destino = carpeta / (f"programa_{usuario.get('ID_Usuario')}_"
+                             f"s{desde:02d}-s{hasta:02d}.pdf")
+    destino.parent.mkdir(parents=True, exist_ok=True)
+
+    documento = SimpleDocTemplate(
+        str(destino), pagesize=A4, leftMargin=15 * mm, rightMargin=15 * mm,
+        topMargin=14 * mm, bottomMargin=16 * mm,
+        title=f"Programa de entrenamiento — {nombre}",
+        author=cfg.negocio.nombre_comercial)
+    partes = [
+        _cabecera_marca(cfg, estilos,
+                        f"{cfg.negocio.lema}<br/>{formatear(asignacion.get('F_Inicio'))} "
+                        f"– {formatear(asignacion.get('F_Fin_Prevista'))}"),
+        Spacer(1, 4),
+        Paragraph("Programa de entrenamiento", estilos["titulo"]),
+        Paragraph(f"{nombre} · {macro.get('Nombre', '')}"
+                  + (f" · {macro.get('Objetivo_Ciclo')}" if macro.get("Objetivo_Ciclo") else ""),
+                  estilos["subtitulo"]),
+    ]
+
+    # -- calendario del plan --
+    partes.append(Paragraph("Plan completo", estilos["seccion"]))
+    filas = [["Fase", "Nivel", "Desde", "Hasta", "Semanas"]]
+    for fase in srv_prog.fases_de(repo, id_asignacion):
+        ciclo = repo.obtener("T_CICLOS", fase.get("ID_Ciclo")) or {}
+        if fase.get("Nivel") == "MACRO":
+            continue
+        sangria = "" if fase.get("Nivel") == "MESO" else "     "
+        inicio, fin = fase.get("F_Inicio"), fase.get("F_Fin")
+        filas.append([
+            Paragraph(f"{sangria}{ciclo.get('Nombre', '')}", estilos["celda"]),
+            (fase.get("Nivel") or "").capitalize(),
+            formatear(inicio), formatear(fin),
+            str(((fin - inicio).days + 1) // 7) if inicio and fin else ""])
+    partes.append(_tabla(filas, [78 * mm, 20 * mm, 25 * mm, 25 * mm, 22 * mm]))
+
+    # -- semanas --
+    sin_1rm: set[str] = set()
+    for semana in elegidas:
+        partes.append(Paragraph(
+            f"Semana {semana.numero} · {semana.nombre_micro}"
+            + (f" · desde el {formatear(semana.inicio)}" if semana.inicio else ""),
+            estilos["seccion"]))
+        if not semana.sesiones:
+            partes.append(Paragraph("Sin sesiones definidas en este microciclo.",
+                                    estilos["texto"]))
+            continue
+        for sesion in semana.sesiones:
+            partes.append(Paragraph(
+                f"<b>Día {sesion.get('Num_Dia')} · {sesion.get('Nombre') or ''}</b>"
+                + (f"  ({sesion.get('Tipo', '').lower()})" if sesion.get("Tipo") else ""),
+                estilos["texto"]))
+            filas = [["Bloque", "Ejercicio", "Series", "Reps", "Carga", "Desc.", "Notas"]]
+            for linea in srv_prog.lineas(repo, sesion["ID_Sesion"]):
+                ejercicio = repo.obtener("T_EJERCICIOS", linea.get("ID_Ejercicio")) or {}
+                carga = srv_prog.resolver_carga(
+                    repo, linea, asignacion.get("ID_Usuario"), semana.en_micro)
+                if carga.sin_1rm:
+                    sin_1rm.add(ejercicio.get("Nombre") or linea.get("ID_Ejercicio"))
+                nota = " · ".join(x for x in (
+                    linea.get("Notas") or "", srv_prog.nota_progresion(linea.get("Progresion")),
+                    f"tempo {linea['Tempo']}" if linea.get("Tempo") else "") if x)
+                descanso = linea.get("Descanso_Seg")
+                filas.append([
+                    (linea.get("Bloque") or "").replace("_", " ").capitalize(),
+                    Paragraph(ejercicio.get("Nombre") or "", estilos["celda"]),
+                    str(linea.get("Series") or ""), str(linea.get("Reps") or ""),
+                    Paragraph(f"<b>{carga.texto}</b>", estilos["celda"]),
+                    f"{int(descanso)}s" if descanso else "",
+                    Paragraph(nota, estilos["celda"])])
+            partes.append(_tabla(
+                filas, [22 * mm, 45 * mm, 13 * mm, 16 * mm, 34 * mm, 13 * mm, 37 * mm]))
+            partes.append(Spacer(1, 5))
+
+    if sin_1rm:
+        partes.append(Spacer(1, 4))
+        partes.append(Paragraph(
+            "<b>Pendiente de medir:</b> " + ", ".join(sorted(sin_1rm)) +
+            ". Sin la repetición máxima no se puede calcular el peso, así que esas "
+            "casillas salen «por determinar».", estilos["texto"]))
+
+    partes.append(Spacer(1, 8))
+    partes.append(Paragraph(
+        "Anota debajo de cada sesión lo que hayas hecho de verdad: repeticiones, "
+        "kilos y sensaciones. Esa información es la que permite ajustar el plan.",
+        estilos["pie"]))
+
+    def pie(lienzo, _documento):
+        lienzo.saveState()
+        lienzo.setFont("Helvetica", 7.5)
+        lienzo.setFillColor(colors.HexColor("#9AA5AD"))
+        lienzo.drawString(15 * mm, 10 * mm,
+                          f"{cfg.negocio.nombre_comercial} · {cfg.negocio.lema}")
+        lienzo.drawRightString(A4[0] - 15 * mm, 10 * mm,
+                               f"{nombre} · página {lienzo.getPageNumber()}")
+        lienzo.restoreState()
+
+    documento.build(partes, onFirstPage=pie, onLaterPages=pie)
+    return destino

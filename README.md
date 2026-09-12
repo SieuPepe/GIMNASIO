@@ -17,8 +17,8 @@ comunicación automatizada por correo con los usuarios.
 
 ## Estado
 
-**Fases 0 a 3 implementadas:** cimientos, usuarios, catálogo de ejercicios y
-valoración física con informe en PDF.
+**Fases 0 a 4 implementadas:** cimientos, usuarios, catálogo de ejercicios,
+valoración física y planificación con cálculo de cargas.
 
 | Fase | Contenido | Estado |
 |---|---|---|
@@ -26,7 +26,7 @@ valoración física con informe en PDF.
 | 1 | Usuarios, objetivos, salud y cribado PAR-Q+, disponibilidad | Hecha |
 | 2 | Catálogo de ejercicios, con 127 de partida | Hecha |
 | 3 | Valoración física, protocolos, baremos e informe en PDF | Hecha |
-| 4 | Planificación, cargas y PDF del programa | Pendiente |
+| 4 | Planificación en árbol, cargas, asignaciones y PDF | Hecha |
 | 5 | Correo, formularios y cola de revisión | Pendiente |
 | 6 | Panel de alertas completo | Pendiente |
 | 7 | Módulo de IA | Pendiente |
@@ -51,7 +51,10 @@ python herramientas/importar_ejercicios.py
 # 5. Cargar pruebas, baremos y protocolos de valoración
 python herramientas/importar_valoracion.py
 
-# 6. Arrancar
+# 6. Crear las plantillas de macrociclo de partida
+python herramientas/crear_plantillas.py
+
+# 7. Arrancar
 python -m zeu
 ```
 
