@@ -3,7 +3,7 @@
 Formulario de Google enlazado desde el correo `ENCUESTA_T14`. Objetivo doble:
 ajustar el entrenamiento y conseguir que el usuario encadene otro ciclo.
 
-Diseño: **13 preguntas, 2 minutos**. Más largo baja la tasa de respuesta de forma
+Diseño: **14 preguntas, 2 minutos**. Más largo baja la tasa de respuesta de forma
 brusca. Solo son obligatorias las preguntas 1, 4, 9 y 10.
 
 ## Bloque 1 — Sensación física
@@ -58,17 +58,15 @@ de un cierre. Es la pregunta con más valor comercial del formulario.
 
 ## Cierre
 
-Texto final con la llamada a la acción, y la pregunta de cita según lo que se
-decida en el documento 04:
+Texto final con la llamada a la acción y una única pregunta de cierre:
 
 | # | Pregunta | Tipo | Código |
 |---|---|---|---|
-| 14 | ¿Quieres que hablemos para preparar tu próximo ciclo? | Sí, llámame / Sí, por correo / Todavía no | `QUIERE_CITA` |
-| 15 | Si quieres que te llame, indica dos franjas que te encajen | Texto libre | `FRANJAS_CITA` |
+| 14 | ¿Quieres que hablemos para preparar tu próximo ciclo? | **Sí / Todavía no** | `QUIERE_CITA` |
 
-Una respuesta afirmativa en la 14 genera una alerta en el panel de inicio. Esto es
-la opción 1 de la sección "Reserva de cita" del documento 04, pendiente de
-validar.
+**Sin reserva de horario.** Un "Sí" genera una alerta en el panel de inicio y un
+correo de confirmación que le indica que se pase por la sala cuando esté el
+entrenador. Ver [04 — Cita con el entrenador](04-comunicaciones-email.md#cita-con-el-entrenador-sin-reserva-de-horario).
 
 ## Descartado
 
@@ -95,7 +93,7 @@ para cada usuario y generada por la aplicación.
 | `PREFERENCIA_HORARIA` | Actualiza `T_DISPONIBILIDAD` |
 | `OBJETIVO` = Lo cambio | Nueva fila en `T_OBJETIVOS`, el anterior pasa a MODIFICADO |
 | `PROXIMO_CICLO` | Entrada directa del expediente para generar el ciclo siguiente |
-| `QUIERE_CITA` = Sí | Alerta en el panel |
+| `QUIERE_CITA` = Sí | Alerta en el panel + correo indicando el horario de sala |
 | `GUSTA_MAS` / `GUSTA_MENOS` | Al expediente de la IA como texto |
 
 El punto importante: las respuestas **no se quedan en un informe**. Vuelven al

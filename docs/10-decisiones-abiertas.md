@@ -1,69 +1,81 @@
 # 10 — Decisiones abiertas
 
-Lo que falta por cerrar, en orden de urgencia. Las tres primeras condicionan
-decisiones técnicas; las demás pueden resolverse durante el desarrollo.
+## Cerradas en esta ronda
 
-## 1. Hardware del PC (bloquea la fase 7)
+| Punto | Decisión |
+|---|---|
+| Hardware | i5-1235U · 16 GB · sin GPU → IA local troceada + generador por reglas ([03](03-arquitectura.md#hardware-de-destino-y-qué-implica), [07](07-modulo-ia.md#el-hardware-manda-i5-1235u-16-gb-sin-gpu)) |
+| Correo | Google Forms confirmado. Cuenta de Gmail personal. Se creará proyecto en Google Cloud con cuenta de servicio |
+| Credenciales | Fichero `.env` con contraseña de aplicación, fuera del repositorio |
+| Revisión de correos | Vista previa del correo ya interpretado por la IA → aprobar → enviar |
+| Modo vacaciones | Aprobado, con caducidad obligatoria y tope diario |
+| Cita | Sin reserva de horario. Solo confirmación de interés + indicación del horario de sala |
+| Valoración | Varias plantillas (protocolos). Fuerza por técnica salvo dinamómetro. Quitado el test de abdominales. Añadidos *reverse plank*, *side plank*, *step down*, *pull up*, Sorensen, zancada y *scratch test*. Anexo de baremos por sexo y edad |
+| Catálogo y plantillas | No existen propios → los preparamos nosotros como carga inicial |
 
-Para saber si Ollama en local puede con esto o hay que contemplar un proveedor en
-la nube:
+---
 
-- ¿Tiene GPU dedicada? Marca, modelo y memoria de vídeo (VRAM).
-- Memoria RAM del sistema.
-- ¿Hay ya Ollama instalado y algún modelo descargado?
+## Abiertas
 
-Con GPU de 8 GB se puede trabajar con modelos medianos; con 16 GB o más, con
-modelos bastante buenos; solo con CPU es posible pero lento (minutos por
-generación), aceptable si se genera un ciclo de vez en cuando y no en cadena.
+### 1. Validación de la batería de valoración (lo más urgente)
 
-## 2. Cuenta de Google (bloquea la fase 5)
+Necesita tu revisión como entrenador, en dos puntos concretos:
 
-- ¿La cuenta de Gmail desde la que saldrán los correos es una cuenta personal
-  gratuita o de Google Workspace (dominio propio)? Afecta a los límites de envío
-  y a la disponibilidad de la función de citas de Calendar.
-- ¿Se acepta crear un proyecto gratuito en Google Cloud y una cuenta de servicio
-  para importar las respuestas de forma automática, o se prefiere empezar con la
-  descarga manual del CSV?
-- ¿Tiene ya activada la verificación en dos pasos? Es requisito para generar la
-  contraseña de aplicación.
+**a) Clasificación de las pruebas isométricas.** Plancha lateral, plancha
+invertida y Sorensen las he dejado como **cronometradas** (`CUANTITATIVA`), porque
+es lo que son y porque las *relaciones* entre ellas son su aportación más valiosa
+(detectan desequilibrio flexores/extensores y asimetría derecha-izquierda). Tú
+dijiste que en fuerza la valoración inicial es de técnica. ¿Las quieres
+cronometradas, por técnica, o ambas cosas? Se cambia con una celda del catálogo.
 
-## 3. Reserva de cita
+**b) Los baremos del [Anexo 11](11-anexo-baremos.md).** Son valores orientativos
+recopilados de referencias de uso habitual, con su solidez indicada prueba por
+prueba. Hay que revisarlos. En particular, los marcados como **solidez baja** —
+plancha frontal, dominada y suspensión, escala de *scratch test* para adultos
+jóvenes — y la **plancha invertida, que no tiene baremo publicado** y por ahora
+solo sirve como comparación del usuario consigo mismo. Si tienes tablas propias o
+de referencia que uses, son mejores que estas.
 
-Validar la opción 1 del documento 04 (pregunta dentro del formulario + alerta en
-el panel) como punto de partida, o decantarse por Calendly / Calendar.
+### 2. Protocolos de valoración definitivos
 
-## 4. Batería de valoración
+He propuesto seis plantillas ([05](05-valoracion-fisica.md#protocolos-de-partida-propuestos)):
+estándar adulto activo, principiante/sedentario, mayor de 65, reincorporación tras
+lesión, rendimiento y revisión rápida. ¿Son los perfiles que realmente ves en tu
+sala? ¿Falta alguno (embarazo y posparto, población con patología metabólica)?
+¿Sobra alguno?
 
-Revisar la propuesta del documento 05 como entrenador: qué pruebas se van a medir
-de verdad, con qué material, y de dónde salen los baremos (¿tablas normativas
-publicadas? ¿criterio propio?). Los baremos son editables, pero hay que partir de
-unos valores iniciales.
+### 3. Modelo de IA local
 
-## 5. Catálogo inicial de ejercicios
+Hay que **medir en tu equipo**, no decidir sobre el papel. Candidatos:
+`qwen2.5:7b-instruct`, `llama3.1:8b-instruct`, `mistral:7b-instruct`.
+¿Tienes ya Ollama instalado? Si no, es el primer paso del módulo de IA, y la
+pantalla de diagnóstico de la aplicación dará los datos para elegir.
 
-¿Existe ya un listado propio (Excel, Word, una libreta) que se pueda importar? Si
-no, se prepara una carga inicial de ~100 ejercicios habituales para revisar y
-completar.
+### 4. Identidad visual de los PDF
 
-## 6. Plantillas de macrociclo de partida
+Logotipo, nombre comercial, colores y pie de página con datos de contacto. Hace
+falta para los informes de valoración y para los programas de entrenamiento. Un
+PNG del logo y tres datos bastan para empezar.
 
-¿Hay planificaciones que ya se usen y convenga meter como plantillas desde el
-principio? Es el atajo más rápido para que la herramienta sea útil desde el día
-uno.
+### 5. Horario de sala
 
-## 7. Identidad visual de los PDF
+Para el correo de confirmación de cita hace falta el texto del horario en que
+estás en sala (`config.toml`). ¿Cuál es?
 
-Logotipo, nombre comercial, colores, pie de página con datos de contacto. Hace
-falta para los informes de valoración y los programas.
-
-## 8. Datos existentes
+### 6. Datos existentes
 
 ¿Hay usuarios en algún Excel o cuaderno que haya que migrar, o se empieza de cero?
 Si hay algo, conviene verlo antes de fijar los campos definitivos.
 
-## 9. Textos legales
+### 7. Texto del consentimiento
 
-El texto de la solicitud de consentimiento debería revisarlo alguien con criterio
-legal. Se pidió expresamente que sea breve y sin muro de texto, lo cual es
-razonable, pero conviene que lo que se envíe sea suficiente: se tratan datos de
-salud, que el RGPD considera de categoría especial.
+El texto de la solicitud debería revisarlo alguien con criterio legal. Se pidió
+que sea breve y sin muro legal, lo cual es razonable, pero conviene que lo que se
+envíe sea suficiente: se tratan datos de salud, que el RGPD considera de categoría
+especial. Hay un borrador en
+[04](04-comunicaciones-email.md#consentimiento-de-datos).
+
+### 8. Nombre de la aplicación
+
+Aparecerá en la ventana, en los PDF y en los correos. Por ahora está como
+"GIMNASIO".

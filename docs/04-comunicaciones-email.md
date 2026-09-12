@@ -2,13 +2,17 @@
 
 ## Envío
 
-SMTP directo de Gmail: `smtp.gmail.com:465` (SSL). Requiere **contraseña de
-aplicación** de 16 caracteres, que exige tener activada la verificación en dos
-pasos en la cuenta de Google. La contraseña se guarda en el Almacén de
-credenciales de Windows (`keyring`), nunca en el Excel ni en el `config.toml`.
+SMTP directo de Gmail: `smtp.gmail.com:465` (SSL), desde una cuenta de Gmail
+personal. Requiere **contraseña de aplicación** de 16 caracteres, que exige tener
+activada la verificación en dos pasos en la cuenta de Google.
 
-Límite de Gmail gratuito: ~500 destinatarios al día. Con 100 usuarios no es un
-problema.
+La credencial va en el fichero `.env`, fuera del repositorio. Ver las
+consideraciones de [03 — Configuración y secretos](03-arquitectura.md#sobre-guardar-credenciales-en-env).
+
+Límite de una cuenta de Gmail gratuita: del orden de **500 destinatarios al día**,
+y conviene no enviar ráfagas grandes de golpe. Con 100 usuarios no hay problema;
+la aplicación espaciará los envíos en lote unos segundos entre uno y otro para no
+parecer un emisor masivo.
 
 ## Cadencia definitiva
 
@@ -148,15 +152,50 @@ Alternativa si se prefiere no usar un segundo formulario: la autorización se
 recoge en papel/presencialmente y se marca a mano en la ficha
 (`Origen_Consentimiento = PRESENCIAL`). Ambas vías quedan soportadas.
 
-## Reserva de cita: pendiente de definir
+## Cita con el entrenador: sin reserva de horario
 
-Es la pieza que falta por cerrar. Sin servidor propio, las opciones son:
+Decisión tomada: **no hay reserva de hora.** Se descartan Calendly y los horarios
+de citas de Google Calendar, que además requieren cuenta de pago.
 
-| Opción | Cómo funciona | Pros y contras |
-|---|---|---|
-| **1. Dentro del propio formulario** | Una pregunta más: *"¿quieres que te llame para preparar tu siguiente ciclo?"* + *"indica dos franjas que te encajen"*. Genera una alerta en el panel | Cero herramientas nuevas, todo en el flujo existente. El entrenador cierra la cita por teléfono. **Recomendada para empezar** |
-| **2. Google Calendar - Citas** | Página de reserva con la disponibilidad real; el usuario elige hueco | Buena experiencia, pero la función de horarios de citas es de Google Workspace (cuenta de pago) |
-| **3. Calendly (plan gratuito)** | Enlace de reserva en el correo | Funciona bien y es gratis en su nivel básico, pero es un servicio externo más, y la cita no vuelve automáticamente al Excel |
+Funcionamiento:
 
-Propuesta: empezar por la **1**, y evaluar la **2** o la **3** cuando el flujo
-esté rodado y se sepa cuánta gente pide cita de verdad.
+1. En el formulario, una pregunta de una sola respuesta:
+   *"¿Quieres que hablemos para preparar tu próximo ciclo?"* → **Sí / Todavía no**.
+2. Si responde **Sí**, al importar la respuesta:
+   - Se genera una **alerta en el panel de inicio** con su nombre.
+   - Se genera un borrador de correo de confirmación que le indica que **se pase
+     por la sala cuando esté el entrenador**, con el horario de sala tomado de la
+     configuración (`config.toml`: `horario_sala`).
+3. No hay hueco reservado, ni recordatorio, ni confirmación de asistencia.
+
+Es lo más simple que funciona, no añade ninguna herramienta externa y encaja con
+cómo trabaja realmente un entrenador de sala.
+
+## Redacción del cuerpo con IA
+
+El cuerpo del correo lo redacta la IA local a partir de los datos del usuario, la
+instrucción de la plantilla y la nota personal del entrenador, que queda integrada
+en el texto en lugar de pegada aparte. El detalle del proceso, las restricciones
+que se imponen al modelo y las comprobaciones automáticas previas están en
+[07 — Redacción de correos con IA](07-modulo-ia.md#redacción-de-correos-con-ia).
+
+En la pantalla de revisión se ve **el correo final, ya interpretado por la IA**,
+exactamente como lo va a recibir el usuario. Se aprueba y sale.
+
+## Modo vacaciones
+
+Interruptor en la configuración. Con el modo activado, los borradores se generan
+**y se envían solos**, sin pasar por revisión.
+
+Salvaguardas, porque un correo enviado no se puede recuperar:
+
+| Salvaguarda | Motivo |
+|---|---|
+| Solo salen las plantillas con `Permite_Modo_Vacaciones_SN = Sí` | Un correo delicado (una respuesta a alguien que ha declarado molestias) nunca sale sin revisión |
+| Tope de envíos al día, configurable | Evita que un error de fechas dispare 80 correos |
+| Nunca a usuarios sin consentimiento registrado | Requisito legal, no configurable |
+| Se marca `Aprobado_Por = MODO_VACACIONES` | Queda constancia de lo que salió sin supervisión |
+| **Fecha de caducidad obligatoria** al activarlo | El riesgo real no es activarlo, es olvidarse de desactivarlo. Vencida la fecha, vuelve a revisión manual solo |
+| Resumen diario al entrenador | Un correo con lo que se envió ese día, para no volver a ciegas |
+| Aviso visible en la pantalla de inicio | Franja de color mientras esté activo |
+| Los correos sin plantilla apta se acumulan como borradores | No se pierde nada: esperan a la vuelta |

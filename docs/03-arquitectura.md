@@ -25,7 +25,7 @@ Razones:
 | Acceso al Excel | openpyxl | Lectura/escritura de `.xlsx` sin necesitar Excel instalado |
 | PDF | ReportLab + matplotlib | Informes con tablas y gráficas (radar de valoración, evolución) |
 | Correo | `smtplib` + `ssl` (SMTP Gmail) | Sin dependencia de Outlook |
-| Secretos | `keyring` (Almacén de credenciales de Windows) | La contraseña de aplicación de Gmail **no** se guarda en el Excel |
+| Secretos | Fichero `.env` fuera del repositorio (`python-dotenv`) | Sencillo y suficiente para un PC de un solo usuario |
 | IA | `requests` contra la API de Ollama; capa de proveedor intercambiable | Local por defecto, ampliable a proveedores en la nube |
 | Google Forms | `gspread` + cuenta de servicio (o importación manual de CSV) | Lectura de la hoja de respuestas |
 | Empaquetado | PyInstaller (modo carpeta) + instalador Inno Setup | `.exe` de doble clic |
@@ -92,8 +92,64 @@ horizonte previsible; si algún día lo hubiera, la capa `datos/` lo absorbe.
 
 ## Configuración y secretos
 
-- `config.toml` junto al ejecutable: ruta del libro, carpeta de copias, remitente
-  de correo, servidor SMTP, URL de Ollama, modelo por defecto, rutas de PDF.
-- La **contraseña de aplicación de Gmail** y la clave de cuenta de servicio de
-  Google se guardan en el Almacén de credenciales de Windows vía `keyring`.
-  Nunca en el Excel ni en el `config.toml`, y nunca en el repositorio.
+Dos ficheros junto al ejecutable:
+
+- **`config.toml`** — parámetros no sensibles: ruta del libro, carpeta de copias,
+  número de copias a conservar, URL de Ollama, modelo por defecto, días de aviso
+  previo, horario del entrenador en sala, modo vacaciones.
+- **`.env`** — credenciales:
+
+```ini
+GMAIL_USUARIO=micuenta@gmail.com
+GMAIL_APP_PASSWORD=xxxxxxxxxxxxxxxx
+GOOGLE_SERVICE_ACCOUNT_JSON=C:\GIMNASIO\secretos\cuenta-servicio.json
+OPENAI_API_KEY=            # opcional, si se usa proveedor en la nube
+```
+
+### Sobre guardar credenciales en `.env`
+
+Funciona y es lo más sencillo, que es la razón para elegirlo. La contrapartida a
+tener presente: **el fichero está en texto plano**, así que cualquiera con acceso
+a ese PC, o a una copia de seguridad de ese PC, puede leer la contraseña.
+
+En este caso el riesgo es asumible y se acota así:
+
+1. Se usa una **contraseña de aplicación** de Gmail, no la contraseña de la
+   cuenta. Es específica para esta aplicación, no da acceso a la cuenta de Google
+   y **se puede revocar en cualquier momento** desde la configuración de Google si
+   algo va mal.
+2. El `.env` está en `.gitignore`: **nunca** llega al repositorio.
+3. Se excluye de las copias de seguridad que salgan del PC (y de cualquier copia
+   en la nube).
+4. El JSON de la cuenta de servicio de Google se guarda en una subcarpeta propia,
+   también excluida.
+
+Si en algún momento se quiere endurecer, mover los secretos al Almacén de
+credenciales de Windows (`keyring`) es un cambio de unas pocas líneas, porque
+todo el acceso a credenciales pasa por una única función. Se deja preparado así,
+pero **arrancamos con `.env`**.
+
+## Hardware de destino y qué implica
+
+**Intel Core i5-1235U · 16 GB de RAM · sin GPU dedicada.**
+
+Para la aplicación en sí (interfaz, Excel, PDF, correo) es más que suficiente: no
+hay nada exigente en ese trabajo.
+
+Para la IA local sí tiene consecuencias, y condicionan el diseño del módulo:
+
+- Es un procesador portátil de 10 núcleos (2 de rendimiento + 8 de eficiencia) sin
+  aceleración gráfica aprovechable. La inferencia va **por CPU**.
+- Con 16 GB de RAM el techo práctico son modelos de **7-8 mil millones de
+  parámetros cuantizados a 4 bits** (ocupan del orden de 4-5 GB). Un modelo de
+  14B cuantizado (≈ 9 GB) entra por los pelos pero deja el equipo muy justo.
+- Velocidad esperable: **del orden de 4 a 8 palabras por segundo** con un modelo
+  de 7-8B. Un texto corto (el cuerpo de un correo, 200-300 palabras) sale en
+  **menos de un minuto**. Una planificación completa en JSON, que son varios
+  miles de palabras, tardaría **muchos minutos** en una sola tirada.
+
+Consecuencia de diseño, desarrollada en el [documento 07](07-modulo-ia.md):
+la generación **no se hace de una sola vez**. Se trocea (esqueleto → cada
+mesociclo → cada sesión), lo que la vuelve viable en este equipo y además más
+fiable. Y las tareas cortas (redactar correos, resumir feedback) van en local sin
+problema.

@@ -68,27 +68,65 @@ con barra olímpica no sirve a quien entrena 3 días en casa con mancuernas.
 
 ## Bloque: valoración física
 
+### `T_PROTOCOLOS` (plantillas de valoración)
+`ID_Protocolo` · Nombre · Descripción · `Perfil_Objetivo` · `Edad_Min` ·
+`Edad_Max` · Sexo · `Duracion_Est_Min` · `Material_Necesario` ·
+`Es_Predeterminado_SN` · `Activo_SN`
+
+No todos los usuarios hacen la misma batería. Un protocolo es un subconjunto de
+pruebas del catálogo, pensado para un perfil (principiante, mayor de 65,
+reincorporación tras lesión, rendimiento, revisión rápida). Ver [05](05-valoracion-fisica.md#protocolos-varias-plantillas-de-valoración).
+
+### `T_PROTOCOLO_DET`
+`ID_Protocolo` · `ID_Test` · Orden · `Obligatorio_SN` · `Notas_Protocolo`
+
 ### `T_CAT_TESTS` (catálogo de pruebas)
-`ID_Test` · Nombre · Capacidad (FUERZA / RESISTENCIA / POTENCIA / MOVILIDAD /
-EQUILIBRIO / COMPOSICION) · Unidad · Protocolo (texto) · `Mejor_Es` (ALTO/BAJO) ·
-`Material` · `Activo_SN`
+`ID_Test` · Nombre · Capacidad (FUERZA / POTENCIA / RESISTENCIA / MOVILIDAD /
+EQUILIBRIO / COMPOSICION / CONTROL_MOTOR) · **`Tipo_Medida`** (CUANTITATIVA /
+TECNICA / MIXTA / CUALITATIVA) · Unidad · `Bilateral_SN` · Protocolo (texto) ·
+`Mejor_Es` (ALTO / BAJO) · Material · `Requiere_Esfuerzo_Maximo_SN` ·
+`Tiene_Baremo_SN` · `Activo_SN`
+
+`Tipo_Medida` es lo que permite que en la misma batería convivan una dinamometría
+en kg y una sentadilla puntuada por técnica. `Bilateral_SN` hace que la prueba se
+registre por lados y se calcule la asimetría.
+`Requiere_Esfuerzo_Maximo_SN` es lo que el cribado bloquea.
+`Tiene_Baremo_SN = No` (p. ej. plancha invertida) → se registra el valor, sale en
+la evolución, pero no entra en el radar.
+
+### `T_TEST_CRITERIOS` (criterios observables de las pruebas técnicas)
+`ID_Test` · `ID_Criterio` · Descripción · Orden · `Es_Dolor_SN`
+
+La lista de compensaciones que se marcan como casillas al puntuar una prueba
+técnica. El criterio marcado como dolor fuerza puntuación 0.
 
 ### `T_BAREMOS` (tablas normativas)
-`ID_Test` · Sexo · `Edad_Min` · `Edad_Max` · `Valor_Min` · `Valor_Max` ·
-Categoría (MUY_BAJO / BAJO / MEDIO / ALTO / MUY_ALTO) · `Puntuacion` (0-100)
+`ID_Test` · Sexo (H / M / AMBOS) · `Edad_Min` · `Edad_Max` · `Valor_Min` ·
+`Valor_Max` · Categoría · `Puntuacion` (0-100) · `Fuente` · `Solidez`
 
-Editables desde el Excel por el entrenador. Son sus criterios, no los míos.
+Editables desde el Excel. Valores iniciales en el
+[Anexo 11](11-anexo-baremos.md), cargables con un botón.
 
 ### `T_VALORACIONES` (cabecera)
-`ID_Valoracion` · `ID_Usuario` · Fecha · Tipo (INICIAL / SEGUIMIENTO / FINAL_CICLO) ·
-Evaluador · `ID_Asignacion` (opcional) · Observaciones · `Score_Global` ·
-`Ruta_PDF`
+`ID_Valoracion` · `ID_Usuario` · **`ID_Protocolo`** · Fecha · Tipo (INICIAL /
+SEGUIMIENTO / FINAL_CICLO) · Evaluador · `ID_Asignacion` · Observaciones ·
+`Bloqueo_Esfuerzo_Maximo_SN` · `Ruta_PDF`
+
+Guardar el protocolo usado es imprescindible para que las comparativas sean
+honestas: solo se comparan pruebas presentes en ambas valoraciones.
 
 ### `T_VALORACION_DET` (formato largo)
-`ID_Valoracion` · `ID_Test` · Valor · Unidad · Percentil · `Puntuacion` ·
-Categoría · Notas
+`ID_Valoracion` · `ID_Test` · Lado (DERECHO / IZQUIERDO / NA) · Valor ·
+`Valor_Tecnica` (0-3) · Unidad · `Puntuacion` · Categoría · Notas
 
----
+### `T_VALORACION_CRITERIOS`
+`ID_Valoracion` · `ID_Test` · `ID_Criterio` · Lado · `Observado_SN`
+
+### `T_CAPACIDADES` (agregado calculado)
+`ID_Valoracion` · Capacidad · `Puntuacion` · `N_Pruebas`
+
+Se guarda para que el radar del informe sea reproducible años después, aunque los
+baremos hayan cambiado entretanto. `N_Pruebas = 0` → el eje no se dibuja.
 
 ## Bloque: entrenamiento
 
@@ -149,8 +187,13 @@ disparador de T-14 días tiene una fecha firme contra la que comparar.
 
 ### `T_PLANTILLAS_MAIL`
 `ID_Plantilla` · Código (CONSENTIMIENTO / BIENVENIDA / CHECKIN_MITAD /
-ENCUESTA_T14 / CIERRE_CICLO) · Asunto · `Cuerpo_HTML` · `Requiere_Revision_SN` ·
-`URL_Form` · `Activo_SN`
+ENCUESTA_T14 / CIERRE_CICLO / AGRADECIMIENTO / RECORDATORIO) · Asunto ·
+`Cuerpo_HTML` · `Requiere_Revision_SN` · `Permite_Modo_Vacaciones_SN` ·
+`Instruccion_IA` · `URL_Form` · `Activo_SN`
+
+`Instruccion_IA` es la indicación con la que la IA personaliza el cuerpo del
+correo para cada usuario. `Permite_Modo_Vacaciones_SN` decide si ese tipo de
+correo puede salir sin revisión cuando el modo vacaciones está activo.
 
 Con marcadores tipo `{{nombre}}`, `{{programa}}`, `{{objetivo}}`,
 `{{nota_entrenador}}`, `{{enlace_form}}`.
@@ -158,8 +201,13 @@ Con marcadores tipo `{{nombre}}`, `{{programa}}`, `{{objetivo}}`,
 ### `T_COLA_MAIL`
 `ID_Envio` · `ID_Usuario` · `ID_Asignacion` · `Codigo_Plantilla` · `F_Generado` ·
 `F_Programada` · Estado (BORRADOR / REVISADO / ENVIADO / ERROR / CANCELADO) ·
-`Nota_Entrenador` · `Asunto_Final` · `Cuerpo_Final` · `F_Envio` ·
-`Enlace_Form_Prefill` · `F_Recordatorio` · `Respondido_SN` · `Error`
+`Nota_Entrenador` · `Cuerpo_IA` · `Asunto_Final` · `Cuerpo_Final` · `F_Envio` ·
+`Aprobado_Por` (ENTRENADOR / MODO_VACACIONES) · `Enlace_Form_Prefill` ·
+`F_Recordatorio` · `Respondido_SN` · `Error`
+
+`Cuerpo_IA` guarda lo que redactó la IA antes de que el entrenador lo tocara, para
+poder comparar y mejorar la instrucción. `Aprobado_Por` deja constancia de qué
+salió sin revisión humana.
 
 ### `T_RESPUESTAS` (formato largo)
 `ID_Respuesta` · `ID_Usuario` · `ID_Envio` · `F_Respuesta` · `Codigo_Pregunta` ·

@@ -21,12 +21,17 @@ primer día, y los datos que se metan ahora sirven para todo lo demás.
 
 ## Fase 2 — Catálogo de ejercicios
 - Catálogo con patrón, grupo, material, nivel, incremento de carga, vídeo.
-- Carga inicial: ~80-120 ejercicios habituales, importables desde CSV.
+- **Carga inicial preparada por nosotros:** no hay listado propio de partida, así
+  que se entrega un catálogo de ~100 ejercicios habituales ya clasificados por
+  patrón, grupo muscular, material, nivel e incremento de carga, importable y
+  editable. El entrenador revisa, quita y añade.
 
 **Resultado:** la base sin la cual los programas serían texto libre.
 
 ## Fase 3 — Valoración física
-- Catálogo de test y baremos editables.
+- Catálogo de test, **protocolos (plantillas de valoración)** y baremos editables.
+- Carga inicial de los baremos del [Anexo 11](11-anexo-baremos.md) con un botón.
+- Pruebas de técnica con escala 0-3 y criterios observables.
 - Ventana de valoración con cálculo de puntuaciones y categorías.
 - Cribado PAR-Q+ con bloqueo de test máximos.
 - Informe en PDF con radar y comparativa.
@@ -39,6 +44,9 @@ algo en la mano.
 - Árbol de ciclos: macro → meso → micro, con `ID_Padre`.
 - Editor de sesiones y de líneas de ejercicio.
 - Plantillas, clonado y duplicado de ciclos.
+- **Plantillas de macrociclo de partida preparadas por nosotros** (tampoco hay
+  propias): 3 o 4 estructuras tipo — principiante 12 semanas, hipertrofia 16,
+  fuerza 16, salud general 12 — para tener de qué partir el primer día.
 - Cálculo de cargas, redondeo y progresiones (documento 06).
 - Asignación de macrociclo a usuario y cálculo del calendario de fases.
 - **PDF del programa a demanda.**
@@ -54,6 +62,7 @@ sustituye a las hojas suelta y a los planes en Word.
 - Importación de respuestas (CSV y cuenta de servicio).
 - Correo y formulario de consentimiento.
 - Recordatorios y agradecimiento.
+- **Modo vacaciones** con sus salvaguardas.
 
 **Resultado:** el requisito del aviso a T-14 días, cerrado de punta a punta.
 
@@ -66,7 +75,10 @@ sustituye a las hojas suelta y a los planes en Word.
 **Resultado:** deja de haber que acordarse de nada.
 
 ## Fase 7 — IA
-- Capa de proveedor + Ollama.
+- Capa de proveedor + Ollama, con pantalla de diagnóstico de modelos.
+- **Generador determinista por reglas** (base sobre la que trabaja la IA).
+- Redacción de correos con IA (se adelanta a la fase 5, porque es la tarea corta
+  y no depende del resto del módulo).
 - Expediente seudonimizado del usuario.
 - Generación con esquema JSON y validador estricto.
 - Bucle iterativo con feedback.

@@ -1,124 +1,230 @@
 # 05 — Valoración física
 
+> Las tablas de referencia numéricas de cada prueba están en el
+> **[Anexo 11 — Baremos y tablas de referencia](11-anexo-baremos.md)**.
+
 ## Para qué sirve
 
-Tres funciones a la vez:
-
-1. **Entregable de valor al usuario**: un informe en PDF con su foto fija de
-   partida. Es material de enganche de primer orden, sobre todo cuando se repite
-   y se puede comparar.
+1. **Entregable de valor al usuario**: informe en PDF con su punto de partida.
 2. **Entrada de la planificación**: sin valoración, cualquier programa es una
-   suposición. Y sin valoración no hay 1RM, luego no hay cálculo de cargas.
-3. **Materia prima para la IA**: datos numéricos y normalizados, que es lo que un
-   modelo puede usar bien (frente a "el usuario está flojo de piernas").
+   suposición.
+3. **Materia prima para la IA**: datos normalizados en lugar de impresiones.
 
 ## Cuándo se hace
 
-- **INICIAL**: en el alta, obligatoria.
-- **SEGUIMIENTO**: en cualquier momento, a criterio del entrenador. Lo natural es
-  al final de cada mesociclo o cada 8-12 semanas.
-- **FINAL_CICLO**: al cerrar una asignación, para el informe comparativo que se
-  entrega junto a la propuesta del ciclo siguiente.
+- **INICIAL**: en el alta.
+- **SEGUIMIENTO**: a criterio del entrenador (lo natural, al cerrar cada
+  mesociclo o cada 8-12 semanas).
+- **FINAL_CICLO**: al cerrar una asignación, para el informe comparativo que
+  acompaña a la propuesta del ciclo siguiente.
 
-Alerta en el panel de inicio: usuarios cuya última valoración tiene más de N meses
+Alerta en el panel: usuarios cuya última valoración supera los N meses
 (configurable, por defecto 4).
 
-## Estructura: catálogo + baremos
+---
 
-La batería **no está en el código**. Está en dos hojas del Excel que el entrenador
-edita a su gusto:
+## Protocolos: varias plantillas de valoración
 
-- `T_CAT_TESTS`: qué pruebas existen, en qué unidad, qué capacidad miden, si mejor
-  es más alto o más bajo, y el protocolo escrito.
-- `T_BAREMOS`: para cada prueba, sexo y rango de edad, los tramos de valor y la
-  puntuación 0-100 y categoría que corresponden.
+**No todos los usuarios hacen la misma batería.** No estaba contemplado en la
+versión anterior de este documento y se añade ahora como pieza central.
 
-La aplicación solo aplica: mete el valor medido, busca el tramo del baremo según
-sexo y edad del usuario, y devuelve puntuación y categoría. Añadir una prueba
-nueva no requiere tocar el programa.
+La valoración se organiza en **protocolos**: plantillas que agrupan un
+subconjunto de pruebas del catálogo, en un orden, con indicación de cuáles son
+obligatorias.
 
-## Batería propuesta (a validar)
+### Tablas
 
-Propuesta de partida. Como entrenador, ajústala: quita lo que no vayas a medir y
-añade lo que uses.
+**`T_PROTOCOLOS`**
+`ID_Protocolo` · Nombre · Descripción · `Perfil_Objetivo` · `Edad_Min` ·
+`Edad_Max` · `Sexo` (o ambos) · `Duracion_Est_Min` · `Material_Necesario` ·
+`Es_Predeterminado_SN` · `Activo_SN`
+
+**`T_PROTOCOLO_DET`**
+`ID_Protocolo` · `ID_Test` · Orden · `Obligatorio_SN` · `Notas_Protocolo`
+
+### Protocolos de partida propuestos
+
+| Protocolo | Para quién | Contenido |
+|---|---|---|
+| **Estándar adulto activo** | Adulto sano, sin limitaciones | Batería completa |
+| **Principiante / sedentario** | Sin experiencia previa | Cribado + composición + técnica + dinamómetro + Rockport. Sin saltos ni dominadas |
+| **Mayor de 65** | Población mayor | Cribado ampliado + composición + equilibrio + movilidad (*scratch*, *sit & reach*) + dinamómetro + marcha. Sin esfuerzo máximo |
+| **Reincorporación tras lesión** | Vuelta desde lesión | Cribado + técnica del patrón afectado + asimetrías + movilidad. Sin test máximos |
+| **Rendimiento / deportista** | Con experiencia | Completa + Course Navette + saltos + dominadas |
+| **Revisión rápida (seguimiento)** | Seguimiento entre ciclos | Composición + dinamómetro + 2-3 pruebas de control. 20 minutos |
+
+Editables y ampliables desde el Excel. El entrenador puede crear los suyos.
+
+### Cómo funciona en la aplicación
+
+1. Al crear una valoración se elige el protocolo. La aplicación **sugiere** el más
+   adecuado según edad, sexo y datos de salud del usuario, pero el entrenador
+   decide.
+2. Se abre la ventana con **solo las pruebas de ese protocolo**, en su orden, con
+   el protocolo escrito de cada una a la vista.
+3. Las pruebas obligatorias no cumplimentadas impiden cerrar la valoración; las
+   opcionales se pueden dejar en blanco.
+4. Se puede **añadir una prueba fuera de protocolo** en cualquier momento.
+5. Queda registrado qué protocolo se usó (`T_VALORACIONES.ID_Protocolo`), lo cual
+   es imprescindible para que las comparativas sean honestas: solo se comparan
+   pruebas presentes en ambas valoraciones.
+
+---
+
+## Tipos de medida
+
+Cada prueba del catálogo declara su `Tipo_Medida`:
+
+| Tipo | Qué se registra | Ejemplos |
+|---|---|---|
+| `CUANTITATIVA` | Un número con unidad, baremado por sexo y edad | Dinamometría, VO2máx, *sit & reach*, tiempos isométricos |
+| `TECNICA` | Una puntuación de calidad de movimiento 0-3 + criterios observados | Sentadilla, zancada, *step down* |
+| `MIXTA` | Número **y** puntuación técnica | Dominada (repeticiones + técnica) |
+| `CUALITATIVA` | Categoría o texto | Cribado, observaciones posturales |
+
+### Escala de técnica (0-3)
+
+| Puntuación | Criterio |
+|---|---|
+| **0** | **Aparece dolor durante el movimiento.** Se detiene la prueba y se deriva |
+| **1** | No completa el movimiento, o compensaciones graves no corregibles en el momento |
+| **2** | Completa el movimiento con compensaciones leves, corregibles con indicación verbal |
+| **3** | Ejecución correcta en todo el rango, sin compensaciones |
+
+Un **0 en cualquier prueba técnica** marca la valoración con alerta y bloquea la
+prescripción de ese patrón hasta su revisión. Es la misma lógica de seguridad del
+cribado.
+
+Cada prueba técnica lleva su **lista de criterios observables** (`T_TEST_CRITERIOS`:
+`ID_Test` · `ID_Criterio` · Descripción · Orden). En la ventana aparecen como
+casillas, y lo marcado se guarda en `T_VALORACION_CRITERIOS`. Así la puntuación
+queda justificada y el informe puede decir *qué* falla, no solo *cuánto*.
+
+---
+
+## Batería de pruebas
 
 ### Cribado previo (antes de cualquier esfuerzo)
-| Prueba | Registro |
-|---|---|
-| PAR-Q+ (7 preguntas) | Sí/No cada una |
-| Tensión arterial en reposo | mmHg |
-| Frecuencia cardíaca en reposo | lpm |
 
-> Cualquier "Sí" en el PAR-Q+ o una tensión por encima de 140/90 debe marcar
-> `Requiere_Informe_Medico_SN` y **bloquear los test de esfuerzo máximo** hasta
-> tener el visto bueno médico. La aplicación lo hará de forma explícita: avisa y
-> pide confirmación por escrito para continuar.
+| Prueba | Registro | Tablas |
+|---|---|---|
+| PAR-Q+ (7 preguntas) | Sí/No cada una | [Anexo §1](11-anexo-baremos.md#1-cribado-previo) |
+| Tensión arterial en reposo | mmHg | [Anexo §1.2](11-anexo-baremos.md#12-tensión-arterial-en-reposo) |
+| Frecuencia cardíaca en reposo | lpm | [Anexo §1.3](11-anexo-baremos.md#13-frecuencia-cardíaca-en-reposo) |
 
-### Composición corporal
-Peso · Altura · IMC (calculado) · % grasa (pliegues o bioimpedancia) ·
+Cualquier "Sí" en el PAR-Q+, o una tensión en grado de hipertensión, marca
+`Requiere_Informe_Medico_SN`, **bloquea las pruebas de esfuerzo máximo** y exige
+confirmación expresa para continuar.
+
+### Composición corporal — `CUANTITATIVA`
+
+Peso · Altura · IMC *(calculado)* · % grasa (pliegues o bioimpedancia) ·
 Perímetros: cintura, cadera, abdomen, brazo relajado y contraído, muslo, pecho ·
-Índice cintura-cadera (calculado) · Índice cintura-altura (calculado)
+Índice cintura-cadera *(calculado)* · Índice cintura-altura *(calculado)*
 
-### Fuerza
-| Prueba | Unidad | Observaciones |
+Tablas: [Anexo §2](11-anexo-baremos.md#2-composición-corporal)
+
+### Fuerza y control motor
+
+**Cambio respecto a la versión anterior:** en la valoración inicial la fuerza
+**no se mide en unidades**, se valora la **calidad de ejecución**. La única prueba
+cuantitativa es la dinamometría. Los test de 1RM submáximo salen de la valoración
+inicial y quedan como prueba de seguimiento opcional, dentro del protocolo de
+rendimiento.
+
+| Prueba | Tipo | Registro | Tablas |
+|---|---|---|---|
+| **Dinamometría manual** | `CUANTITATIVA` | kg, mano dominante y no dominante | [§3.1](11-anexo-baremos.md#31-dinamometría-manual-handgrip) |
+| **Sentadilla profunda** (con brazos arriba) | `TECNICA` | 0-3 + criterios | [§3.2](11-anexo-baremos.md#32-pruebas-de-técnica-escala-0-3) |
+| **Zancada** (*lunge*) | `TECNICA` | 0-3 + criterios, cada lado | [§3.2](11-anexo-baremos.md#32-pruebas-de-técnica-escala-0-3) |
+| **Step down** (descenso lateral del escalón) | `TECNICA` | 0-3 + criterios, cada lado | [§3.3](11-anexo-baremos.md#33-step-down-descenso-lateral) |
+| **Dominada** (*pull up*) | `MIXTA` | repeticiones + técnica 0-3 | [§3.4](11-anexo-baremos.md#34-dominada-pull-up-y-suspensión) |
+| **Plancha frontal** | `CUANTITATIVA` | segundos | [§3.5](11-anexo-baremos.md#35-resistencia-isométrica-del-tronco) |
+| **Plancha lateral** (*side plank*) | `CUANTITATIVA` | segundos, cada lado | [§3.5](11-anexo-baremos.md#35-resistencia-isométrica-del-tronco) |
+| **Plancha invertida** (*reverse plank*) | `CUANTITATIVA` | segundos | [§3.5](11-anexo-baremos.md#35-resistencia-isométrica-del-tronco) |
+| **Sorensen** (extensores lumbares) | `CUANTITATIVA` | segundos | [§3.5](11-anexo-baremos.md#35-resistencia-isométrica-del-tronco) |
+
+**Eliminado:** test de abdominales en 60 segundos.
+
+> **Punto a confirmar:** plancha lateral, plancha invertida y Sorensen son
+> pruebas *cronometradas*, no de técnica. Las he clasificado como cuantitativas
+> porque es lo que son y porque existen valores de referencia, sobre todo para
+> las **relaciones entre ellas** (§3.5 del anexo), que es su aportación más útil:
+> detectan desequilibrios flexores/extensores y asimetrías derecha-izquierda. Si
+> prefieres valorarlas solo por técnica, se cambia con una celda del catálogo.
+
+### Potencia — `CUANTITATIVA`
+
+| Prueba | Unidad | Tablas |
 |---|---|---|
-| Dinamometría manual (handgrip) | kg | Rápida, segura, buen predictor general de salud |
-| Sentadilla — test de repeticiones submáximas | kg × reps | → 1RM estimado |
-| Press banca — test de repeticiones submáximas | kg × reps | → 1RM estimado |
-| Flexiones máximas | reps | Alternativa sin material |
-| Plancha frontal isométrica | segundos | Resistencia del core |
-| Abdominales en 60 s | reps | |
+| Salto vertical (CMJ / Sargent) | cm | [§4](11-anexo-baremos.md#4-potencia) |
+| Salto horizontal a pies juntos | cm | [§4](11-anexo-baremos.md#4-potencia) |
 
-### Potencia
-| Prueba | Unidad |
-|---|---|
-| Salto vertical (CMJ / test de Sargent) | cm |
-| Salto horizontal a pies juntos | cm |
+Fuera de los protocolos de principiante, mayores y reincorporación.
 
-### Resistencia cardiorrespiratoria
-Elegir **una** según medios y perfil del usuario:
-| Prueba | Unidad | Perfil |
+### Resistencia cardiorrespiratoria — `CUANTITATIVA`
+
+Todas las pruebas desembocan en la **misma variable comparable: el VO₂máx
+estimado (ml/kg/min)**, que es la medida de potencia aerobica. Así da igual qué
+prueba se use con cada usuario: el baremo y el radar del informe son los mismos.
+
+| Prueba | Perfil | Fórmula y tablas |
 |---|---|---|
-| Test de Rockport (1 milla andando) | min + FC → VO2máx estimado | Principiantes, sedentarios, mayores |
-| Test del escalón YMCA | FC de recuperación → VO2máx | Espacio reducido |
-| Course Navette (20 m) | palieres → VO2máx | Jóvenes, deportistas |
-| Test de Cooper (12 min) | metros → VO2máx | Corredores |
+| Rockport (1 milla andando) | Principiantes, sedentarios, mayores | [§5.2](11-anexo-baremos.md#52-fórmulas-de-estimación-del-vo₂máx) |
+| Course Navette 20 m | Jóvenes, deportistas | [§5.2](11-anexo-baremos.md#52-fórmulas-de-estimación-del-vo₂máx) |
+| Cooper 12 min | Corredores | [§5.2](11-anexo-baremos.md#52-fórmulas-de-estimación-del-vo₂máx) |
 
-### Movilidad y equilibrio
-| Prueba | Unidad |
-|---|---|
-| Sit & reach | cm |
-| Sentadilla profunda con brazos arriba (*overhead squat*) | escala 0-3 |
-| Movilidad de hombro (test de Apley / rascado) | cm de separación |
-| Dorsiflexión de tobillo (rodilla a pared) | cm |
-| Apoyo monopodal con ojos cerrados | segundos |
+Baremos de VO₂máx por sexo y edad: [§5.1](11-anexo-baremos.md#51-vo₂máx-baremos-por-sexo-y-edad)
+
+### Movilidad y equilibrio — `CUANTITATIVA`
+
+| Prueba | Unidad | Tablas |
+|---|---|---|
+| *Sit & reach* | cm | [§6.1](11-anexo-baremos.md#61-sit--reach-flexibilidad-isquiosural-y-lumbar) |
+| ***Scratch test*** (movilidad de hombro, manos a la espalda) | cm de separación | [§6.2](11-anexo-baremos.md#62-scratch-test-movilidad-de-hombro) |
+| Dorsiflexión de tobillo (rodilla a pared) | cm | [§6.3](11-anexo-baremos.md#63-dorsiflexión-de-tobillo-rodilla-a-pared) |
+| Apoyo monopodal con ojos cerrados | segundos | [§6.4](11-anexo-baremos.md#64-apoyo-monopodal-con-ojos-cerrados) |
+
+---
+
+## Puntuación y radar
+
+Cada prueba produce una `Puntuacion` 0-100 a través de su baremo. Las pruebas
+técnicas se convierten con una escala fija (0 → 0, 1 → 33, 2 → 66, 3 → 100).
+
+Las puntuaciones se agregan por **capacidad** (media de las pruebas medidas de
+esa capacidad presentes en el protocolo):
+
+`FUERZA` · `POTENCIA` · `RESISTENCIA` · `MOVILIDAD` · `EQUILIBRIO` ·
+`COMPOSICION` · `CONTROL_MOTOR`
+
+Regla importante: **solo se puntúan las capacidades con al menos una prueba
+medida.** Un protocolo reducido genera un radar con menos ejes, no un radar con
+ceros. Un cero falso es peor que un hueco.
 
 ## El informe en PDF
 
-Contenido propuesto:
+1. **Portada**: nombre, fecha, protocolo aplicado, logotipo.
+2. **Resumen en una página**: radar de capacidades, con el número de pruebas que
+   sustenta cada eje.
+3. **Detalle por prueba**: valor medido, categoría, y la referencia normativa para
+   su sexo y edad tomada del anexo.
+4. **Hallazgos de control motor**: qué compensaciones se han observado en las
+   pruebas técnicas, en texto legible para el usuario.
+5. **Asimetrías y relaciones**: diferencias derecha-izquierda y las relaciones de
+   resistencia del tronco. Es información que el usuario no ha visto nunca y que
+   se explica en dos frases.
+6. **Comparativa** con la valoración anterior del mismo protocolo: radar
+   superpuesto y tabla de diferencias. La página que vende el siguiente ciclo.
+7. **Puntos fuertes y áreas de mejora**, derivados de las puntuaciones y editables
+   antes de generar el PDF.
+8. **Conclusión del entrenador**: texto libre.
 
-1. **Portada**: nombre, fecha, datos básicos, logotipo.
-2. **Resumen en una página**: gráfica de radar con las 5-6 capacidades
-   (fuerza, potencia, resistencia, movilidad, equilibrio, composición corporal),
-   cada una puntuada 0-100 a partir de los baremos. Es lo que el usuario mira
-   y lo que recuerda.
-3. **Detalle por prueba**: valor medido, categoría, y referencia normativa para su
-   sexo y edad.
-4. **Comparativa**, si hay valoración anterior: radar superpuesto (antes/ahora) y
-   tabla de diferencias con flechas. **Esta es la página que vende el siguiente
-   ciclo.**
-5. **Puntos fuertes y áreas de mejora**: se derivan de las puntuaciones más altas
-   y más bajas, con texto que el entrenador puede editar antes de generar el PDF.
-6. **Conclusión y recomendación del entrenador**: texto libre.
+## Enlace con la planificación
 
-> Nota: esto reintroduce por la puerta de atrás la funcionalidad de gráficas, que
-> quedó fuera de la lista de prioridades. No es contradicción: el radar y la
-> comparativa son parte del informe de valoración, no un módulo aparte de
-> estadística. Las gráficas de evolución general (peso a lo largo del tiempo,
-> etc.) siguen fuera de esta fase.
-
-## Enlace con el 1RM
-
-Los test de repeticiones submáximas escriben automáticamente en `T_1RM` con
-`Origen = VALORACION`, aplicando la fórmula configurada. A partir de ahí, todo el
-cálculo de cargas del documento 06 funciona solo.
+- Las puntuaciones y los hallazgos técnicos entran en el expediente de la IA.
+- Un **0 técnico** en un patrón prohíbe prescribir ese patrón (regla dura).
+- Un **2** lo permite con nota de corrección técnica en la sesión.
+- Las asimetrías > umbral generan sugerencia de trabajo unilateral.
+- Los test de 1RM submáximo, cuando se hagan (protocolo de rendimiento o
+  seguimiento), escriben en `T_1RM` con `Origen = VALORACION`.

@@ -27,17 +27,102 @@ apellidos, correo ni teléfono**. Va como `USR-0042`, con sexo, edad, métricas,
 objetivos, limitaciones y disponibilidad. La correspondencia con la persona se
 queda en el Excel. No cuesta nada hacerlo así y elimina el problema de raíz.
 
-### Nota realista sobre el modelo local
+### El hardware manda: i5-1235U, 16 GB, sin GPU
 
-Generar una periodización completa en JSON válido y coherente es una tarea
-exigente. Un modelo local pequeño (del orden de 7-8 mil millones de parámetros)
-tiende a producir JSON malformado, a inventarse ejercicios que no están en el
-catálogo y a perder la coherencia entre mesociclos. Modelos locales de mayor
-tamaño lo hacen bastante mejor, pero requieren una GPU con suficiente memoria.
+La inferencia va por CPU. Con 16 GB de RAM el techo práctico son modelos de 7-8
+mil millones de parámetros cuantizados a 4 bits, a razón de unas **4-8 palabras
+por segundo**.
 
-Por eso: la arquitectura soporta ambos, la validación (más abajo) es estricta, y
-**hay que probar con el hardware real** antes de decidir. Es una de las preguntas
-abiertas del documento 10.
+Eso lleva a clasificar las tareas de IA en tres grupos, y a tratar cada una de
+forma distinta:
+
+| Tarea | Salida | Tiempo local | Decisión |
+|---|---|---|---|
+| Redactar el cuerpo de un correo | 200-300 palabras | < 1 min | **Local, sin discusión** |
+| Resumir el feedback de una encuesta | 50-100 palabras | segundos | **Local** |
+| Redactar los "puntos fuertes / áreas de mejora" de un informe | 150 palabras | < 1 min | **Local** |
+| Sugerir un ejercicio alternativo | 20 palabras | segundos | **Local** |
+| **Generar un macrociclo completo en JSON** | 3.000-6.000 palabras | 15-40 min de una tirada | **Troceada** (ver abajo) |
+
+Y a dos decisiones de diseño importantes:
+
+### Decisión 1: la generación se trocea
+
+Pedir una periodización de 24 semanas en una sola respuesta JSON es lo peor que se
+puede hacer con un modelo pequeño: tarda mucho, se le degrada la coherencia a
+mitad y un solo error de sintaxis tira la respuesta entera a la basura.
+
+En su lugar, se generará **en pasos encadenados**, cada uno con una salida corta:
+
+```
+Paso 1  Esqueleto del macrociclo: nombre, objetivo y la lista de mesociclos
+        con su enfoque y duración.            (~200 palabras, ~30 s)
+        -> El entrenador lo revisa y lo aprueba ANTES de seguir.
+
+Paso 2  Para cada mesociclo: sus microciclos, con enfoque y duración.
+        (~150 palabras cada uno)
+
+Paso 3  Para cada microciclo distinto: sus sesiones y las líneas de ejercicio,
+        con el catálogo filtrado en el contexto.   (~400 palabras cada una)
+
+Paso 4  La aplicación monta el árbol completo y lo valida.
+```
+
+Ventajas, más allá de la velocidad:
+
+- **Se puede parar en el paso 1.** Si el esqueleto no convence, se corrige ahí y
+  no se han gastado 30 minutos generando sesiones de una estructura equivocada.
+- Cada respuesta es pequeña, luego la probabilidad de JSON válido es mucho mayor,
+  y un reintento cuesta segundos y no minutos.
+- Los microciclos repetidos no se regeneran: se clonan.
+- Hay **barra de progreso real** ("mesociclo 2 de 4, sesión 1 de 3"), el proceso
+  corre en segundo plano, se puede cancelar, y se puede retomar donde se quedó.
+
+Con esto, una planificación completa vendrá a tardar del orden de **15 a 30
+minutos** en este equipo. Es asumible para algo que se hace una vez por usuario y
+por ciclo, y que se puede dejar corriendo mientras se atiende la sala.
+
+### Decisión 2: primero un generador por reglas, y la IA encima
+
+Antes de la IA se construye un **generador determinista**: a partir del objetivo,
+el nivel, los días disponibles, el material y la valoración física, monta una
+planificación correcta aplicando plantillas y las reglas de `T_REGLAS`. Sin
+modelo de lenguaje, en milisegundos, y siempre válida.
+
+Sobre esa base, la IA tiene dos modos de trabajo:
+
+| Modo | Qué hace | Coste |
+|---|---|---|
+| **Refinar** (recomendado por defecto) | Parte del plan generado por reglas y lo ajusta, sustituye ejercicios, adapta el enfoque y redacta las notas | Salidas cortas, rápido y muy fiable |
+| **Generar** | Crea la planificación desde cero por los pasos de arriba | Más creativo, más lento, más validación |
+
+Esto es lo que hace que el módulo sea útil **desde el primer día** y no dependa de
+que el modelo local dé la talla. Si un día se cambia a un equipo con GPU, o a un
+proveedor en la nube, el modo "Generar" mejora y el resto sigue igual.
+
+### Formato estructurado obligado
+
+Ollama admite exigir que la respuesta cumpla un **esquema JSON** concreto
+(parámetro `format` con el esquema). Con esto, incluso un modelo de 7B devuelve
+JSON sintácticamente válido casi siempre. Se usará en todas las llamadas que
+esperen datos, sin excepción.
+
+### Modelos a probar en este equipo
+
+Candidatos razonables para 16 GB sin GPU, cuantización Q4:
+`qwen2.5:7b-instruct` · `llama3.1:8b-instruct` · `mistral:7b-instruct`.
+
+No se puede decidir sobre el papel: hay que **medir en el equipo real** velocidad
+y calidad con los mismos casos de prueba. La aplicación llevará una pantalla de
+diagnóstico que mide palabras por segundo y porcentaje de respuestas válidas por
+modelo, para poder comparar con datos y no por impresión.
+
+### Si hiciera falta más
+
+Queda como opción documentada, no como plan: un proveedor en la nube para el modo
+"Generar", con el expediente seudonimizado. El volumen es pequeño (unas pocas
+generaciones a la semana con 100 usuarios), así que el coste sería bajo. Se decide
+más adelante, con los datos de la pantalla de diagnóstico encima de la mesa.
 
 ## Generación: el expediente y el contrato de salida
 
@@ -175,3 +260,45 @@ Ollama sirve también modelos de *embeddings*, con lo que se podría calcular la
 similitud entre el perfil del usuario y cada artículo, y seleccionar los más
 próximos. Los vectores caben en una hoja del Excel. No es necesario al principio:
 con etiquetas se llega bastante lejos.
+
+---
+
+## Redacción de correos con IA
+
+Tarea corta, perfectamente viable en local, y la que más se va a usar.
+
+**Entrada:** la plantilla del correo, su `Instruccion_IA`, los datos del usuario
+(nombre, objetivo literal, fase del plan, tiempo que lleva, resultados de su
+última valoración si los hay) y **la nota personal del entrenador**, cuando la
+haya escrito.
+
+**Salida:** el cuerpo del correo en HTML sencillo, con la nota del entrenador
+integrada de forma natural en el texto — no pegada como un bloque aparte.
+
+**Flujo normal:**
+
+```
+Disparador (T-14 días) -> la IA redacta -> pantalla de revisión:
+   cuerpo montado + campo para tu impresión personal
+   -> [Reescribir con la IA]  (para incorporar tu nota al texto)
+   -> vista previa tal cual la recibirá el usuario
+   -> [Aprobar y enviar]
+```
+
+Restricciones que se le imponen al modelo:
+
+- No inventar datos. Solo puede usar lo que se le pasa. Si no hay datos de
+  progreso, no los menciona.
+- No prometer nada (descuentos, plazos, resultados).
+- No dar consejo médico.
+- Tono y extensión fijados en la instrucción de la plantilla.
+- El enlace del formulario lo pone la aplicación, no el modelo.
+
+Y una comprobación automática antes de mostrar el borrador: que el enlace del
+formulario esté presente y sea el correcto, que el nombre del usuario sea el suyo,
+y que no aparezca ningún marcador `{{...}}` sin sustituir. Son los tres errores
+que dejarían en evidencia un correo automático.
+
+El cuerpo redactado por la IA se guarda en `T_COLA_MAIL.Cuerpo_IA` junto al final
+editado. Comparar ambos a lo largo del tiempo es la forma de ir afinando la
+instrucción de cada plantilla.
