@@ -17,14 +17,15 @@ comunicación automatizada por correo con los usuarios.
 
 ## Estado
 
-**Fases 0, 1 y 2 implementadas:** cimientos, usuarios y catálogo de ejercicios.
+**Fases 0 a 3 implementadas:** cimientos, usuarios, catálogo de ejercicios y
+valoración física con informe en PDF.
 
 | Fase | Contenido | Estado |
 |---|---|---|
 | 0 | Libro de datos, capa de acceso, copias de seguridad, configuración | Hecha |
 | 1 | Usuarios, objetivos, salud y cribado PAR-Q+, disponibilidad | Hecha |
 | 2 | Catálogo de ejercicios, con 127 de partida | Hecha |
-| 3 | Valoración física e informe en PDF | Pendiente |
+| 3 | Valoración física, protocolos, baremos e informe en PDF | Hecha |
 | 4 | Planificación, cargas y PDF del programa | Pendiente |
 | 5 | Correo, formularios y cola de revisión | Pendiente |
 | 6 | Panel de alertas completo | Pendiente |
@@ -47,7 +48,10 @@ python herramientas/crear_libro.py
 # 4. Cargar el catálogo inicial de ejercicios
 python herramientas/importar_ejercicios.py
 
-# 5. Arrancar
+# 5. Cargar pruebas, baremos y protocolos de valoración
+python herramientas/importar_valoracion.py
+
+# 6. Arrancar
 python -m zeu
 ```
 

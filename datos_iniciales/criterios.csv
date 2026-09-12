@@ -1,0 +1,23 @@
+﻿ID_Criterio;ID_Test;Descripcion;Orden;Es_Dolor_SN
+SENTADILLA_TEC-1;SENTADILLA_TEC;No alcanza la profundidad (muslo paralelo al suelo);1;NO
+SENTADILLA_TEC-2;SENTADILLA_TEC;Los talones se despegan del suelo;2;NO
+SENTADILLA_TEC-3;SENTADILLA_TEC;Las rodillas colapsan hacia dentro (valgo);3;NO
+SENTADILLA_TEC-4;SENTADILLA_TEC;Inclinación excesiva del tronco hacia delante;4;NO
+SENTADILLA_TEC-5;SENTADILLA_TEC;Pérdida de la curvatura lumbar en el fondo;5;NO
+SENTADILLA_TEC-6;SENTADILLA_TEC;Los brazos caen hacia delante;6;NO
+SENTADILLA_TEC-7;SENTADILLA_TEC;Desplazamiento lateral: carga más una pierna;7;NO
+SENTADILLA_TEC-8;SENTADILLA_TEC;Dolor en algún punto del recorrido;8;SI
+ZANCADA_TEC-1;ZANCADA_TEC;Pérdida de equilibrio, necesita apoyo;1;NO
+ZANCADA_TEC-2;ZANCADA_TEC;Valgo de la rodilla adelantada;2;NO
+ZANCADA_TEC-3;ZANCADA_TEC;Caída de la pelvis del lado libre;3;NO
+ZANCADA_TEC-4;ZANCADA_TEC;Tronco inclinado o rotado;4;NO
+ZANCADA_TEC-5;ZANCADA_TEC;Rango incompleto: la rodilla de atrás no baja lo suficiente;5;NO
+ZANCADA_TEC-6;ZANCADA_TEC;Diferencia clara entre un lado y el otro;6;NO
+ZANCADA_TEC-7;ZANCADA_TEC;Dolor durante el movimiento;7;SI
+STEP_DOWN_TEC-1;STEP_DOWN_TEC;Usa los brazos para equilibrarse;1;NO
+STEP_DOWN_TEC-2;STEP_DOWN_TEC;Inclina o rota el tronco;2;NO
+STEP_DOWN_TEC-3;STEP_DOWN_TEC;Caída de la pelvis del lado libre (Trendelenburg);3;NO
+STEP_DOWN_TEC-4;STEP_DOWN_TEC;La rodilla se desplaza hacia dentro respecto al pie;4;NO
+STEP_DOWN_TEC-5;STEP_DOWN_TEC;El pie de apoyo se mueve o pierde estabilidad;5;NO
+STEP_DOWN_TEC-6;STEP_DOWN_TEC;Descenso brusco, no controlado;6;NO
+STEP_DOWN_TEC-7;STEP_DOWN_TEC;Dolor durante el movimiento;7;SI

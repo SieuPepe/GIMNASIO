@@ -16,12 +16,12 @@ from . import estilo
 from .comunes import avisar_error
 from .vista_ejercicios import VistaEjercicios
 from .vista_inicio import VistaInicio
+from .vista_valoraciones import VistaValoraciones
 from .vista_usuarios import VistaUsuarios
 
 # Secciones previstas. Las que no tienen vista aún quedan desactivadas, para que
 # se vea hacia dónde va la aplicación.
 PENDIENTES = [
-    ("Valoración", "Fase 3"),
     ("Programas", "Fase 4"),
     ("Asignaciones", "Fase 4"),
     ("Correo", "Fase 5"),
@@ -71,13 +71,16 @@ class VentanaPrincipal(QMainWindow):
         self.vista_inicio = VistaInicio(self.repo)
         self.vista_usuarios = VistaUsuarios(self.repo, self.guardar)
         self.vista_ejercicios = VistaEjercicios(self.repo, self.guardar)
+        self.vista_valoraciones = VistaValoraciones(self.repo, self.cfg, self.guardar)
         self.paginas.addWidget(self.vista_inicio)
         self.paginas.addWidget(self.vista_usuarios)
         self.paginas.addWidget(self.vista_ejercicios)
+        self.paginas.addWidget(self.vista_valoraciones)
 
         grupo = QButtonGroup(self)
         grupo.setExclusive(True)
-        for indice, texto in enumerate(("Inicio", "Usuarios", "Ejercicios")):
+        for indice, texto in enumerate(
+                ("Inicio", "Usuarios", "Ejercicios", "Valoraciones")):
             boton = QPushButton(texto)
             boton.setCheckable(True)
             boton.clicked.connect(lambda _=False, i=indice: self._ir(i))

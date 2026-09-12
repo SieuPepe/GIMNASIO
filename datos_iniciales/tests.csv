@@ -1,0 +1,41 @@
+﻿ID_Test;Nombre;Capacidad;Tipo_Medida;Unidad;Bilateral_SN;Mejor_Es;Requiere_Esfuerzo_Maximo_SN;Tiene_Baremo_SN;Calculada_SN;Decimales;Material;Protocolo;Activo_SN
+PESO;Peso;COMPOSICION;CUANTITATIVA;kg;NO;;NO;NO;NO;1;Báscula;Descalzo y con ropa ligera, siempre en la misma báscula.;SI
+ALTURA;Altura;COMPOSICION;CUANTITATIVA;cm;NO;;NO;NO;NO;1;Tallímetro;Descalzo, talones juntos, mirada al frente.;SI
+IMC;Índice de masa corporal;COMPOSICION;CUANTITATIVA;kg/m2;NO;BAJO;NO;SI;SI;1;;Se calcula: peso / altura al cuadrado. No distingue músculo de grasa.;SI
+GRASA_PCT;Porcentaje de grasa;COMPOSICION;CUANTITATIVA;%;NO;BAJO;NO;SI;NO;1;Plicómetro o bioimpedancia;Anotar siempre el método: pliegues y bioimpedancia no son comparables.;SI
+PERIM_CINTURA;Perímetro de cintura;COMPOSICION;CUANTITATIVA;cm;NO;BAJO;NO;SI;NO;1;Cinta métrica;En el punto medio entre la última costilla y la cresta ilíaca, al final de una espiración normal.;SI
+PERIM_CADERA;Perímetro de cadera;COMPOSICION;CUANTITATIVA;cm;NO;;NO;NO;NO;1;Cinta métrica;En la zona más prominente de los glúteos.;SI
+PERIM_ABDOMEN;Perímetro abdominal;COMPOSICION;CUANTITATIVA;cm;NO;;NO;NO;NO;1;Cinta métrica;A la altura del ombligo.;SI
+PERIM_BRAZO;Perímetro de brazo contraído;COMPOSICION;CUANTITATIVA;cm;SI;;NO;NO;NO;1;Cinta métrica;Codo a 90 grados, en máxima contracción.;SI
+PERIM_MUSLO;Perímetro de muslo;COMPOSICION;CUANTITATIVA;cm;SI;;NO;NO;NO;1;Cinta métrica;A un tercio de la distancia entre cadera y rodilla.;SI
+ICC;Índice cintura-cadera;COMPOSICION;CUANTITATIVA;;NO;BAJO;NO;SI;SI;2;;Se calcula: cintura dividida por cadera.;SI
+ICA;Índice cintura-altura;COMPOSICION;CUANTITATIVA;;NO;BAJO;NO;SI;SI;2;;Se calcula: cintura dividida por altura. La cintura debe medir menos de la mitad de la altura.;SI
+DINAMOMETRIA;Dinamometría manual;FUERZA;CUANTITATIVA;kg;SI;ALTO;NO;SI;NO;1;Dinamómetro;Codo a 90 grados, pegado al cuerpo. Mejor de tres intentos por mano.;SI
+STS_30;Sit-to-stand en 30 segundos;FUERZA;CUANTITATIVA;rep;NO;ALTO;NO;SI;NO;0;Silla de 43-45 cm;Brazos cruzados sobre el pecho, sin apoyarlos. Repeticiones completas en 30 segundos. Anotar la altura de la silla.;SI
+STS_5;Sit-to-stand de 5 repeticiones;FUERZA;CUANTITATIVA;s;NO;BAJO;NO;SI;NO;1;Silla de 43-45 cm;Tiempo en completar cinco ciclos completos, brazos cruzados.;SI
+DOMINADA;Dominadas máximas;FUERZA;MIXTA;rep;NO;ALTO;SI;SI;NO;0;Barra fija;Agarre prono, rango completo. Se puntúa también la técnica.;SI
+DEAD_HANG;Suspensión isométrica;FUERZA;CUANTITATIVA;s;NO;ALTO;NO;SI;NO;0;Barra fija;Agarre prono, brazos extendidos, hasta soltarse.;SI
+PLANCHA_FRONTAL;Plancha frontal;FUERZA;CUANTITATIVA;s;NO;ALTO;NO;SI;NO;0;Colchoneta;Apoyo en antebrazos, hasta perder la alineación.;SI
+PLANCHA_LATERAL;Plancha lateral;FUERZA;CUANTITATIVA;s;SI;ALTO;NO;SI;NO;0;Colchoneta;Un lado cada vez. La diferencia entre lados es tan informativa como el tiempo.;SI
+PLANCHA_INVERTIDA;Plancha invertida;FUERZA;CUANTITATIVA;s;NO;ALTO;NO;NO;NO;0;Colchoneta;Sin baremo publicado: sirve para compararse con uno mismo entre valoraciones.;SI
+SORENSEN;Sorensen (extensores lumbares);FUERZA;CUANTITATIVA;s;NO;ALTO;NO;SI;NO;0;Banco lumbar;Tronco horizontal sin apoyo, hasta perder la posición.;SI
+FLEXORES_TRONCO;Resistencia de flexores del tronco;FUERZA;CUANTITATIVA;s;NO;ALTO;NO;SI;NO;0;Colchoneta;Tronco a 60 grados sostenido, hasta perder el ángulo.;SI
+SENTADILLA_TEC;Sentadilla profunda con brazos arriba;CONTROL_MOTOR;TECNICA;0-3;NO;ALTO;NO;SI;NO;0;;Cinco repeticiones controladas. Se observan las compensaciones, no la carga.;SI
+ZANCADA_TEC;Zancada;CONTROL_MOTOR;TECNICA;0-3;SI;ALTO;NO;SI;NO;0;;Cinco repeticiones por lado.;SI
+STEP_DOWN_TEC;Step down lateral;CONTROL_MOTOR;TECNICA;0-3;SI;ALTO;NO;SI;NO;0;Cajón de 20 cm;Descenso controlado hasta tocar el suelo con el talón contrario, cinco por lado.;SI
+SALTO_VERTICAL;Salto vertical;POTENCIA;CUANTITATIVA;cm;NO;ALTO;SI;SI;NO;1;Pared o plataforma;Con contramovimiento. Fijar el protocolo y no cambiarlo.;SI
+SALTO_HORIZONTAL;Salto horizontal a pies juntos;POTENCIA;CUANTITATIVA;cm;NO;ALTO;SI;SI;NO;1;Cinta métrica;Mejor de tres intentos, se mide al talón más retrasado.;SI
+VO2MAX;VO2 máximo estimado;RESISTENCIA;CUANTITATIVA;ml/kg/min;NO;ALTO;NO;SI;SI;1;;Se calcula a partir de la prueba de campo que se haya hecho.;SI
+ROCKPORT_TIEMPO;Rockport: tiempo;RESISTENCIA;CUANTITATIVA;min;NO;BAJO;NO;NO;NO;2;Pista de 1 milla;Una milla andando lo más rápido posible sin correr.;SI
+ROCKPORT_FC;Rockport: FC final;RESISTENCIA;CUANTITATIVA;lpm;NO;BAJO;NO;NO;NO;0;Pulsómetro;Pulsaciones inmediatamente al terminar.;SI
+COOPER_DIST;Cooper: distancia en 12 min;RESISTENCIA;CUANTITATIVA;m;NO;ALTO;SI;NO;NO;0;Pista;Distancia recorrida en 12 minutos.;SI
+NAVETTE_VEL;Course Navette: velocidad final;RESISTENCIA;CUANTITATIVA;km/h;NO;ALTO;SI;NO;NO;1;Pista de 20 m;Velocidad del último palier completado.;SI
+HARVARD_DUR;Harvard: duración;RESISTENCIA;CUANTITATIVA;s;NO;ALTO;SI;NO;NO;0;Escalón 50/43 cm;Duración real. Máximo 300 s.;SI
+HARVARD_P1;Harvard: pulso 1:00-1:30;RESISTENCIA;CUANTITATIVA;lat;NO;BAJO;SI;NO;NO;0;;Pulsaciones contadas en esa ventana de recuperación.;SI
+HARVARD_P2;Harvard: pulso 2:00-2:30;RESISTENCIA;CUANTITATIVA;lat;NO;BAJO;SI;NO;NO;0;;;SI
+HARVARD_P3;Harvard: pulso 3:00-3:30;RESISTENCIA;CUANTITATIVA;lat;NO;BAJO;SI;NO;NO;0;;;SI
+HARVARD_IF;Harvard: índice de capacidad física;RESISTENCIA;CUANTITATIVA;;NO;ALTO;SI;SI;SI;1;;Se calcula. No equivale a VO2 máximo: solo se compara con otro Harvard.;SI
+SIT_AND_REACH;Sit and reach;MOVILIDAD;CUANTITATIVA;cm;NO;ALTO;NO;SI;NO;1;Cajón;Cero = las manos llegan a la punta de los pies. Anotar la convención usada.;SI
+SCRATCH;Scratch test (movilidad de hombro);MOVILIDAD;CUANTITATIVA;cm;SI;ALTO;NO;SI;NO;1;Cinta métrica;Negativo = los dedos no se tocan. La asimetría importa tanto como el valor.;SI
+DORSIFLEXION;Dorsiflexión de tobillo;MOVILIDAD;CUANTITATIVA;cm;SI;ALTO;NO;SI;NO;1;Cinta métrica;Rodilla a la pared sin despegar el talón. Distancia del dedo gordo a la pared.;SI
+MONOPODAL;Apoyo monopodal con ojos cerrados;EQUILIBRIO;CUANTITATIVA;s;SI;ALTO;NO;SI;NO;0;;Mejor de dos intentos por pierna.;SI
