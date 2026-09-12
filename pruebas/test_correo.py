@@ -193,7 +193,7 @@ class Montaje(Base):
             "Estado": "BORRADOR"})
         problemas = srv.comprobar(self.repo, self.cfg,
                                   self.repo.obtener("T_COLA_MAIL", envio_id))
-        self.assertTrue(any("URL configurada" in p for p in problemas))
+        self.assertTrue(any("no tiene URL" in p for p in problemas))
 
 
 class Envio(Base):
