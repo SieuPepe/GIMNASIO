@@ -94,9 +94,29 @@ horizonte previsible; si algún día lo hubiera, la capa `datos/` lo absorbe.
 
 Dos ficheros junto al ejecutable:
 
-- **`config.toml`** — parámetros no sensibles: ruta del libro, carpeta de copias,
-  número de copias a conservar, URL de Ollama, modelo por defecto, días de aviso
-  previo, horario del entrenador en sala, modo vacaciones.
+- **`config.toml`** — parámetros no sensibles:
+
+```toml
+[negocio]
+nombre_comercial = "ZEU"
+lema             = "Enjoy your process"
+horario_sala     = "Lunes a sábado de 07:00 a 21:00 · Domingo de 07:00 a 14:00"
+
+[datos]
+libro   = "C:/ZEU/datos_gimnasio.xlsx"
+backups = "C:/ZEU/backups"
+copias_a_conservar = 30
+
+[correo]
+dias_aviso_previo = 14
+modo_vacaciones   = false
+caducidad_modo_vacaciones = ""
+tope_envios_dia   = 20
+
+[ia]
+url_ollama = "http://localhost:11434"
+modelo     = "qwen2.5:7b-instruct"
+```
 - **`.env`** — credenciales:
 
 ```ini
@@ -131,7 +151,15 @@ pero **arrancamos con `.env`**.
 
 ## Hardware de destino y qué implica
 
-**Intel Core i5-1235U · 16 GB de RAM · sin GPU dedicada.**
+> **El equipo de destino final será otro, todavía sin definir.** Lo que sigue
+> describe el equipo de desarrollo y prueba disponible hoy, y sirve como
+> **suelo**: la aplicación está diseñada para funcionar bien en él, de modo que en
+> cualquier máquina igual o mejor funcionará igual o mejor. Nada del diseño
+> depende del hardware salvo la velocidad del módulo de IA. Ver
+> [10 — Decisiones abiertas](10-decisiones-abiertas.md).
+
+**Equipo de referencia actual: Intel Core i5-1235U · 16 GB de RAM · sin GPU
+dedicada.**
 
 Para la aplicación en sí (interfaz, Excel, PDF, correo) es más que suficiente: no
 hay nada exigente en ese trabajo.

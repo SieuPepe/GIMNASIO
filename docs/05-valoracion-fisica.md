@@ -47,11 +47,11 @@ obligatorias.
 | Protocolo | Para quién | Contenido |
 |---|---|---|
 | **Estándar adulto activo** | Adulto sano, sin limitaciones | Batería completa |
-| **Principiante / sedentario** | Sin experiencia previa | Cribado + composición + técnica + dinamómetro + Rockport. Sin saltos ni dominadas |
-| **Mayor de 65** | Población mayor | Cribado ampliado + composición + equilibrio + movilidad (*scratch*, *sit & reach*) + dinamómetro + marcha. Sin esfuerzo máximo |
-| **Reincorporación tras lesión** | Vuelta desde lesión | Cribado + técnica del patrón afectado + asimetrías + movilidad. Sin test máximos |
-| **Rendimiento / deportista** | Con experiencia | Completa + Course Navette + saltos + dominadas |
-| **Revisión rápida (seguimiento)** | Seguimiento entre ciclos | Composición + dinamómetro + 2-3 pruebas de control. 20 minutos |
+| **Principiante / sedentario** | Sin experiencia previa | Cribado + composición + técnica + dinamómetro + *sit-to-stand* + Rockport. Sin saltos, dominadas ni Harvard |
+| **Mayor de 65** | Población mayor | Cribado ampliado + composición + equilibrio + movilidad (*scratch*, *sit & reach*) + dinamómetro + ***sit-to-stand* de 30 s** + marcha. Sin esfuerzo máximo |
+| **Reincorporación tras lesión** | Vuelta desde lesión | Cribado + técnica del patrón afectado + asimetrías + movilidad + *sit-to-stand*. Sin test máximos |
+| **Rendimiento / deportista** | Con experiencia | Completa + Course Navette o Harvard + saltos + dominadas + 1RM submáximo |
+| **Revisión rápida (seguimiento)** | Seguimiento entre ciclos | Composición + dinamómetro + *sit-to-stand* 5 rep + 2-3 pruebas de control. 20 minutos |
 
 Editables y ampliables desde el Excel. El entrenador puede crear los suyos.
 
@@ -135,6 +135,7 @@ rendimiento.
 | Prueba | Tipo | Registro | Tablas |
 |---|---|---|---|
 | **Dinamometría manual** | `CUANTITATIVA` | kg, mano dominante y no dominante | [§3.1](11-anexo-baremos.md#31-dinamometría-manual-handgrip) |
+| ***Sit-to-Stand* / *Chair Stand*** | `CUANTITATIVA` | repeticiones en 30 s **o** segundos en 5 repeticiones | [§3.6](11-anexo-baremos.md#36-sit-to-stand--chair-stand-test) |
 | **Sentadilla profunda** (con brazos arriba) | `TECNICA` | 0-3 + criterios | [§3.2](11-anexo-baremos.md#32-pruebas-de-técnica-escala-0-3) |
 | **Zancada** (*lunge*) | `TECNICA` | 0-3 + criterios, cada lado | [§3.2](11-anexo-baremos.md#32-pruebas-de-técnica-escala-0-3) |
 | **Step down** (descenso lateral del escalón) | `TECNICA` | 0-3 + criterios, cada lado | [§3.3](11-anexo-baremos.md#33-step-down-descenso-lateral) |
@@ -145,6 +146,12 @@ rendimiento.
 | **Sorensen** (extensores lumbares) | `CUANTITATIVA` | segundos | [§3.5](11-anexo-baremos.md#35-resistencia-isométrica-del-tronco) |
 
 **Eliminado:** test de abdominales en 60 segundos.
+
+El ***Sit-to-Stand*** cubre justo el hueco que dejaba sacar los test de 1RM de la
+valoración inicial: da un **número** de fuerza de tren inferior sin carga externa,
+sin riesgo, y aplicable a cualquier perfil, del principiante al mayor de 80. Entra
+en todos los protocolos. Con la dinamometría (tren superior) forman el par
+cuantitativo mínimo de fuerza, y el resto queda en técnica.
 
 > **Punto a confirmar:** plancha lateral, plancha invertida y Sorensen son
 > pruebas *cronometradas*, no de técnica. Las he clasificado como cuantitativas
@@ -173,8 +180,21 @@ prueba se use con cada usuario: el baremo y el radar del informe son los mismos.
 | Rockport (1 milla andando) | Principiantes, sedentarios, mayores | [§5.2](11-anexo-baremos.md#52-fórmulas-de-estimación-del-vo₂máx) |
 | Course Navette 20 m | Jóvenes, deportistas | [§5.2](11-anexo-baremos.md#52-fórmulas-de-estimación-del-vo₂máx) |
 | Cooper 12 min | Corredores | [§5.2](11-anexo-baremos.md#52-fórmulas-de-estimación-del-vo₂máx) |
+| **Escalón de Harvard** | Adulto activo y rendimiento, en espacio reducido | [§5.3](11-anexo-baremos.md#53-prueba-del-escalón-de-harvard-harvard-step-test) |
 
 Baremos de VO₂máx por sexo y edad: [§5.1](11-anexo-baremos.md#51-vo₂máx-baremos-por-sexo-y-edad)
+
+**Matiz sobre el Harvard.** Las tres primeras pruebas dan VO₂máx y son
+intercambiables entre sí. El Harvard da un **índice propio**, que no convierte de
+forma fiable a VO₂máx. Su puntuación 0-100 sí alimenta el eje `RESISTENCIA` del
+radar, pero **en las comparativas no se mezcla con las demás**: un Harvard solo se
+compara con otro Harvard. Detalle en
+[§5.4](11-anexo-baremos.md#54-cómo-conviven-las-pruebas-de-resistencia-en-el-informe).
+
+Además es una prueba **exigente** (5 min a 30 subidas/min en escalón de 50 cm):
+va marcada como esfuerzo máximo, el cribado la bloquea ante cualquier señal de
+alerta, y queda fuera de los protocolos de principiante, mayores y
+reincorporación. Para esos perfiles, Rockport.
 
 ### Movilidad y equilibrio — `CUANTITATIVA`
 

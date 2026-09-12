@@ -1,4 +1,6 @@
-# GIMNASIO — Gestión de usuarios y planificación del entrenamiento
+# ZEU — Gestión de usuarios y planificación del entrenamiento
+
+*Enjoy your process*
 
 Aplicación de escritorio para Windows que gestiona los usuarios de un gimnasio,
 su valoración física, y la planificación del entrenamiento en ciclos
@@ -33,3 +35,4 @@ contrato a validar antes de programar.
 | [09 — Hoja de ruta](docs/09-roadmap.md) | Fases de construcción |
 | [10 — Decisiones abiertas](docs/10-decisiones-abiertas.md) | Lo que falta por decidir |
 | [11 — Anexo de baremos](docs/11-anexo-baremos.md) | Tablas de referencia por sexo y edad de cada prueba |
+| [12 — Identidad de marca](docs/12-marca.md) | Nombre, lema, paleta y ficheros del logotipo |

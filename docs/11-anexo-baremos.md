@@ -293,6 +293,68 @@ con la evolución.
 *Solidez: media para los tiempos de las tres primeras y para las relaciones;
 baja para la plancha frontal; sin baremo la invertida.*
 
+### 3.6 *Sit-to-Stand* / *Chair Stand Test*
+
+Levantarse y sentarse de una silla sin apoyar los brazos (cruzados sobre el
+pecho), con la espalda recta y llegando a la extensión completa de cadera.
+
+Cubre justo el hueco que deja haber sacado los test de 1RM de la valoración
+inicial: da un **número de fuerza de tren inferior** sin carga externa, sin
+riesgo y aplicable a cualquier perfil, del principiante al mayor de 80.
+
+Dos variantes, ambas en el catálogo:
+
+**a) 30 segundos — repeticiones completas en medio minuto.**
+Es la variante del *Senior Fitness Test*. Rangos considerados **normales** (dentro
+de estos valores, la persona está en la media de su edad):
+
+| Edad | Hombres | Mujeres |
+|---|---|---|
+| 60 – 64 | 14 – 19 | 12 – 17 |
+| 65 – 69 | 12 – 18 | 11 – 16 |
+| 70 – 74 | 12 – 17 | 10 – 15 |
+| 75 – 79 | 11 – 17 | 10 – 15 |
+| 80 – 84 | 10 – 15 | 9 – 14 |
+| 85 – 89 | 8 – 14 | 8 – 13 |
+| 90 – 94 | 7 – 12 | 4 – 11 |
+
+Por debajo del límite inferior → debilidad de tren inferior y riesgo aumentado de
+pérdida de autonomía. Por encima del superior → por encima de la media de su edad.
+
+**Para menores de 60 no hay tabla normativa publicada de esta variante.** Escala
+orientativa de uso interno:
+
+| Categoría | Hombres < 60 | Mujeres < 60 |
+|---|---|---|
+| Bajo | < 17 | < 15 |
+| Medio | 17 – 25 | 15 – 22 |
+| Alto | > 25 | > 22 |
+
+**b) 5 repeticiones — tiempo en completar cinco ciclos (segundos).**
+Más rápida y mejor para población adulta general. Valores medios:
+
+| Edad | Tiempo medio |
+|---|---|
+| 20 – 49 | 6 – 8 s |
+| 50 – 59 | 8 – 10 s |
+| 60 – 69 | ≈ 11,5 s |
+| 70 – 79 | ≈ 12,5 s |
+| ≥ 80 | ≈ 15 s |
+
+**Puntos de corte de interés clínico, cualquier edad:**
+**> 12 s** → riesgo de caída aumentado · **> 15 s** → indicador de fragilidad.
+Ambos se marcan en el informe.
+
+**Criterio de la aplicación:** por debajo del rango normal de su edad, o por encima
+de 12 s en la variante de 5 repeticiones, se prioriza el trabajo de fuerza de tren
+inferior en la planificación y se registra como hallazgo en el informe.
+
+Conviene además anotar la **altura de la silla** (estándar ≈ 43-45 cm) y si usa
+apoyo de brazos: sin eso, dos mediciones no son comparables.
+
+*Solidez: media para la tabla de 60+ y para los puntos de corte de 5
+repeticiones. Baja para la escala de menores de 60 en la variante de 30 s.*
+
 ---
 
 ## 4. Potencia
@@ -392,6 +454,83 @@ VO2max = (distancia_m − 504,9) / 44,73
 *Solidez: alta en cuanto a que son las ecuaciones estándar de cada prueba. El
 error de estimación propio de estas fórmulas es del orden de ±10-15 %, lo que
 importa al comparar: **usar siempre la misma prueba con el mismo usuario.***
+
+### 5.3 Prueba del escalón de Harvard (*Harvard Step Test*)
+
+**Protocolo.** Subir y bajar un escalón a ritmo de **30 subidas por minuto**
+(metrónomo a 120 ppm: sube-sube-baja-baja) durante **5 minutos**, o hasta que la
+persona no pueda mantener el ritmo.
+
+- Altura del escalón: **50 cm hombres · 43 cm mujeres**.
+- Se anota la **duración real** en segundos (importante si no llega a los 5 min).
+- Tras terminar, la persona se sienta y se cuentan las pulsaciones en tres
+  ventanas de recuperación: **1:00–1:30**, **2:00–2:30** y **3:00–3:30**.
+
+**Índice de capacidad física (IF), versión completa:**
+
+```
+IF = (duración_segundos × 100) / (2 × (P1 + P2 + P3))
+```
+
+**Versión corta**, solo con el primer recuento (menos precisa, más rápida):
+
+```
+IF = (duración_segundos × 100) / (5,5 × P1)
+```
+
+**Clasificación del índice:**
+
+| Índice | Categoría | Puntuación |
+|---|---|---|
+| < 55 | Deficiente | 10 |
+| 55 – 64 | Bajo | 30 |
+| 65 – 79 | Medio | 50 |
+| 80 – 89 | Bueno | 75 |
+| ≥ 90 | Excelente | 100 |
+
+Sin diferencias de baremo por edad ni sexo: la altura distinta del escalón ya
+compensa parcialmente, y el índice se interpreta igual para todos. Esto es a la
+vez su ventaja (tabla única, muy simple) y su limitación (un índice de 70 no
+significa lo mismo a los 25 que a los 65).
+
+> **Dos advertencias de uso:**
+>
+> 1. **Es una prueba exigente.** Cinco minutos a 30 subidas por minuto en un
+>    escalón de 50 cm es un esfuerzo duro para alguien desentrenado. Va marcada
+>    con `Requiere_Esfuerzo_Maximo_SN = Sí`, así que **el cribado previo la
+>    bloquea** ante cualquier señal de alerta, y queda fuera de los protocolos de
+>    principiante, mayores y reincorporación. Para esos perfiles, Rockport.
+> 2. **El índice no es VO₂máx.** Mide la velocidad de recuperación cardíaca, que
+>    está relacionada con la condición aeróbica pero no es la misma variable, y
+>    las conversiones que circulan a ml/kg/min no son fiables. Ver abajo cómo lo
+>    resuelve la aplicación.
+
+**Variante modificada**, para quien no puede con el protocolo completo: escalón de
+30-35 cm, 3 minutos, mismo cálculo. **No comparable** con el protocolo estándar:
+se registra como prueba distinta, no como la misma con otra altura.
+
+*Solidez: media. El protocolo y la clasificación son los clásicos de la prueba;
+la ausencia de ajuste por edad y sexo es su debilidad conocida.*
+
+### 5.4 Cómo conviven las pruebas de resistencia en el informe
+
+Rockport, Course Navette y Cooper desembocan todas en **VO₂máx estimado**, así que
+son intercambiables entre sí y comparten el baremo de §5.1.
+
+Harvard produce un **índice propio**, en otra escala y sin equivalencia fiable con
+el VO₂máx. La aplicación lo trata así:
+
+- Guarda el índice tal cual, con su categoría y su puntuación 0-100 de la tabla de
+  arriba.
+- Esa puntuación alimenta el eje `RESISTENCIA` del radar igual que lo haría un
+  VO₂máx, porque **la escala 0-100 sí es común**.
+- Pero en las **comparativas entre valoraciones no mezcla pruebas**: un Harvard
+  solo se compara con otro Harvard. Si en la valoración inicial se hizo Rockport y
+  en la de seguimiento Harvard, el informe muestra ambas por separado y **no
+  dibuja una flecha de evolución** entre ellas.
+
+Es la misma regla que con los protocolos: antes que una comparación cómoda pero
+falsa, un hueco honesto.
 
 ---
 
