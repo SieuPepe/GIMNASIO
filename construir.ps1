@@ -96,6 +96,29 @@ function Escribe($texto, $color = 'Gray') { Write-Host "   $texto" -ForegroundCo
 
 Titulo 'Comprobaciones'
 
+# De que version se esta construyendo. Compilar sin haber actualizado es un
+# clasico, y el error que sale no se parece en nada a la causa.
+$git = Get-Command git -ErrorAction SilentlyContinue
+if ($git) {
+    $commit = (Ejecuta 'git' @('-C', $raiz, 'log', '-1', '--format=%h  %ad  %s',
+                               '--date=short')).Salida.Trim()
+    if ($commit) { Escribe "Version: $commit" Green }
+    $sucio = (Ejecuta 'git' @('-C', $raiz, 'status', '--porcelain')).Salida.Trim()
+    if ($sucio) {
+        Escribe 'Aviso: hay cambios sin guardar en el repositorio.' Yellow
+    }
+    # Si la rama no sigue a ninguna remota, esto falla: entonces no hay nada
+    # que avisar, y un aviso falso solo confunde.
+    $r = Ejecuta 'git' @('-C', $raiz, 'rev-list', '--count', 'HEAD..@{u}')
+    if ($r.Codigo -eq 0) {
+        $detras = $r.Salida.Trim()
+        if ($detras -match '^[1-9]') {
+            Escribe "Aviso: te faltan $detras commits por traer. Haz git pull antes" Yellow
+            Escribe '       de construir, o estaras empaquetando la version vieja.' Yellow
+        }
+    }
+}
+
 $py = Join-Path $raiz '.venv\Scripts\python.exe'
 if (-not (Test-Path $py)) {
     $suelto = Get-Command python -ErrorAction SilentlyContinue
