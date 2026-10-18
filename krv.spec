@@ -34,8 +34,12 @@ ocultos = (collect_submodules("openpyxl")
            + ["PySide6.QtPrintSupport"])
 
 # Lo que no se usa y pesa: fuera. Sin esto el paquete se va a más del doble.
+#
+# Aquí solo van módulos grandes que sabemos que nadie importa. Nada de la
+# biblioteca estándar: excluir «unittest» rompió el programa entero, porque
+# pyparsing —que entra con matplotlib— lo importa al cargarse. Lo que se ahorra
+# con esos módulos es calderilla y lo que se arriesga es que no arranque.
 sobra = [
-    "tkinter", "unittest", "pydoc", "doctest", "pdb",
     "PySide6.QtWebEngineCore", "PySide6.QtWebEngineWidgets", "PySide6.QtQuick",
     "PySide6.QtQml", "PySide6.Qt3DCore", "PySide6.QtMultimedia",
     "PySide6.QtNetworkAuth", "PySide6.QtCharts", "PySide6.QtDataVisualization",

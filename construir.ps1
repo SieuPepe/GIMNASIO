@@ -181,7 +181,19 @@ if (-not (Test-Path $programa)) {
 }
 $tamano = [math]::Round((Get-ChildItem (Split-Path $programa) -Recurse |
     Measure-Object -Property Length -Sum).Sum / 1MB, 1)
-Escribe "Listo: dist\KevinRuizValdenegro ($tamano MB)" Green
+Escribe "Empaquetado: dist\KevinRuizValdenegro ($tamano MB)" Green
+
+# Que el propio ejecutable diga si esta completo. Un modulo que falte dentro no
+# se nota al empaquetar: se nota cuando alguien abre el programa, y para
+# entonces ya esta instalado en otro ordenador.
+Escribe 'Comprobando el ejecutable...'
+$r = Ejecuta $programa @('--comprobar')
+if ($r.Codigo -ne 0) {
+    Escribe 'El ejecutable no arranca bien. No lo repartas asi.' Red
+    Write-Host $r.Salida
+    exit 1
+}
+Escribe (($r.Salida -split "`n" | Where-Object { $_ -match 'Comprobaci' }) -join ' ') Green
 
 if ($SoloPrograma) {
     Write-Host ''

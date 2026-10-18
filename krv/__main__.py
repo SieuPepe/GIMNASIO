@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import sys
+from pathlib import Path
 
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QApplication, QMessageBox
@@ -11,6 +12,90 @@ from .datos import libro as mod_libro
 from .nucleo import config, log
 from .ui import asistente, estilo
 from .ui.principal import VentanaPrincipal
+
+
+def comprobar() -> int:
+    """Arranca todo sin enseñar nada, para ver si el paquete está completo.
+
+    Lo llama el guion de construcción nada más empaquetar. Un módulo que falte
+    dentro del ejecutable no se nota al construir: se nota cuando alguien abre
+    el programa, y para entonces ya está instalado en otro ordenador. Esto
+    recorre el mismo camino que el arranque de verdad —las ventanas, el libro,
+    los PDF y los gráficos— y devuelve 1 si algo falta.
+    """
+    import os
+    import tempfile
+    import traceback
+
+    # En Windows hay escritorio y la ventana se construye sin llegar a
+    # enseñarse. Sin escritorio —un servidor, o esta comprobación lanzada desde
+    # una consola remota— hay que decirle a Qt que dibuje en el vacío.
+    if (not sys.platform.startswith("win")
+            and not os.environ.get("DISPLAY")
+            and not os.environ.get("WAYLAND_DISPLAY")):
+        os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+
+    pasos = []
+    try:
+        # Las bibliotecas pesadas, por su nombre, para que el error diga cuál.
+        pasos.append("matplotlib")
+        import matplotlib
+        matplotlib.use("Agg")
+        import matplotlib.pyplot                                  # noqa: F401
+        pasos.append("reportlab")
+        import reportlab.pdfgen.canvas                            # noqa: F401
+        pasos.append("openpyxl")
+        import openpyxl                                           # noqa: F401
+
+        pasos.append("módulos de la aplicación")
+        from .datos import puesta_a_punto
+        from .datos.repositorio import Repositorio
+        from .servicios import informes
+        from .ui.asistente import Asistente                       # noqa: F401
+        from .ui.vista_manual import VistaManual                  # noqa: F401
+
+        pasos.append("recursos empaquetados")
+        for relativa in ("datos_iniciales/ejercicios.csv",
+                         "assets/marca/kevin.ico", "config.ejemplo.toml"):
+            if not (config.RAIZ / relativa).exists():
+                print(f"FALTA el recurso {relativa} en {config.RAIZ}")
+                return 1
+
+        app = QApplication.instance() or QApplication(sys.argv)
+        app.setStyleSheet(estilo.HOJA)
+
+        with tempfile.TemporaryDirectory() as temporal:
+            cfg = config.Config()
+            cfg.datos.libro = Path(temporal) / "comprobacion.xlsx"
+            cfg.datos.backups = Path(temporal) / "copias"
+
+            pasos.append("crear el libro")
+            puesta_a_punto.preparar(cfg, con_demo=False)
+            libro = mod_libro.abrir(cfg.datos.libro, cfg.datos.backups)
+
+            pasos.append("construir la ventana")
+            ventana = VentanaPrincipal(cfg, libro)
+            ventana.vista_manual.mostrar("instalar")
+
+            pasos.append("dibujar un gráfico")
+            radar = informes.grafico_radar(
+                {"FUERZA": (70, 100), "RESISTENCIA": (55, 100),
+                 "MOVILIDAD": (60, 100), "EQUILIBRIO": (80, 100)},
+                None, Path(temporal) / "radar.png")
+            if radar is None or not radar.exists():
+                print("FALLA: no se ha podido dibujar el gráfico")
+                return 1
+
+            pasos.append("cerrar")
+            ventana.close()
+            Repositorio(libro)
+    except Exception:
+        print(f"FALLA en el paso: {pasos[-1] if pasos else 'arranque'}")
+        traceback.print_exc()
+        return 1
+
+    print(f"Comprobación correcta: {len(pasos)} pasos, recursos en {config.RAIZ}")
+    return 0
 
 
 def main() -> int:

@@ -129,6 +129,36 @@ class Spec(unittest.TestCase):
             with self.subTest(prohibido):
                 self.assertNotIn(prohibido, self.texto)
 
+    def test_no_excluye_nada_de_la_biblioteca_estandar(self):
+        """La exclusión que rompió el programa entero.
+
+        «unittest» estaba en la lista de módulos a no empaquetar. Parecía
+        inofensivo, pero pyparsing —que entra de la mano de matplotlib en
+        algunas versiones— lo importa al cargarse, y el programa no llegaba ni
+        a abrir la ventana. Lo que se ahorra excluyendo módulos de la
+        biblioteca estándar es calderilla; lo que se arriesga es que no
+        arranque en un equipo con otras versiones.
+        """
+        import re
+        bloque = re.search(r"sobra = \[(.*?)\]", self.texto, re.DOTALL)
+        self.assertIsNotNone(bloque)
+        nombres = re.findall(r'"([^"]+)"', bloque.group(1))
+        self.assertTrue(nombres)
+        estandar = [n for n in nombres
+                    if n.split(".")[0] in sys.stdlib_module_names]
+        self.assertEqual(estandar, [],
+                         "excluir módulos de la biblioteca estándar rompe el "
+                         "programa en equipos con otras versiones")
+
+    def test_comprueba_el_ejecutable_despues_de_empaquetar(self):
+        # Que el propio ejecutable diga si está completo, antes de repartirlo.
+        guion = (RAIZ / "construir.ps1").read_text(encoding="utf-8")
+        self.assertIn("--comprobar", guion)
+        lanzador = (RAIZ / "arrancar.py").read_text(encoding="utf-8")
+        self.assertIn("--comprobar", lanzador)
+        self.assertIn("def comprobar", (RAIZ / "krv" / "__main__.py").read_text(
+            encoding="utf-8"))
+
     def test_sale_sin_consola(self):
         self.assertIn("console=False", self.texto)
 
