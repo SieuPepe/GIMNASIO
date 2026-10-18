@@ -1335,6 +1335,15 @@ nombre, pero conviene arreglarlo.</li>
 UTF-8, UTF-8 con marca y UTF-16, pero si lo ves raro, vuelve a escribirlo.</li>
 </ul>
 
+<p><b>«No se puede leer la configuración» al arrancar.</b> El
+<tt>config.toml</tt> tiene algo que el programa no entiende. Cada línea debe
+ser <tt>clave = "valor"</tt> y las secciones van entre corchetes, como
+<tt>[negocio]</tt>. El aviso dice la línea exacta. Si lo editaste desde
+PowerShell y no ves nada raro, no te vuelvas loco: el programa ya se apaña con
+la marca invisible que añaden algunos comandos. Y si no quieres pelearte,
+renombra el fichero: arrancará con los valores de fábrica, que son los
+correctos, y lo rehaces desde <tt>config.ejemplo.toml</tt>.</p>
+
 <p><b>El nombre o el lema salen antiguos</b> —en el título de la ventana, en
 la cabecera de los correos o en los PDF—. Esos textos salen de
 <tt>config.toml</tt>, que es <b>tuyo</b>: no se toca al actualizar el programa,

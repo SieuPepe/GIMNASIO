@@ -350,3 +350,66 @@ class FicheroDeCredenciales(unittest.TestCase):
         self.assertIsNone(valor)
         self.assertIn("GMAIL_APP_PASSWORD", error,
                       "debería listar lo que sí ha leído")
+
+
+class FicheroDeConfiguracion(unittest.TestCase):
+    """config.toml lo edita el usuario desde Windows, y llega como llega.
+
+    PowerShell escribe UTF-8 con marca invisible al principio, y tomllib la
+    rechaza con un «Invalid statement (at line 1, column 1)» que no ayuda nada.
+    """
+
+    BUENO = ('[negocio]\n'
+             'nombre_comercial = "Kevin Ruiz Valdenegro"\n'
+             'lema = "Movimiento es vida"\n')
+
+    def _cargar(self, contenido, codificacion="utf-8"):
+        import importlib
+        from krv.nucleo import config as modulo
+        with tempfile.TemporaryDirectory() as carpeta:
+            config = importlib.reload(modulo)
+            ruta = Path(carpeta) / "config.toml"
+            ruta.write_text(contenido, encoding=codificacion)
+            try:
+                return config.cargar(ruta), None
+            except config.ConfigIlegible as error:
+                return None, error
+            finally:
+                importlib.reload(modulo)
+
+    def test_utf8_normal(self):
+        cfg, _ = self._cargar(self.BUENO)
+        self.assertEqual(cfg.negocio.lema, "Movimiento es vida")
+
+    def test_utf8_con_marca_de_orden_de_bytes(self):
+        # Lo que deja `Set-Content -Encoding utf8` en Windows PowerShell 5.
+        cfg, _ = self._cargar(self.BUENO, "utf-8-sig")
+        self.assertEqual(cfg.negocio.nombre_comercial, "Kevin Ruiz Valdenegro")
+
+    def test_utf16(self):
+        cfg, _ = self._cargar(self.BUENO, "utf-16")
+        self.assertEqual(cfg.negocio.lema, "Movimiento es vida")
+
+    def test_un_toml_roto_se_explica_en_vez_de_reventar(self):
+        cfg, error = self._cargar("esto no es toml\n")
+        self.assertIsNone(cfg)
+        self.assertIn("config.toml", str(error))
+        self.assertIn("clave", str(error), "debería decir cómo es una línea válida")
+
+    def test_sin_fichero_valen_los_valores_de_fabrica(self):
+        import importlib
+        from krv.nucleo import config as modulo
+        with tempfile.TemporaryDirectory() as carpeta:
+            config = importlib.reload(modulo)
+            cfg = config.cargar(Path(carpeta) / "no_existe.toml")
+            self.assertEqual(cfg.negocio.lema, "Movimiento es vida")
+            self.assertIsNone(cfg.ruta_config)
+            importlib.reload(modulo)
+
+    def test_los_valores_de_fabrica_son_la_marca_actual(self):
+        # Si alguien borra una línea de su config.toml, esto es lo que queda.
+        from krv.nucleo.config import Config
+        cfg = Config()
+        self.assertEqual(cfg.negocio.nombre_comercial, "Kevin Ruiz Valdenegro")
+        self.assertEqual(cfg.negocio.lema, "Movimiento es vida")
+        self.assertEqual(cfg.correo.remitente, "movimientoesvida.krv@gmail.com")

@@ -72,12 +72,44 @@ def _aplicar(destino, valores: dict) -> None:
         setattr(destino, clave, valor)
 
 
+class ConfigIlegible(Exception):
+    """config.toml existe pero no se puede entender."""
+
+    def __init__(self, ruta: Path, causa: Exception):
+        self.ruta = ruta
+        self.causa = causa
+        super().__init__(
+            f"No se entiende el fichero de configuración:\n{ruta}\n\n"
+            f"{causa}\n\n"
+            "Cada línea tiene que ser  clave = \"valor\"  y las secciones van "
+            "entre corchetes, como [negocio].\n\n"
+            "Si no sabes qué ha pasado, la salida más rápida es renombrar ese "
+            "fichero: el programa arrancará con los valores de fábrica y podrás "
+            "rehacerlo a partir de config.ejemplo.toml.")
+
+
+def _leer_texto(ruta: Path) -> str:
+    """Lee un fichero de texto del usuario sin atragantarse con Windows.
+
+    «utf-8-sig» quita la marca invisible del principio que dejan el Bloc de
+    notas y varios comandos de PowerShell. Sin eso, el fichero falla en la
+    línea 1, columna 1, con un error que no dice nada.
+    """
+    try:
+        return ruta.read_text(encoding="utf-8-sig")
+    except UnicodeDecodeError:
+        return ruta.read_text(encoding="utf-16")
+
+
 def cargar(ruta: Path | None = None) -> Config:
     """Lee config.toml. Si no existe, devuelve la configuración por defecto."""
     cfg = Config()
     ruta = ruta or RAIZ / "config.toml"
     if ruta.exists():
-        datos = tomllib.loads(ruta.read_text(encoding="utf-8"))
+        try:
+            datos = tomllib.loads(_leer_texto(ruta))
+        except (tomllib.TOMLDecodeError, UnicodeDecodeError) as error:
+            raise ConfigIlegible(ruta, error) from error
         for seccion in ("negocio", "datos", "correo", "ia"):
             if seccion in datos:
                 _aplicar(getattr(cfg, seccion), datos[seccion])
@@ -118,11 +150,7 @@ def _cargar_env(ruta: Path | None = None) -> None:
     # «utf-8-sig» quita la marca invisible que el Bloc de notas puede poner al
     # principio del fichero. Sin esto, la primera clave se lee con tres bytes
     # pegados delante y es como si no estuviera: justo la que falla.
-    try:
-        contenido = ruta.read_text(encoding="utf-8-sig")
-    except UnicodeDecodeError:
-        # Guardado en UTF-16 («Unicode» en el desplegable del Bloc de notas).
-        contenido = ruta.read_text(encoding="utf-16")
+    contenido = _leer_texto(ruta)
     leidas = []
     for linea in contenido.splitlines():
         linea = linea.strip().lstrip("\ufeff")

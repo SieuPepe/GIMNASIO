@@ -14,11 +14,18 @@ from .ui.principal import VentanaPrincipal
 
 
 def main() -> int:
-    cfg = config.cargar()
     log.configurar(config.RAIZ / "logs")
     registro = log.obtener("app")
 
+    # La ventana de aviso tiene que existir antes que el primer error, así que
+    # la aplicación de Qt se crea antes de leer nada.
     app = QApplication(sys.argv)
+    try:
+        cfg = config.cargar()
+    except config.ConfigIlegible as error:
+        registro.error("Configuración ilegible: %s", error.causa)
+        QMessageBox.critical(None, "No se puede leer la configuración", str(error))
+        return 1
     app.setApplicationName(cfg.negocio.nombre_comercial)
     if estilo.ICONO.exists():
         app.setWindowIcon(QIcon(str(estilo.ICONO)))
