@@ -159,6 +159,22 @@ class VistaUsuarios(QWidget):
             "Pendiente: " + " · ".join(pendientes) if pendientes
             else "Ficha completa: consentimiento, cribado, objetivo y disponibilidad.")
 
+    def seleccionar_usuario(self, id_usuario: str) -> None:
+        """Deja señalado a ese usuario, aunque el filtro actual lo esconda."""
+        self.busqueda.clear()
+        for fila in range(self.tabla.rowCount()):
+            if self.tabla.item(fila, 0).data(Qt.UserRole) == id_usuario:
+                self.tabla.selectRow(fila)
+                self.tabla.scrollToItem(self.tabla.item(fila, 0))
+                return
+        self.filtro_estado.setCurrentIndex(0)       # todos los estados
+        self.refrescar()
+        for fila in range(self.tabla.rowCount()):
+            if self.tabla.item(fila, 0).data(Qt.UserRole) == id_usuario:
+                self.tabla.selectRow(fila)
+                self.tabla.scrollToItem(self.tabla.item(fila, 0))
+                return
+
     # -- acciones --
     def nuevo(self) -> None:
         dialogo = FichaUsuario(self.repo, padre=self)

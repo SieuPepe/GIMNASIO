@@ -17,8 +17,8 @@ comunicación automatizada por correo con los usuarios.
 
 ## Estado
 
-**Fases 0 a 5 implementadas:** cimientos, usuarios, ejercicios, valoración
-física, planificación y comunicación por correo.
+**Fases 0 a 6 implementadas:** cimientos, usuarios, ejercicios, valoración
+física, planificación, comunicación por correo y panel de alertas.
 
 | Fase | Contenido | Estado |
 |---|---|---|
@@ -28,7 +28,7 @@ física, planificación y comunicación por correo.
 | 3 | Valoración física, protocolos, baremos e informe en PDF | Hecha |
 | 4 | Planificación en árbol, cargas, asignaciones y PDF | Hecha |
 | 5 | Correo, formularios, cola de revisión y modo vacaciones | Hecha |
-| 6 | Panel de alertas completo | Pendiente |
+| 6 | Panel de alertas con navegación a cada ficha | Hecha |
 | 7 | Módulo de IA | Pendiente |
 
 ## Puesta en marcha

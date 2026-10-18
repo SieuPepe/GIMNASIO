@@ -26,6 +26,10 @@ from .vista_usuarios import VistaUsuarios
 # se vea hacia dónde va la aplicación.
 PENDIENTES: list[tuple[str, str]] = []
 
+# Nombre de sección -> página, para que las alertas sepan adónde llevar.
+SECCIONES = {"inicio": 0, "usuarios": 1, "ejercicios": 2, "valoraciones": 3,
+             "programas": 4, "asignaciones": 5, "correo": 6}
+
 
 class VentanaPrincipal(QMainWindow):
     def __init__(self, cfg: Config, libro: Libro):
@@ -67,7 +71,7 @@ class VentanaPrincipal(QMainWindow):
         caja.addWidget(lema)
 
         self.paginas = QStackedWidget()
-        self.vista_inicio = VistaInicio(self.repo)
+        self.vista_inicio = VistaInicio(self.repo, self.cfg, self.ir_a, self.guardar)
         self.vista_usuarios = VistaUsuarios(self.repo, self.guardar)
         self.vista_ejercicios = VistaEjercicios(self.repo, self.guardar)
         self.vista_valoraciones = VistaValoraciones(self.repo, self.cfg, self.guardar)
@@ -84,6 +88,7 @@ class VentanaPrincipal(QMainWindow):
 
         grupo = QButtonGroup(self)
         grupo.setExclusive(True)
+        self.botones_seccion: list[QPushButton] = []
         for indice, texto in enumerate(
                 ("Inicio", "Usuarios", "Ejercicios", "Valoraciones",
                  "Programas", "Asignaciones", "Correo")):
@@ -92,6 +97,7 @@ class VentanaPrincipal(QMainWindow):
             boton.clicked.connect(lambda _=False, i=indice: self._ir(i))
             grupo.addButton(boton)
             caja.addWidget(boton)
+            self.botones_seccion.append(boton)
             if indice == 0:
                 boton.setChecked(True)
 
@@ -110,6 +116,22 @@ class VentanaPrincipal(QMainWindow):
         if indice == 0:
             self.vista_inicio.refrescar()
         self.paginas.setCurrentIndex(indice)
+        if 0 <= indice < len(self.botones_seccion):
+            self.botones_seccion[indice].setChecked(True)
+
+    def ir_a(self, seccion: str, id_usuario: str | None = None) -> None:
+        """Salta a una pantalla y, si procede, deja señalado al usuario.
+
+        Es lo que convierte el panel en algo accionable: de la alerta a la
+        ficha en un clic, sin tener que buscar a la persona.
+        """
+        indice = SECCIONES.get(seccion)
+        if indice is None:
+            return
+        self._ir(indice)
+        vista = self.paginas.widget(indice)
+        if id_usuario and hasattr(vista, "seleccionar_usuario"):
+            vista.seleccionar_usuario(id_usuario)
 
     def guardar(self) -> bool:
         """Escribe el libro tras cada cambio. Devuelve si ha ido bien."""

@@ -76,6 +76,8 @@ sustituye a las hojas suelta y a los planes en Word.
   citas solicitadas.
 
 **Resultado:** deja de haber que acordarse de nada.
+**Hecha.** Alertas de estado, que se van solas al cambiar el estado, y de hecho
+puntual, que se marcan como atendidas. Cada una lleva a su ficha en un clic.
 
 ## Fase 7 — IA
 - Capa de proveedor + Ollama, con pantalla de diagnóstico de modelos.

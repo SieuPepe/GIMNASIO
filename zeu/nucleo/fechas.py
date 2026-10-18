@@ -32,3 +32,21 @@ def a_fecha(valor) -> date | None:
 
 def formatear(valor: date | None) -> str:
     return valor.strftime("%d/%m/%Y") if valor else ""
+
+
+DIAS = ("lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo")
+MESES = ("enero", "febrero", "marzo", "abril", "mayo", "junio", "julio",
+         "agosto", "septiembre", "octubre", "noviembre", "diciembre")
+
+
+def formatear_largo(valor: date | None) -> str:
+    """«lunes, 18 de octubre de 2026», sin depender del idioma del sistema."""
+    if not valor:
+        return ""
+    return (f"{DIAS[valor.weekday()]}, {valor.day} de "
+            f"{MESES[valor.month - 1]} de {valor.year}")
+
+
+def plural(cantidad: int, singular: str, plural_: str | None = None) -> str:
+    """«1 correo» / «3 correos», sin el «1 correos» que delata al programa."""
+    return f"{cantidad} {singular if cantidad == 1 else (plural_ or singular + 's')}"

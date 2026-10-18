@@ -516,6 +516,8 @@ TABLAS: tuple[Tabla, ...] = (
             Columna("Codigo_Pregunta", Tipo.TEXTO, obligatorio=True, ancho=22),
             Columna("Valor", Tipo.TEXTO_LARGO, ancho=55),
             Columna("Origen", Tipo.LISTA, ancho=12, opciones=("FORM", "MANUAL")),
+            Columna("Atendido_SN", Tipo.BOOL, ancho=14,
+                    ayuda="Marcado desde el panel cuando ya se ha resuelto"),
         ),
     ),
 

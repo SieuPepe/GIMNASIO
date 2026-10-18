@@ -155,6 +155,11 @@ class VistaValoraciones(QWidget):
         else:
             self.detalle.setText("Sin asimetrías ni desequilibrios destacables.")
 
+    def seleccionar_usuario(self, id_usuario: str) -> None:
+        indice = self.filtro_usuario.findData(id_usuario)
+        if indice >= 0:
+            self.filtro_usuario.setCurrentIndex(indice)
+
     # -- acciones --
     def nueva(self) -> None:
         usuarios = self.repo.listar("T_USUARIOS", lambda u: u.get("Estado") == "ACTIVO")

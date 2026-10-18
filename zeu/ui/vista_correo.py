@@ -185,6 +185,14 @@ class VistaCorreo(QWidget):
         self.tabla.blockSignals(False)
         self._cargar_seleccion()
 
+    def seleccionar_usuario(self, id_usuario: str) -> None:
+        for fila in range(self.tabla.rowCount()):
+            envio = self.repo.obtener(
+                "T_COLA_MAIL", self.tabla.item(fila, 0).data(Qt.UserRole)) or {}
+            if envio.get("ID_Usuario") == id_usuario:
+                self.tabla.selectRow(fila)
+                return
+
     def seleccionado(self) -> str | None:
         filas = self.tabla.selectionModel().selectedRows() if self.tabla.rowCount() else []
         return self.tabla.item(filas[0].row(), 0).data(Qt.UserRole) if filas else None

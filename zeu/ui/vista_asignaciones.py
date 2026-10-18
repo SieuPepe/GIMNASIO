@@ -283,6 +283,15 @@ class VistaAsignaciones(QWidget):
                         faltan.add(ejercicio.get("Nombre") or "?")
         return faltan
 
+    def seleccionar_usuario(self, id_usuario: str) -> None:
+        for fila in range(self.tabla.rowCount()):
+            asignacion = self.repo.obtener(
+                "T_ASIGNACIONES", self.tabla.item(fila, 0).data(Qt.UserRole)) or {}
+            if asignacion.get("ID_Usuario") == id_usuario:
+                self.tabla.selectRow(fila)
+                self.tabla.scrollToItem(self.tabla.item(fila, 0))
+                return
+
     # -- acciones --
     def nueva(self) -> None:
         if not self.repo.listar("T_USUARIOS", lambda u: u.get("Estado") == "ACTIVO"):

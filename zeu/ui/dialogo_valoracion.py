@@ -317,9 +317,12 @@ class DialogoValoracion(QDialog):
     def _cargar_protocolo(self) -> None:
         while self.disposicion.count():
             elemento = self.disposicion.takeAt(0)
-            if elemento.widget():
-                elemento.widget().setParent(None)
-                elemento.widget().deleteLater()
+            anterior = elemento.widget()
+            if anterior is not None:
+                # Tras setParent(None) el elemento ya no devuelve el widget, así
+                # que hay que guardarse la referencia antes de desvincularlo.
+                anterior.setParent(None)
+                anterior.deleteLater()
         self.filas = {}
 
         id_protocolo = self.protocolo.currentData()
