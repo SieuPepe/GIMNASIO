@@ -9,11 +9,51 @@ Windows sería tocar una sola función.
 from __future__ import annotations
 
 import os
+import sys
 import tomllib
 from dataclasses import dataclass, field
 from pathlib import Path
 
-RAIZ = Path(__file__).resolve().parents[2]
+NOMBRE_CARPETA = "Kevin Ruiz Valdenegro"
+
+
+def empaquetado() -> bool:
+    """Si esto es el .exe del instalador y no el código suelto."""
+    return getattr(sys, "frozen", False)
+
+
+def _raiz() -> Path:
+    """Dónde están los recursos: logotipos, datos iniciales, plantillas.
+
+    Son de solo lectura y viajan dentro del programa. Empaquetado, PyInstaller
+    los deja junto al ejecutable (o en la carpeta temporal del modo de un solo
+    fichero); si no, están en la carpeta del proyecto.
+    """
+    if empaquetado():
+        return Path(getattr(sys, "_MEIPASS", Path(sys.executable).parent))
+    return Path(__file__).resolve().parents[2]
+
+
+def _carpeta_datos() -> Path:
+    """Dónde vive lo del usuario: su libro, su configuración, sus copias.
+
+    Esto no puede estar dentro de «Archivos de programa», porque ahí Windows no
+    deja escribir. Empaquetado va a Documentos, que además es donde la persona
+    espera encontrar un Excel suyo. Sin empaquetar, todo sigue en la carpeta del
+    proyecto, como hasta ahora.
+    """
+    if not empaquetado():
+        return _raiz()
+    documentos = Path.home() / "Documents"
+    if not documentos.exists():                      # Windows en otro idioma
+        documentos = Path(os.environ.get("USERPROFILE", Path.home()))
+    carpeta = documentos / NOMBRE_CARPETA
+    carpeta.mkdir(parents=True, exist_ok=True)
+    return carpeta
+
+
+RAIZ = _raiz()                  # recursos, solo lectura
+CARPETA_DATOS = _carpeta_datos()  # lo del usuario, se escribe
 
 
 @dataclass
@@ -26,8 +66,8 @@ class Negocio:
 
 @dataclass
 class Datos:
-    libro: Path = RAIZ / "datos_krv.xlsx"
-    backups: Path = RAIZ / "backups"
+    libro: Path = CARPETA_DATOS / "datos_krv.xlsx"
+    backups: Path = CARPETA_DATOS / "backups"
     copias_a_conservar: int = 30
 
 
@@ -104,7 +144,7 @@ def _leer_texto(ruta: Path) -> str:
 def cargar(ruta: Path | None = None) -> Config:
     """Lee config.toml. Si no existe, devuelve la configuración por defecto."""
     cfg = Config()
-    ruta = ruta or RAIZ / "config.toml"
+    ruta = ruta or CARPETA_DATOS / "config.toml"
     if ruta.exists():
         try:
             datos = tomllib.loads(_leer_texto(ruta))
@@ -132,7 +172,7 @@ NOMBRES_ENV = (".env", ".env.txt")
 def ruta_env() -> Path | None:
     """El fichero de credenciales que se va a usar, si existe alguno."""
     for nombre in NOMBRES_ENV:
-        candidato = RAIZ / nombre
+        candidato = CARPETA_DATOS / nombre
         if candidato.exists():
             return candidato
     return None
@@ -179,7 +219,7 @@ def diagnostico_env() -> str:
     """
     if _ENV_ORIGEN is None:
         return (f"No se encuentra ningún fichero de credenciales. Tiene que "
-                f"llamarse exactamente «.env» y estar en:\n{RAIZ}\n\n"
+                f"llamarse exactamente «.env» y estar en:\n{CARPETA_DATOS}\n\n"
                 "Ojo: el Bloc de notas le añade «.txt» al guardar si no eliges "
                 "«Todos los archivos» en el tipo de archivo. Si el tuyo se llama "
                 "«.env.txt», renómbralo (aunque así también lo lee).")

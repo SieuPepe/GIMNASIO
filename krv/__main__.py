@@ -14,7 +14,7 @@ from .ui.principal import VentanaPrincipal
 
 
 def main() -> int:
-    log.configurar(config.RAIZ / "logs")
+    log.configurar(config.CARPETA_DATOS / "logs")
     registro = log.obtener("app")
 
     # La ventana de aviso tiene que existir antes que el primer error, así que
@@ -32,11 +32,31 @@ def main() -> int:
     app.setStyleSheet(estilo.HOJA)
 
     if not cfg.datos.libro.exists():
-        QMessageBox.critical(
-            None, "Falta el libro de datos",
-            f"No se encuentra {cfg.datos.libro}.\n\n"
-            "Créalo ejecutando:\n    python herramientas/crear_libro.py")
-        return 1
+        # Instalado como programa no hay consola a la que mandar a nadie: si no
+        # hay libro, se ofrece crearlo aquí mismo.
+        respuesta = QMessageBox.question(
+            None, "Todavía no hay libro de datos",
+            f"No se encuentra:\n{cfg.datos.libro}\n\n"
+            "Puedo crearlo ahora con el catálogo de ejercicios, las pruebas de "
+            "valoración, las plantillas y un usuario de ejemplo para que veas "
+            "cómo funciona todo.\n\n¿Lo creo?",
+            QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
+        if respuesta != QMessageBox.Yes:
+            return 1
+        from .datos import puesta_a_punto
+        try:
+            hecho = puesta_a_punto.preparar(cfg, con_demo=True)
+        except Exception as error:
+            registro.exception("No se ha podido crear el libro")
+            QMessageBox.critical(None, "No se ha podido crear el libro", str(error))
+            return 1
+        registro.info("Libro creado: %s", hecho.resumen())
+        QMessageBox.information(
+            None, "Libro creado",
+            f"Listo:\n{hecho.ruta}\n\n{hecho.resumen()}.\n\n"
+            "Dentro tienes al usuario «Prueba Demostración» con programas, "
+            "valoraciones y correos, para ver el programa funcionando. Se puede "
+            "borrar cuando ya no haga falta.")
 
     libro = mod_libro.Libro(cfg.datos.libro, cfg.datos.backups,
                             cfg.datos.copias_a_conservar)

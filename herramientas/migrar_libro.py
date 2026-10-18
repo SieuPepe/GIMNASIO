@@ -19,7 +19,7 @@ def main() -> int:
     argumentos = [a for a in sys.argv[1:] if not a.startswith("--")]
     solo_revisar = "--revisar" in sys.argv
     cfg = config.cargar()
-    log.configurar(config.RAIZ / "logs")
+    log.configurar(config.CARPETA_DATOS / "logs")
     ruta = Path(argumentos[0]) if argumentos else cfg.datos.libro
 
     if not ruta.exists():

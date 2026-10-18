@@ -21,7 +21,7 @@ from krv.servicios.importacion import (                          # noqa: E402
 
 def main() -> int:
     cfg = config.cargar()
-    log.configurar(config.RAIZ / "logs")
+    log.configurar(config.CARPETA_DATOS / "logs")
     if not cfg.datos.libro.exists():
         print(f"No existe el libro {cfg.datos.libro}.")
         print("Créalo primero con: python herramientas/crear_libro.py")

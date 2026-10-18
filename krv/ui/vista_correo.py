@@ -362,7 +362,7 @@ class VistaCorreo(QWidget):
     def importar_respuestas(self) -> None:
         ruta, _ = QFileDialog.getOpenFileName(
             self, "Fichero de respuestas de Google Forms",
-            str(cfg_mod.RAIZ), "Ficheros CSV (*.csv)")
+            str(cfg_mod.CARPETA_DATOS), "Ficheros CSV (*.csv)")
         if not ruta:
             return
         try:

@@ -17,7 +17,7 @@ def main() -> int:
     argumentos = [a for a in sys.argv[1:] if not a.startswith("--")]
     sobreescribir = "--sobreescribir" in sys.argv
     cfg = config.cargar()
-    log.configurar(config.RAIZ / "logs")
+    log.configurar(config.CARPETA_DATOS / "logs")
     ruta = Path(argumentos[0]) if argumentos else cfg.datos.libro
 
     if ruta.exists() and not sobreescribir:

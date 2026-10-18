@@ -241,8 +241,7 @@ class Asistente(QWizard):
                      "ningún correo, empieza por Correo → «Probar la conexión».")
         QMessageBox.information(
             self, "Todo listo",
-            f"Configuración guardada en:\n{config.RAIZ / 'config.toml'}\n"
-            f"{config.RAIZ / '.env'}\n\n"
+            f"Configuración guardada en:\n{config.CARPETA_DATOS}\n\n"
             f"{formularios} formularios anotados.{aviso}")
         super().accept()
 
@@ -251,7 +250,7 @@ class Asistente(QWizard):
 
 def escribir_env(cuenta: str, clave: str, ruta: Path | None = None) -> Path:
     """Guarda las credenciales. Sin marca de orden de bytes, en UTF-8 limpio."""
-    ruta = ruta or config.RAIZ / ".env"
+    ruta = ruta or config.CARPETA_DATOS / ".env"
     contenido = (f"GMAIL_USUARIO={cuenta}\n"
                  f"GMAIL_APP_PASSWORD={clave}\n")
     ruta.write_text(contenido, encoding="utf-8", newline="\n")
@@ -266,7 +265,7 @@ def escribir_config(cfg: config.Config, remitente: str, nombre: str, lema: str,
     Se parte de config.ejemplo.toml para no perder los comentarios que explican
     cada apartado: el fichero lo va a leer una persona, no solo el programa.
     """
-    ruta = ruta or config.RAIZ / "config.toml"
+    ruta = ruta or config.CARPETA_DATOS / "config.toml"
     modelo = config.RAIZ / "config.ejemplo.toml"
     if ruta.exists():
         texto = config._leer_texto(ruta)

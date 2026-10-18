@@ -23,10 +23,10 @@ def _oculta(valor: str) -> str:
 
 def main() -> int:
     cfg = config.cargar()
-    log.configurar(config.RAIZ / "logs")
+    log.configurar(config.CARPETA_DATOS / "logs")
     enviar = "--enviar" in sys.argv
 
-    ruta_env = config.RAIZ / ".env"
+    ruta_env = config.CARPETA_DATOS / ".env"
     print(f"Fichero .env       {'encontrado' if ruta_env.exists() else 'NO EXISTE en ' + str(ruta_env)}")
     if not ruta_env.exists():
         print("\nCópialo de la plantilla y rellénalo:")

@@ -23,7 +23,7 @@ def main() -> int:
     argumentos = [a for a in sys.argv[1:] if not a.startswith("--")]
     actualizar = "--actualizar" in sys.argv
     cfg = config.cargar()
-    log.configurar(config.RAIZ / "logs")
+    log.configurar(config.CARPETA_DATOS / "logs")
 
     ruta_csv = Path(argumentos[0]) if argumentos else POR_DEFECTO
     if not ruta_csv.exists():

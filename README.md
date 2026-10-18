@@ -31,17 +31,22 @@ física, planificación, comunicación por correo y panel de alertas.
 | 6 | Panel de alertas con navegación a cada ficha | Hecha |
 | — | Manual interactivo, ayuda por ventana y recorridos guiados | Hecha |
 | 7 | Módulo de IA | Pendiente |
-| 8 | Instalador con dos modos y asistente de configuración | Hecha |
+| 8 | Instalador .exe con dos modos y asistente de configuración | Hecha |
 | 8.5 | Datos de demostración | Hecha |
 | 9 | App para el móvil | Pendiente |
 
 ## Instalación
 
+Para el ordenador de destino: **`KevinRuizValdenegro_Instalador.exe`**, un solo
+fichero. No necesita que allí haya Python ni nada instalado.
+
+Si en lugar del instalador tienes la carpeta del proyecto:
+
 ```powershell
 powershell -ExecutionPolicy Bypass -File instalar.ps1
 ```
 
-Pregunta qué quieres hacer:
+En los dos casos pregunta qué quieres hacer:
 
 | Modo | Qué hace con tus datos |
 |---|---|
@@ -55,6 +60,20 @@ seguir si el libro está abierto en Excel.
 La primera vez, el programa abre un **asistente** que pregunta la cuenta de
 correo —y la prueba contra Gmail antes de guardarla—, las direcciones de los
 formularios de Google y los datos de la marca. No hace falta nada más.
+
+Instalado, **el programa y los datos van separados**: el programa donde van los
+programas, y el Excel, la configuración, las copias y los PDF en
+`Documentos\Kevin Ruiz Valdenegro`. El desinstalador no toca esa carpeta.
+
+### Fabricar el instalador
+
+```powershell
+powershell -ExecutionPolicy Bypass -File construir.ps1
+```
+
+Pasa las pruebas, empaqueta el programa con PyInstaller (`krv.spec`) y monta el
+`.exe` con Inno Setup (`instalador/krv.iss`). Hace falta [Inno Setup
+6](https://jrsoftware.org/isdl.php) en la máquina donde se construye.
 
 ## Ayuda dentro del programa
 

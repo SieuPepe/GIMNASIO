@@ -302,7 +302,7 @@ class FicheroDeCredenciales(unittest.TestCase):
         from krv.nucleo import config as modulo
         with tempfile.TemporaryDirectory() as carpeta:
             config = importlib.reload(modulo)
-            config.RAIZ = Path(carpeta)
+            config.RAIZ = config.CARPETA_DATOS = Path(carpeta)
             for clave in ("GMAIL_USUARIO", "GMAIL_APP_PASSWORD"):
                 os.environ.pop(clave, None)
             if nombre:

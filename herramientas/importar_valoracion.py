@@ -18,7 +18,7 @@ def main() -> int:
     argumentos = [a for a in sys.argv[1:] if not a.startswith("--")]
     actualizar = "--actualizar" in sys.argv
     cfg = config.cargar()
-    log.configurar(config.RAIZ / "logs")
+    log.configurar(config.CARPETA_DATOS / "logs")
     carpeta = Path(argumentos[0]) if argumentos else config.RAIZ / "datos_iniciales"
 
     if not cfg.datos.libro.exists():

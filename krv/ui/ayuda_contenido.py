@@ -1000,10 +1000,10 @@ portada de este manual se ve lo que el programa está usando ahora mismo.</p>
         clave="instalar",
         titulo="Instalar y actualizar",
         cuerpo="""
-<p>El instalador es <tt>instalar.ps1</tt>, en la carpeta del programa. Se lanza
-con el botón derecho → «Ejecutar con PowerShell», o desde una consola:</p>
-
-<p><tt>powershell -ExecutionPolicy Bypass -File instalar.ps1</tt></p>
+<p>Hay un instalador de verdad: un solo fichero
+<tt>KevinRuizValdenegro_Instalador.exe</tt> que se lleva al ordenador y se abre
+con doble clic. <b>No hace falta que ahí haya Python ni nada instalado</b>: el
+programa viaja entero dentro.</p>
 
 <p>Pregunta qué quieres hacer, y hay dos caminos muy distintos:</p>
 
@@ -1038,7 +1038,27 @@ se quedan como están.</p>
 
 <p>Si algo sale mal, la copia está junto al libro, con el nombre
 <tt>datos_krv_antes_de_instalar_<i>fecha</i>.xlsx</tt>: se recupera copiándola
-encima del original, con el programa cerrado.</p>
+encima del original, con el programa cerrado. Y cuando la instalación desde
+cero rehace el libro, el anterior tampoco se borra: se aparta con el nombre
+<tt>datos_krv_reemplazado_<i>fecha</i>.xlsx</tt>.</p>
+
+<h2>Dónde queda cada cosa</h2>
+<p>Instalado, el programa y tus datos viven separados, y esto conviene saberlo:</p>
+<ul>
+<li><b>El programa</b> va donde van los programas. No hay nada tuyo ahí, así que
+se puede desinstalar y reinstalar sin miedo.</li>
+<li><b>Tus datos</b> van a <tt>Documentos\Kevin Ruiz Valdenegro</tt>: el Excel,
+la configuración, las copias de seguridad, los registros y los PDF que generes.
+Esa carpeta tiene su propio acceso directo en el menú de inicio.</li>
+</ul>
+<p>El desinstalador <b>nunca</b> toca esa carpeta: quitar el programa no borra
+nada tuyo. Y para pasarte a otro ordenador basta con copiarla.</p>
+
+<h2>Si trabajas sobre el código</h2>
+<p>Si en vez del instalador tienes la carpeta del proyecto, el equivalente es
+<tt>instalar.ps1</tt>, que prepara el entorno de Python y hace lo mismo con los
+dos modos. Y <tt>construir.ps1</tt> es el que fabrica el instalador: empaqueta
+el programa y monta el <tt>.exe</tt>.</p>
 """,
     ),
     Pagina(

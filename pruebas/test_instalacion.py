@@ -236,7 +236,7 @@ class AsistenteDePrimeraVez(unittest.TestCase):
         from krv.nucleo import config as modulo
         from krv.ui import asistente
         recargado = importlib.reload(modulo)
-        recargado.RAIZ = self.base
+        recargado.CARPETA_DATOS = self.base
         os.environ.pop("GMAIL_APP_PASSWORD", None)
         importlib.reload(asistente)
         try:

@@ -30,3 +30,5 @@ venv/
 build/
 dist/
 *.spec
+# ...pero el nuestro sí: es parte del proyecto, no un residuo.
+!krv.spec

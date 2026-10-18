@@ -103,8 +103,19 @@ puntual, que se marcan como atendidas. Cada una lleva a su ficha en un clic.
   fechada antes de nada en los dos modos, y solo lo rehace si se elige la
   instalación desde cero y se confirma.
 
-**Pendiente:** empaquetar con PyInstaller para no depender de que haya Python
-instalado. Hoy el instalador lo comprueba y avisa de dónde bajarlo.
+- Empaquetado con PyInstaller (`krv.spec`): el programa viaja entero, sin
+  depender de que haya Python en el ordenador de destino.
+- Instalador de Windows con Inno Setup (`instalador/krv.iss`): un solo `.exe`,
+  instalación por usuario sin pedir administrador, desinstalador, y los dos
+  modos como primera pregunta del asistente.
+- `construir.ps1` fabrica las dos cosas de una vez, pasando antes las pruebas.
+- Separación de recursos y datos: el programa es de solo lectura y lo del
+  usuario vive en `Documentos\Kevin Ruiz Valdenegro`, que es lo que permite
+  instalar en «Archivos de programa» sin pelearse con los permisos. El
+  desinstalador no toca esa carpeta.
+
+**Pendiente:** la primera pasada real en el PC de destino, y firmar el
+ejecutable si Windows SmartScreen da la lata.
 
 ## Fase 8.5 — Datos de demostración
 **Hecha.** La instalación desde cero deja un usuario de ejemplo con todo lo que
