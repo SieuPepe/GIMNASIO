@@ -2,13 +2,13 @@
 # Aquí NO van contraseñas: esas van en .env
 
 [negocio]
-nombre_comercial = "ZEU"
-lema             = "Enjoy your process"
+nombre_comercial = "Kevin Ruiz Valdenegro"
+lema             = "Licenciado en Ciencias del Deporte y la Actividad Física"
 horario_sala     = "Lunes a sábado de 07:00 a 21:00 · Domingo de 07:00 a 14:00"
 contacto         = ""
 
 [datos]
-libro              = "datos_zeu.xlsx"
+libro              = "datos_krv.xlsx"
 backups            = "backups"
 copias_a_conservar = 30
 

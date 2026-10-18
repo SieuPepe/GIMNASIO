@@ -18,15 +18,15 @@ RAIZ = Path(__file__).resolve().parents[2]
 
 @dataclass
 class Negocio:
-    nombre_comercial: str = "ZEU"
-    lema: str = "Enjoy your process"
+    nombre_comercial: str = "Kevin Ruiz Valdenegro"
+    lema: str = "Licenciado en Ciencias del Deporte y la Actividad Física"
     horario_sala: str = ""
     contacto: str = ""
 
 
 @dataclass
 class Datos:
-    libro: Path = RAIZ / "datos_zeu.xlsx"
+    libro: Path = RAIZ / "datos_krv.xlsx"
     backups: Path = RAIZ / "backups"
     copias_a_conservar: int = 30
 

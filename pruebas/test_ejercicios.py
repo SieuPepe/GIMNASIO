@@ -7,11 +7,11 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from zeu.datos import libro as ml                               # noqa: E402
-from zeu.datos.repositorio import Repositorio                   # noqa: E402
-from zeu.nucleo.config import RAIZ                              # noqa: E402
-from zeu.servicios import ejercicios as srv                     # noqa: E402
-from zeu.servicios.importacion import importar_ejercicios       # noqa: E402
+from krv.datos import libro as ml                               # noqa: E402
+from krv.datos.repositorio import Repositorio                   # noqa: E402
+from krv.nucleo.config import RAIZ                              # noqa: E402
+from krv.servicios import ejercicios as srv                     # noqa: E402
+from krv.servicios.importacion import importar_ejercicios       # noqa: E402
 
 CSV = RAIZ / "datos_iniciales" / "ejercicios.csv"
 

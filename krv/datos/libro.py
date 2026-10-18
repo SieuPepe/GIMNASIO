@@ -23,8 +23,8 @@ from .esquema import TABLAS, Columna, Tabla, Tipo
 
 _log = log.obtener("datos.libro")
 
-AZUL = "4A7FA5"
-AZUL_CLARO = "D9E4EC"
+AZUL = "15568F"
+AZUL_CLARO = "D7E3EF"
 GRIS = "F2F2F2"
 
 

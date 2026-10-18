@@ -1,6 +1,6 @@
-# ZEU — Gestión de usuarios y planificación del entrenamiento
+# Kevin Ruiz Valdenegro — Gestión de usuarios y planificación del entrenamiento
 
-*Enjoy your process*
+*Licenciado en Ciencias del Deporte y la Actividad Física*
 
 Aplicación de escritorio para Windows que gestiona los usuarios de un gimnasio,
 su valoración física, y la planificación del entrenamiento en ciclos
@@ -48,9 +48,23 @@ python herramientas/crear_libro.py
 # 4. Cargar todos los datos iniciales: ejercicios, valoración, plantillas y correos
 python herramientas/preparar_datos.py
 
-# 5. Arrancar
-python -m zeu
+# 5. Crear el acceso directo del Escritorio (icono, sin ventana negra)
+powershell -ExecutionPolicy Bypass -File herramientas\crear_acceso_directo.ps1
+
+# 6. Arrancar
+python -m krv
 ```
+
+### Arrancar con un icono
+
+El paso 5 deja en el Escritorio un acceso directo **Kevin Ruiz Valdenegro** con
+el logotipo. Arranca la aplicación con doble clic y **sin ventana de consola
+detrás**, porque usa `pythonw.exe` en lugar de `python.exe`.
+
+La contrapartida de no tener consola es que, si algo falla antes de que se abra
+la ventana, no se ve el error. Para eso está **`ARRANCAR.bat`** en la carpeta
+del proyecto: hace lo mismo pero dejando la ventana abierta con el mensaje. Los
+errores quedan además en `logs/krv.log`.
 
 Las pruebas se lanzan con `python -m unittest discover -s pruebas`.
 
@@ -69,10 +83,22 @@ python herramientas/migrar_libro.py             # lo aplica
 Las herramientas de línea de comandos lo hacen por su cuenta, así que
 `preparar_datos.py` funciona igual sobre un libro antiguo.
 
+### Si vienes de la versión anterior
+
+El fichero de datos se llamaba `datos_zeu.xlsx` y ahora el nombre por defecto es
+`datos_krv.xlsx`. Para renombrarlo sin perder nada, con la aplicación cerrada:
+
+```powershell
+cd $HOME\GIMNASIO; Rename-Item datos_zeu.xlsx datos_krv.xlsx; (Get-Content config.toml) -replace 'datos_zeu\.xlsx','datos_krv.xlsx' | Set-Content config.toml
+```
+
+También puedes dejarlo como está: la ruta sale de `config.toml`, así que la
+aplicación funciona igual con cualquier nombre.
+
 ## Estructura del código
 
 ```
-zeu/
+krv/
 ├── nucleo/     Configuración, credenciales, registro y fechas
 ├── datos/      Esquema del libro, acceso a Excel y repositorio
 ├── servicios/  Lógica de negocio

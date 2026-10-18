@@ -8,15 +8,15 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from zeu.datos import (libro as ml, plantillas, plantillas_correo,      # noqa: E402
+from krv.datos import (libro as ml, plantillas, plantillas_correo,      # noqa: E402
                        semillas)
-from zeu.datos.repositorio import Repositorio                           # noqa: E402
-from zeu.nucleo import config                                           # noqa: E402
-from zeu.nucleo.config import RAIZ                                      # noqa: E402
-from zeu.nucleo.fechas import formatear_largo, plural                   # noqa: E402
-from zeu.servicios import alertas as srv                                # noqa: E402
-from zeu.servicios import programas as srv_programas                    # noqa: E402
-from zeu.servicios.importacion import (importar_ejercicios,             # noqa: E402
+from krv.datos.repositorio import Repositorio                           # noqa: E402
+from krv.nucleo import config                                           # noqa: E402
+from krv.nucleo.config import RAIZ                                      # noqa: E402
+from krv.nucleo.fechas import formatear_largo, plural                   # noqa: E402
+from krv.servicios import alertas as srv                                # noqa: E402
+from krv.servicios import programas as srv_programas                    # noqa: E402
+from krv.servicios.importacion import (importar_ejercicios,             # noqa: E402
                                        importar_valoracion)
 
 

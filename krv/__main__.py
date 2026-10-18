@@ -1,9 +1,10 @@
-"""Punto de entrada de la aplicación ZEU."""
+"""Punto de entrada de la aplicación Kevin Ruiz Valdenegro."""
 
 from __future__ import annotations
 
 import sys
 
+from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QApplication, QMessageBox
 
 from .datos import libro as mod_libro
@@ -19,6 +20,8 @@ def main() -> int:
 
     app = QApplication(sys.argv)
     app.setApplicationName(cfg.negocio.nombre_comercial)
+    if estilo.ICONO.exists():
+        app.setWindowIcon(QIcon(str(estilo.ICONO)))
     app.setStyleSheet(estilo.HOJA)
 
     if not cfg.datos.libro.exists():

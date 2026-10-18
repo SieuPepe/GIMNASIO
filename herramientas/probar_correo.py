@@ -9,8 +9,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from zeu.nucleo import config, log                  # noqa: E402
-from zeu.servicios import correo as srv             # noqa: E402
+from krv.nucleo import config, log                  # noqa: E402
+from krv.servicios import correo as srv             # noqa: E402
 
 
 def _oculta(valor: str) -> str:
@@ -55,7 +55,7 @@ def main() -> int:
     if enviar:
         print("\nEnviándote un correo de prueba a ti mismo…")
         html = srv.envolver(
-            "<p>Si lees esto, el correo de ZEU funciona.</p>"
+            "<p>Si lees esto, el correo de Kevin Ruiz Valdenegro funciona.</p>"
             "<p>Este mensaje lo ha enviado <code>herramientas/probar_correo.py</code>.</p>",
             cfg.negocio.nombre_comercial, cfg.negocio.lema)
         try:

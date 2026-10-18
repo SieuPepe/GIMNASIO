@@ -8,13 +8,13 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from zeu.datos import libro as ml                                  # noqa: E402
-from zeu.datos.repositorio import Repositorio                      # noqa: E402
-from zeu.nucleo import config                                      # noqa: E402
-from zeu.nucleo.config import RAIZ                                 # noqa: E402
-from zeu.servicios import informes                                 # noqa: E402
-from zeu.servicios import valoracion as srv                        # noqa: E402
-from zeu.servicios.importacion import importar_valoracion          # noqa: E402
+from krv.datos import libro as ml                                  # noqa: E402
+from krv.datos.repositorio import Repositorio                      # noqa: E402
+from krv.nucleo import config                                      # noqa: E402
+from krv.nucleo.config import RAIZ                                 # noqa: E402
+from krv.servicios import informes                                 # noqa: E402
+from krv.servicios import valoracion as srv                        # noqa: E402
+from krv.servicios.importacion import importar_valoracion          # noqa: E402
 
 DATOS = RAIZ / "datos_iniciales"
 

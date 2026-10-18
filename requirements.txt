@@ -1,4 +1,4 @@
-# ZEU — dependencias
+# Kevin Ruiz Valdenegro — dependencias
 #
 # Se indican versiones mínimas, no exactas: así pip resuelve la rueda que
 # corresponda a tu versión de Python en Windows. Entre paréntesis, la versión

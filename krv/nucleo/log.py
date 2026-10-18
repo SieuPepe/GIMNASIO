@@ -19,13 +19,13 @@ def configurar(carpeta: Path) -> None:
         datefmt="%Y-%m-%d %H:%M:%S",
     )
     fichero = TimedRotatingFileHandler(
-        carpeta / "zeu.log", when="midnight", backupCount=30, encoding="utf-8"
+        carpeta / "krv.log", when="midnight", backupCount=30, encoding="utf-8"
     )
     fichero.setFormatter(formato)
     consola = logging.StreamHandler()
     consola.setFormatter(formato)
 
-    raiz = logging.getLogger("zeu")
+    raiz = logging.getLogger("krv")
     raiz.setLevel(logging.INFO)
     raiz.addHandler(fichero)
     raiz.addHandler(consola)
@@ -33,4 +33,4 @@ def configurar(carpeta: Path) -> None:
 
 
 def obtener(nombre: str) -> logging.Logger:
-    return logging.getLogger(f"zeu.{nombre}")
+    return logging.getLogger(f"krv.{nombre}")

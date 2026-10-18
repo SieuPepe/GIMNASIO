@@ -24,15 +24,15 @@ SECCION = re.compile(r"\{\{#\s*([a-z_0-9]+)\s*\}\}(.*?)\{\{/\s*\1\s*\}\}",
 
 HOJA_ESTILO = """
 body{font-family:Segoe UI,Helvetica,Arial,sans-serif;color:#333;line-height:1.55;
-     font-size:15px;margin:0;padding:0;background:#F4F6F8}
+     font-size:15px;margin:0;padding:0;background:#EEF1F4}
 .marco{max-width:620px;margin:0 auto;background:#fff}
-.cabecera{background:#356283;color:#fff;padding:20px 26px}
+.cabecera{background:#06305A;color:#fff;padding:20px 26px}
 .cabecera h1{margin:0;font-size:22px;letter-spacing:1px}
-.cabecera p{margin:4px 0 0;font-size:12px;color:#A9C4D6;letter-spacing:2px;
+.cabecera p{margin:4px 0 0;font-size:12px;color:#9FBBD4;letter-spacing:2px;
             text-transform:uppercase}
 .cuerpo{padding:24px 26px}
-.nota{background:#D9E4EC;border-left:4px solid #4A7FA5;padding:12px 16px;margin:18px 0}
-.boton{display:inline-block;background:#4A7FA5;color:#fff !important;text-decoration:none;
+.nota{background:#D7E3EF;border-left:4px solid #15568F;padding:12px 16px;margin:18px 0}
+.boton{display:inline-block;background:#15568F;color:#fff !important;text-decoration:none;
        padding:12px 26px;border-radius:4px;font-weight:bold;margin:18px 0}
 .pie{padding:16px 26px;color:#8A959D;font-size:12px;border-top:1px solid #E2E8EC}
 """

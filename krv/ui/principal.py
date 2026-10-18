@@ -55,20 +55,23 @@ class VentanaPrincipal(QMainWindow):
         caja.setContentsMargins(0, 0, 0, 0)
         caja.setSpacing(0)
 
-        logo = estilo.ruta_logo()
+        logo = estilo.ruta_logo_claro()
         if logo:
             imagen = QLabel()
             imagen.setPixmap(QPixmap(str(logo)).scaledToWidth(
-                170, Qt.SmoothTransformation))
-            imagen.setContentsMargins(18, 18, 18, 8)
+                185, Qt.SmoothTransformation))
+            imagen.setContentsMargins(16, 20, 16, 14)
+            imagen.setToolTip(self.cfg.negocio.nombre_comercial)
             caja.addWidget(imagen)
         else:
             marca = QLabel(self.cfg.negocio.nombre_comercial)
             marca.setObjectName("marca")
+            marca.setWordWrap(True)
             caja.addWidget(marca)
-        lema = QLabel(self.cfg.negocio.lema)
-        lema.setObjectName("lema")
-        caja.addWidget(lema)
+            lema = QLabel(self.cfg.negocio.lema)
+            lema.setObjectName("lema")
+            lema.setWordWrap(True)
+            caja.addWidget(lema)
 
         self.paginas = QStackedWidget()
         self.vista_inicio = VistaInicio(self.repo, self.cfg, self.ir_a, self.guardar)

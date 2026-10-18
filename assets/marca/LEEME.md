@@ -1,14 +1,18 @@
 # Ficheros de marca
 
-Guarda aquí los ficheros del logotipo de ZEU:
+Logotipo de **Kevin Ruiz Valdenegro**. Ver [docs/12-marca.md](../../docs/12-marca.md).
 
-- `zeu-logo.png` — logo completo con el lema, **fondo transparente**, ≥ 1200 px
-  de ancho
-- `zeu-logo.svg` — versión vectorial, si existe
-- `zeu-iso.png` — solo el recuadro "ZEU!", para cabeceras estrechas y para el
-  icono del ejecutable
+| Fichero | Qué es |
+|---|---|
+| `kevin-logo.png` | Original en su color, fondo transparente. **Es la fuente de todo lo demás** |
+| `kevin-logo-fondo-blanco.png` | Versión con fondo blanco sólido |
+| `kevin-logo-blanco.png` | Generado: el logotipo en blanco, para fondos oscuros |
+| `kevin-iso.png` | Generado: solo el símbolo (K + corredor) |
+| `kevin-iso-blanco.png` | Generado: el símbolo en blanco |
+| `kevin.ico` | Generado: icono de Windows, de 16 a 256 px |
 
-El `.gitignore` del proyecto excluye imágenes y PDF generados, pero **esta carpeta
-está exceptuada**: los ficheros de marca sí se versionan.
+Si cambia el logotipo, sustituye `kevin-logo.png` y
+`kevin-logo-fondo-blanco.png` y vuelve a generar el resto con
+`herramientas/generar_marca.py`.
 
-Ver [docs/12-marca.md](../../docs/12-marca.md).
+Color de marca: **`#06305A`**.

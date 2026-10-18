@@ -31,8 +31,8 @@ from . import valoracion as srv
 # como se codifica el mismo dato en dos momentos. Ambos pasan el 3:1 sobre papel
 # blanco; además van con trazo distinto y con la tabla comparativa al lado, que
 # es lo que hace que la identidad no dependa solo del color.
-AZUL_ANTES = "#5E8CAE"
-AZUL_AHORA = "#356283"
+AZUL_ANTES = "#2E6FA8"
+AZUL_AHORA = "#06305A"
 
 ETIQUETA_CAPACIDAD = {
     "COMPOSICION": "Composición\ncorporal", "FUERZA": "Fuerza",
@@ -40,6 +40,23 @@ ETIQUETA_CAPACIDAD = {
     "RESISTENCIA": "Resistencia", "MOVILIDAD": "Movilidad",
     "EQUILIBRIO": "Equilibrio",
 }
+
+
+def _lado_marca(cfg: Config, estilos: dict, derecha: str) -> list:
+    """Logotipo a la izquierda y el dato que toque a la derecha.
+
+    El logotipo ya lleva el nombre y la titulación, así que cuando está no se
+    repiten al lado: solo se escriben si no hay fichero de logotipo.
+    """
+    logo = estilo.ruta_logo()
+    if logo and logo.exists():
+        izquierda = Image(str(logo), width=42 * mm, height=20 * mm, kind="proportional")
+    else:
+        izquierda = Paragraph(
+            f"<b>{cfg.negocio.nombre_comercial}</b><br/>"
+            f"<font size=9 color='#6C7A85'>{cfg.negocio.lema}</font>",
+            estilos["titulo"])
+    return [izquierda, Paragraph(derecha, estilos["subtitulo"])]
 
 
 def _estilos() -> dict:
@@ -181,16 +198,10 @@ def generar(repo: Repositorio, cfg: Config, id_valoracion: str,
     partes = []
 
     # -- cabecera --
-    logo = estilo.ruta_logo()
     protocolo = repo.obtener("T_PROTOCOLOS", resumen.valoracion.get("ID_Protocolo")) or {}
-    encabezado = [[
-        Paragraph(f"<b>{cfg.negocio.nombre_comercial}</b>", estilos["titulo"]),
-        Paragraph(f"{cfg.negocio.lema}<br/>{formatear(resumen.valoracion.get('Fecha'))}",
-                  estilos["subtitulo"]),
-    ]]
-    if logo and logo.exists():
-        encabezado[0][0] = Image(str(logo), width=34 * mm, height=16 * mm, kind="proportional")
-    tabla_encabezado = Table(encabezado, colWidths=[100 * mm, 74 * mm])
+    tabla_encabezado = Table(
+        [_lado_marca(cfg, estilos, formatear(resumen.valoracion.get("Fecha")))],
+        colWidths=[100 * mm, 74 * mm])
     tabla_encabezado.setStyle(TableStyle([("ALIGN", (1, 0), (1, 0), "RIGHT"),
                                           ("VALIGN", (0, 0), (-1, -1), "MIDDLE")]))
     partes += [tabla_encabezado, Spacer(1, 6)]
@@ -346,12 +357,7 @@ def generar(repo: Repositorio, cfg: Config, id_valoracion: str,
 # --- Programa de entrenamiento ----------------------------------------------
 
 def _cabecera_marca(cfg: Config, estilos: dict, derecha: str) -> Table:
-    logo = estilo.ruta_logo()
-    izquierda = (Image(str(logo), width=34 * mm, height=16 * mm, kind="proportional")
-                 if logo and logo.exists()
-                 else Paragraph(f"<b>{cfg.negocio.nombre_comercial}</b>", estilos["titulo"]))
-    tabla = Table([[izquierda, Paragraph(derecha, estilos["subtitulo"])]],
-                  colWidths=[100 * mm, 74 * mm])
+    tabla = Table([_lado_marca(cfg, estilos, derecha)], colWidths=[100 * mm, 74 * mm])
     tabla.setStyle(TableStyle([("ALIGN", (1, 0), (1, 0), "RIGHT"),
                                ("VALIGN", (0, 0), (-1, -1), "MIDDLE")]))
     return tabla
@@ -388,8 +394,8 @@ def generar_programa(repo: Repositorio, cfg: Config, id_asignacion: str,
         author=cfg.negocio.nombre_comercial)
     partes = [
         _cabecera_marca(cfg, estilos,
-                        f"{cfg.negocio.lema}<br/>{formatear(asignacion.get('F_Inicio'))} "
-                        f"– {formatear(asignacion.get('F_Fin_Prevista'))}"),
+                        f"{formatear(asignacion.get('F_Inicio'))} – "
+                        f"{formatear(asignacion.get('F_Fin_Prevista'))}"),
         Spacer(1, 4),
         Paragraph("Programa de entrenamiento", estilos["titulo"]),
         Paragraph(f"{nombre} · {macro.get('Nombre', '')}"

@@ -11,11 +11,11 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from zeu.datos import libro as ml, semillas                       # noqa: E402
-from zeu.datos.esquema import TABLAS, Tipo, tabla                  # noqa: E402
-from zeu.datos.repositorio import ErrorValidacion, Repositorio     # noqa: E402
-from zeu.nucleo.fechas import a_fecha, edad                        # noqa: E402
-from zeu.servicios import usuarios as srv                          # noqa: E402
+from krv.datos import libro as ml, semillas                       # noqa: E402
+from krv.datos.esquema import TABLAS, Tipo, tabla                  # noqa: E402
+from krv.datos.repositorio import ErrorValidacion, Repositorio     # noqa: E402
+from krv.nucleo.fechas import a_fecha, edad                        # noqa: E402
+from krv.servicios import usuarios as srv                          # noqa: E402
 
 
 class Esquema(unittest.TestCase):

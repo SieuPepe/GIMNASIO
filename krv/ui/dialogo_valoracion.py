@@ -137,7 +137,7 @@ class FilaPrueba(QWidget):
         if self.prueba.get("Calculada_SN"):
             campo.setReadOnly(True)
             campo.setButtonSymbols(QDoubleSpinBox.NoButtons)
-            campo.setStyleSheet("background: #F2F5F7; color: #4A7FA5;")
+            campo.setStyleSheet("background: #F2F5F7; color: #15568F;")
             campo.setToolTip("Se calcula a partir de otras pruebas")
         else:
             campo.valueChanged.connect(self.al_cambiar)

@@ -1,4 +1,4 @@
-"""Paleta y hoja de estilos de ZEU. Ver docs/12-marca.md"""
+"""Paleta y hoja de estilos de Kevin Ruiz Valdenegro. Ver docs/12-marca.md"""
 
 from __future__ import annotations
 
@@ -6,11 +6,14 @@ from pathlib import Path
 
 from ..nucleo.config import RAIZ
 
-AZUL = "#4A7FA5"
-AZUL_OSCURO = "#356283"
-AZUL_CLARO = "#D9E4EC"
-GRIS_FONDO = "#E2E2E2"
-GRIS_TEXTO = "#333333"
+# Tomados del logotipo: el marino es el del dibujo, y los demás son pasos del
+# mismo tono elegidos para que cada uso llegue al contraste que necesita.
+AZUL = "#15568F"
+AZUL_OSCURO = "#06305A"
+AZUL_CLARO = "#D7E3EF"
+GRIS_FONDO = "#EEF1F4"
+AZUL_MEDIO = "#2E6FA8"
+GRIS_TEXTO = "#2B2B2B"
 BLANCO = "#FFFFFF"
 
 BUENO = "#5B9279"
@@ -18,15 +21,26 @@ MEDIO = "#C9A227"
 BAJO = "#C1663F"
 ALERTA = "#A33B3B"
 
-LOGO = RAIZ / "assets" / "marca" / "zeu-logo.png"
-ISO = RAIZ / "assets" / "marca" / "zeu-iso.png"
+MARCA = RAIZ / "assets" / "marca"
+LOGO = MARCA / "kevin-logo.png"              # marino, para papel y fondos claros
+LOGO_BLANCO = MARCA / "kevin-logo-blanco.png"  # para la barra lateral oscura
+ISO = MARCA / "kevin-iso.png"
+ICONO = MARCA / "kevin.ico"
 
 
 def ruta_logo() -> Path | None:
-    for candidato in (ISO, LOGO):
+    """El logotipo en su color, para documentos y fondos claros."""
+    for candidato in (LOGO, ISO):
         if candidato.exists():
             return candidato
     return None
+
+
+def ruta_logo_claro() -> Path | None:
+    """La versión en blanco: sobre la barra lateral, el marino no se vería."""
+    if LOGO_BLANCO.exists():
+        return LOGO_BLANCO
+    return ruta_logo()
 
 
 HOJA = f"""
@@ -39,13 +53,13 @@ QMainWindow, QDialog {{ background: {BLANCO}; }}
 
 #lateral {{ background: {AZUL_OSCURO}; }}
 #lateral QPushButton {{
-    background: transparent; border: none; color: #DCE7EF;
+    background: transparent; border: none; color: #CBDAE8;
     text-align: left; padding: 11px 18px; font-size: 14px;
 }}
 #lateral QPushButton:hover {{ background: {AZUL}; color: white; }}
 #lateral QPushButton:checked {{ background: {AZUL}; color: white; font-weight: bold; }}
-#marca {{ color: white; font-size: 26px; font-weight: bold; padding: 18px 18px 0 18px; }}
-#lema {{ color: #A9C4D6; font-size: 11px; padding: 0 18px 18px 18px; }}
+#marca {{ color: white; font-size: 19px; font-weight: bold; padding: 18px 16px 0 16px; }}
+#lema {{ color: #9FBBD4; font-size: 11px; padding: 0 18px 18px 18px; }}
 
 #titulo {{ font-size: 21px; font-weight: bold; color: {AZUL_OSCURO}; }}
 #subtitulo {{ color: #6C7A85; }}

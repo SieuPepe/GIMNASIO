@@ -11,10 +11,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from zeu.datos.libro import abrir                          # noqa: E402
-from zeu.datos.repositorio import Repositorio              # noqa: E402
-from zeu.nucleo import config, log                         # noqa: E402
-from zeu.servicios.importacion import importar_ejercicios  # noqa: E402
+from krv.datos.libro import abrir                          # noqa: E402
+from krv.datos.repositorio import Repositorio              # noqa: E402
+from krv.nucleo import config, log                         # noqa: E402
+from krv.servicios.importacion import importar_ejercicios  # noqa: E402
 
 POR_DEFECTO = config.RAIZ / "datos_iniciales" / "ejercicios.csv"
 

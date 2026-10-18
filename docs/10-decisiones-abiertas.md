@@ -5,7 +5,7 @@
 | Punto | Decisión |
 |---|---|
 | Hardware de referencia | i5-1235U · 16 GB · sin GPU → IA local troceada + generador por reglas. El equipo final será otro, aún sin definir |
-| Marca | Nombre comercial **ZEU**, lema *Enjoy your process*. Paleta y aplicación en [12](12-marca.md) |
+| Marca | Nombre comercial **Kevin Ruiz Valdenegro**, lema *Licenciado en Ciencias del Deporte y la Actividad Física*. Paleta y aplicación en [12](12-marca.md) |
 | Horario de sala | Lunes a sábado 07:00-21:00 · Domingo 07:00-14:00 |
 | Pruebas añadidas | *Sit-to-Stand* / *Chair Stand* en fuerza y escalón de Harvard en resistencia, ambas con sus tablas |
 | Correo | Google Forms confirmado. Cuenta de Gmail personal. Se creará proyecto en Google Cloud con cuenta de servicio |
@@ -70,18 +70,12 @@ cuando queramos. Candidatos: `qwen2.5:7b-instruct`, `llama3.1:8b-instruct`,
 `mistral:7b-instruct`. La pantalla de diagnóstico de la aplicación dará velocidad
 y porcentaje de respuestas válidas de cada uno con los mismos casos de prueba.
 
-### 5. Ficheros de marca y datos de contacto
+### 5. Datos de contacto
 
-Falta subir el logotipo al repositorio, en `assets/marca/` (ver
-[12](12-marca.md)). Se necesita una versión con **fondo transparente**: el fichero
-recibido tiene fondo gris sólido y en una cabecera sobre papel blanco recortaría
-un rectángulo.
-
-También faltan los datos de contacto que van en el pie de informes y correos:
-dirección, teléfono, correo y web.
-
-Y confirmar la **paleta**: los hex del documento 12 están tomados a ojo del
-logotipo. Si existe el fichero de diseño con los valores exactos, mejor.
+El logotipo ya está en `assets/marca/` y la paleta sale de él
+(ver [12](12-marca.md)). Faltan los datos de contacto que van en el pie de los
+informes y en la firma de los correos: teléfono, correo y dirección si procede.
+Se ponen en `config.toml`, clave `contacto` de `[negocio]`.
 
 ### 6. Datos existentes
 

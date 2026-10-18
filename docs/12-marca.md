@@ -1,80 +1,85 @@
 # 12 — Identidad de marca
 
-## Nombre y lema
+## Nombre
 
-- **Nombre comercial:** ZEU
-- **Lema:** *ENJOY YOUR PROCESS*
+**Kevin Ruiz Valdenegro** — *Licenciado en Ciencias del Deporte y la Actividad
+Física*
 
-El lema no es decorativo para este proyecto: "disfruta tu proceso" es exactamente
-lo que hacen el informe de valoración comparativo y el cuestionario de renovación
-— poner el foco en el recorrido, no solo en el resultado. Merece aparecer en el
-pie de los informes y en la firma de los correos.
+El nombre comercial es el del propio entrenador, así que en los correos y en los
+informes la firma y la marca son la misma cosa. La línea de titulación hace de
+subtítulo donde antes iba un lema: aparece bajo el nombre en la cabecera de los
+correos y en el pie de los PDF.
 
-## Aplicación
+Ambos se configuran en `config.toml`, sección `[negocio]`, de modo que cambiarlos
+no exige tocar código.
 
-| Soporte | Uso de la marca |
+## Logotipo
+
+El símbolo es una **K** de la que arranca un corredor en trazo continuo, con el
+nombre debajo y la titulación como línea de base.
+
+| Fichero | Para qué |
 |---|---|
-| Ventana de la aplicación | Logo en la barra superior y en la pantalla de inicio. Título de ventana: *ZEU — Gestión de entrenamiento* |
-| Informe de valoración (PDF) | Logo en la portada; logo pequeño y lema en el pie de cada página |
-| Programa de entrenamiento (PDF) | Cabecera con logo, nombre del usuario y fase del ciclo |
-| Correos | Logo en la cabecera del HTML y firma con lema y datos de contacto |
-| Icono del ejecutable | Versión cuadrada del logo (`.ico`) |
+| `assets/marca/kevin-logo.png` | Logotipo completo en su color, **fondo transparente**. Cabecera de los PDF |
+| `assets/marca/kevin-logo-blanco.png` | El mismo, en blanco. Barra lateral de la aplicación |
+| `assets/marca/kevin-logo-fondo-blanco.png` | Versión con fondo blanco sólido, de respaldo |
+| `assets/marca/kevin-iso.png` | Solo el símbolo (K + corredor), para espacios estrechos |
+| `assets/marca/kevin-iso-blanco.png` | El símbolo en blanco |
+| `assets/marca/kevin.ico` | Icono de Windows, de 16 a 256 px. Ventana y acceso directo |
+
+Las versiones en blanco y el icono **se generan a partir del original**; si algún
+día cambia el logotipo, hay que regenerarlas.
+
+> Por qué hacen falta dos colores: el logotipo es marino y la barra lateral de la
+> aplicación también. Puesto ahí en su color, no se vería. Por eso la interfaz
+> usa `ruta_logo_claro()` y los documentos `ruta_logo()`.
 
 ## Paleta
 
-Tomada del logotipo. **Los valores son aproximados**: en cuanto haya un fichero
-vectorial o los hex exactos, se sustituyen aquí y se propagan solos, porque todos
-los generadores (PDF, HTML de correo, interfaz) leen los colores de un único
-módulo.
+Tomada del logotipo. El marino es el color exacto del dibujo; el resto son pasos
+del mismo tono, elegidos para que cada uso llegue al contraste que necesita sobre
+blanco.
 
-| Uso | Color | Hex aproximado |
-|---|---|---|
-| Principal (azul del logotipo) | Azul acero | `#4A7FA5` |
-| Principal oscuro (títulos, texto destacado) | Azul profundo | `#356283` |
-| Claro (fondos de tabla, bandas) | Azul muy claro | `#D9E4EC` |
-| Fondo neutro | Gris claro del logotipo | `#E2E2E2` |
-| Texto | Gris oscuro | `#333333` |
+| Uso | Color | Hex | Contraste sobre blanco |
+|---|---|---|---|
+| Marino: logotipo, barra lateral, títulos | Azul marino | `#06305A` | 13,3 : 1 |
+| Principal: botones, cabeceras de tabla | Azul | `#15568F` | 7,6 : 1 |
+| Intermedio: estados y serie anterior del radar | Azul medio | `#2E6FA8` | 5,3 : 1 |
+| Bandas y recuadros destacados | Azul claro | `#D7E3EF` | — |
+| Fondo neutro | Gris claro | `#EEF1F4` | — |
+| Texto | Gris oscuro | `#2B2B2B` | 14,5 : 1 |
 
-**Colores funcionales** para el radar de valoración y las alertas, elegidos para
-convivir con el azul de marca sin competir con él:
+**Colores funcionales**, para el radar de la valoración y las alertas del panel.
+Se reservan para indicar estado y no se usan nunca como color de marca:
 
 | Significado | Hex |
 |---|---|
-| Bueno / por encima de la media | `#5B9279` |
-| Medio / en la media | `#C9A227` |
-| Bajo / atención | `#C1663F` |
-| Alerta / bloqueo (dolor, cribado) | `#A33B3B` |
+| Bueno · por encima de la media | `#5B9279` |
+| Medio · en la media | `#C9A227` |
+| Bajo · atención | `#C1663F` |
+| Alerta · bloqueo (dolor, cribado, consentimiento) | `#A33B3B` |
 
-En el radar comparativo: la valoración anterior en gris (`#9AA5AD`) y la actual en
-el azul de marca. La mejora se ve sola, sin necesidad de explicarla.
+### El radar comparativo
 
-## Ficheros
+Las dos series del informe de valoración son **el mismo tono en dos pasos**,
+porque no son dos categorías distintas sino el mismo dato en dos momentos:
+la anterior en azul medio `#2E6FA8` con trazo discontinuo, la actual en marino
+`#06305A` con trazo continuo. Ambas pasan el 3:1 sobre papel blanco, llevan el
+valor escrito en cada eje y la tabla al lado, de modo que distinguirlas nunca
+depende solo del color.
 
-Se esperan en `assets/marca/`:
+## Dónde aparece la marca
 
-| Fichero | Para qué | Estado |
-|---|---|---|
-| `zeu-logo.png` | Logo completo con lema, fondo transparente, ≥ 1200 px de ancho | **Pendiente** |
-| `zeu-logo.svg` | Versión vectorial, si existe | Deseable |
-| `zeu-iso.png` | Solo el recuadro "ZEU!", para cabeceras estrechas e icono | Deseable |
-| `zeu.ico` | Icono del ejecutable | Se genera a partir del anterior |
+| Soporte | Qué se ve |
+|---|---|
+| Barra lateral | Logotipo en blanco sobre marino |
+| Ventana y acceso directo | `kevin.ico` |
+| Informe de valoración | Logotipo en la cabecera; nombre y titulación en el pie de cada página |
+| Hoja de entrenamiento | Igual |
+| Correos | Cabecera marina con el nombre y la titulación debajo; botones en azul |
 
-El logo se ha recibido por conversación, pero **no está en el repositorio**: hay
-que guardar el fichero en esa carpeta.
+## Pendiente
 
-Nota práctica: el logo recibido tiene fondo gris sólido. Para las cabeceras de los
-PDF y de los correos hace falta la versión con **fondo transparente**, o el gris
-recortará un rectángulo sobre el papel blanco. Si no hay original disponible, se
-puede recortar el fondo, pero saldrá mejor desde el fichero de diseño.
-
-## Datos de contacto
-
-Pendientes: dirección, teléfono, correo de contacto y web, si la hay. Aparecen en
-el pie de los informes y en la firma de los correos.
-
-## Horario de sala
-
-Configurado en `config.toml` (`horario_sala`), y usado en el correo de
-confirmación de cita:
-
-> **Lunes a sábado de 07:00 a 21:00 · Domingo de 07:00 a 14:00**
+Los **datos de contacto** que van en el pie de los informes y en la firma de los
+correos: teléfono, correo y dirección, si procede. Se configuran en
+`config.toml`, clave `contacto`, dentro de `[negocio]`.

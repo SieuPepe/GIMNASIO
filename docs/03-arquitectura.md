@@ -98,13 +98,13 @@ Dos ficheros junto al ejecutable:
 
 ```toml
 [negocio]
-nombre_comercial = "ZEU"
-lema             = "Enjoy your process"
+nombre_comercial = "Kevin Ruiz Valdenegro"
+lema             = "Licenciado en Ciencias del Deporte y la Actividad Física"
 horario_sala     = "Lunes a sábado de 07:00 a 21:00 · Domingo de 07:00 a 14:00"
 
 [datos]
-libro   = "C:/ZEU/datos_gimnasio.xlsx"
-backups = "C:/ZEU/backups"
+libro   = "C:/Kevin Ruiz Valdenegro/datos_gimnasio.xlsx"
+backups = "C:/Kevin Ruiz Valdenegro/backups"
 copias_a_conservar = 30
 
 [correo]

@@ -8,9 +8,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from zeu.datos import libro as mod_libro       # noqa: E402
-from zeu.datos import semillas                 # noqa: E402
-from zeu.nucleo import config, log             # noqa: E402
+from krv.datos import libro as mod_libro       # noqa: E402
+from krv.datos import semillas                 # noqa: E402
+from krv.nucleo import config, log             # noqa: E402
 
 
 def main() -> int:
