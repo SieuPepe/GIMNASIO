@@ -6,6 +6,7 @@ siguiente plan. Ver docs/08, apartado «Aprovechamiento de las respuestas».
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 from datetime import date, datetime
 from pathlib import Path
@@ -42,7 +43,11 @@ CLAVES = {
 }
 COLUMNAS_ID = {"ID_Usuario": ("id_usuario", "idusuario", "usuario_id"),
                "ID_Envio": ("id_envio", "idenvio", "envio_id")}
-AFIRMATIVOS = ("si", "sí", "autorizo", "si, llamame", "si, por correo", "true", "1")
+# Se mira la PRIMERA palabra, no la frase entera: así «Sí», «Sí, quiero» y
+# «Sí, llámame» valen igual, y «Sin problema» o «Todavía no» no cuelan.
+AFIRMATIVOS = ("si", "autorizo", "acepto", "true", "1")
+NEGATIVOS = ("no", "ninguna", "ninguno", "nada", "nunca")
+MANTIENE = ("mantengo", "mantener", "igual", "mismo", "sigue", "no")
 
 
 def _codigo_de(cabecera: str) -> str | None:
@@ -61,8 +66,29 @@ def _columna_id(cabecera: str) -> str | None:
     return None
 
 
+def _palabras(valor) -> list[str]:
+    """Las palabras del valor, sin tildes ni signos."""
+    limpio = srv_ejercicios.sin_tildes(valor)
+    return [p for p in re.split(r"[^a-z0-9]+", limpio) if p]
+
+
 def _es_afirmativo(valor) -> bool:
-    return srv_ejercicios.sin_tildes(valor).strip() in AFIRMATIVOS
+    palabras = _palabras(valor)
+    return bool(palabras) and palabras[0] in AFIRMATIVOS
+
+
+def _es_negativo(valor) -> bool:
+    """«No», «Ninguna», «Nada»… cualquier forma de decir que no hay nada."""
+    palabras = _palabras(valor)
+    return bool(palabras) and palabras[0] in NEGATIVOS
+
+
+def _quiere_cambiar(valor) -> bool:
+    """Detecta «lo cambio», «quiero cambiarlo»… pero no «lo mantengo»."""
+    palabras = _palabras(valor)
+    if not palabras or palabras[0] in MANTIENE:
+        return False
+    return any(p.startswith("cambi") or p.startswith("otro") for p in palabras)
 
 
 @dataclass
@@ -177,12 +203,11 @@ def _acciones(repo: Repositorio, cfg: Config, id_usuario: str, id_envio: str,
             hechas.append(f"{nombre}: consentimiento registrado con fecha "
                           f"{fecha:%d/%m/%Y}")
 
-    if "MOLESTIAS" in valores and not srv_ejercicios.sin_tildes(
-            valores["MOLESTIAS"]).startswith("no"):
+    if "MOLESTIAS" in valores and not _es_negativo(valores["MOLESTIAS"]):
         hechas.append(f"{nombre}: declara molestias «{valores['MOLESTIAS'][:60]}». "
                       "Revisar antes del siguiente ciclo")
 
-    if "OBJETIVO" in valores and "cambio" in srv_ejercicios.sin_tildes(valores["OBJETIVO"]):
+    if "OBJETIVO" in valores and _quiere_cambiar(valores["OBJETIVO"]):
         anterior = next(iter(repo.listar(
             "T_OBJETIVOS", lambda o: (o.get("ID_Usuario") == id_usuario
                                       and o.get("Estado") == "ACTIVO"))), None)

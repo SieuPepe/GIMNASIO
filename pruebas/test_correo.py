@@ -409,6 +409,34 @@ class Respuestas(Base):
             escritor.writerows(filas)
         return ruta
 
+    def test_interpreta_las_variantes_de_un_si(self):
+        """«Sí, quiero» tiene que valer igual que «Sí»; «Sin…» no."""
+        for valor in ("Sí", "Si", "Sí, quiero", "Sí, llámame", "Autorizo"):
+            self.assertTrue(srv_respuestas._es_afirmativo(valor), valor)
+        for valor in ("No", "Todavía no", "Sin problema", ""):
+            self.assertFalse(srv_respuestas._es_afirmativo(valor), valor)
+
+    def test_interpreta_las_variantes_de_un_no(self):
+        """«Ninguna» significa que no hay molestias, igual que «No»."""
+        for valor in ("No", "Ninguna", "Nada", "No he tenido"):
+            self.assertTrue(srv_respuestas._es_negativo(valor), valor)
+        for valor in ("Leves", "Sí, en el hombro"):
+            self.assertFalse(srv_respuestas._es_negativo(valor), valor)
+
+    def test_distingue_mantener_de_cambiar_el_objetivo(self):
+        for valor in ("Lo cambio", "Quiero cambiarlo", "Ahora busco otro objetivo"):
+            self.assertTrue(srv_respuestas._quiere_cambiar(valor), valor)
+        for valor in ("Lo mantengo", "Sigo igual", "El mismo"):
+            self.assertFalse(srv_respuestas._quiere_cambiar(valor), valor)
+
+    def test_ninguna_molestia_no_dispara_una_alerta(self):
+        identificador = self._usuario()
+        ruta = self._csv([["21/12/2026", identificador, "", "Ninguna"]],
+                         ["Marca temporal", "ID_Usuario", "ID_Envio",
+                          "¿Has tenido molestias o dolores?"])
+        resultado = srv_respuestas.importar(self.repo, self.cfg, ruta)
+        self.assertFalse(any("molestias" in a for a in resultado.acciones))
+
     def test_reconoce_las_preguntas_por_su_texto(self):
         self.assertEqual(
             srv_respuestas._codigo_de("¿Cómo te sientes físicamente ahora mismo?"),
@@ -471,6 +499,14 @@ class Respuestas(Base):
                                       and o.get("Estado") == "ACTIVO"))
         self.assertEqual(len(activos), 1)
         self.assertIn("fuerza", activos[0]["Descripcion"])
+
+    def test_un_si_con_coletilla_tambien_pide_cita(self):
+        identificador = self._usuario()
+        ruta = self._csv([["21/12/2026", identificador, "", "Sí, llámame"]],
+                         ["Marca temporal", "ID_Usuario", "ID_Envio",
+                          "¿Quieres que hablemos para preparar tu próximo ciclo?"])
+        resultado = srv_respuestas.importar(self.repo, self.cfg, ruta)
+        self.assertTrue(any("hablar contigo" in a for a in resultado.acciones))
 
     def test_responder_genera_el_correo_de_agradecimiento(self):
         identificador = self._usuario()
