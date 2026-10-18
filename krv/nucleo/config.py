@@ -212,6 +212,22 @@ def _leer_texto(ruta: Path) -> str:
         return ruta.read_text(encoding="utf-16")
 
 
+def _hacer_absolutas(cfg: "Config") -> None:
+    """Una ruta relativa de config.toml se cuenta desde la carpeta de datos.
+
+    El fichero de ejemplo trae «datos_krv.xlsx» a secas, que se lee mucho mejor
+    que una ruta entera. Pero una ruta relativa la resuelve Python desde el
+    directorio en el que se haya arrancado el programa, y eso solo coincide con
+    la carpeta de datos cuando se ejecuta desde el código. Instalado, el
+    programa arranca desde donde arranque el acceso directo y entonces no
+    encuentra su propio libro.
+    """
+    for seccion in (cfg.negocio, cfg.datos, cfg.correo, cfg.ia):
+        for nombre, valor in list(vars(seccion).items()):
+            if isinstance(valor, Path) and not valor.is_absolute():
+                setattr(seccion, nombre, CARPETA_DATOS / valor)
+
+
 def cargar(ruta: Path | None = None) -> Config:
     """Lee config.toml. Si no existe, devuelve la configuración por defecto."""
     cfg = Config()
@@ -225,6 +241,7 @@ def cargar(ruta: Path | None = None) -> Config:
             if seccion in datos:
                 _aplicar(getattr(cfg, seccion), datos[seccion])
         cfg.ruta_config = ruta
+    _hacer_absolutas(cfg)
     return cfg
 
 

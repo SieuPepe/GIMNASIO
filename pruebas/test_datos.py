@@ -286,6 +286,69 @@ if __name__ == "__main__":
     unittest.main()
 
 
+class RutasDeLaConfiguracion(unittest.TestCase):
+    """Una ruta relativa en config.toml tiene que contarse desde los datos.
+
+    El fichero de ejemplo trae «datos_krv.xlsx» a secas, que se lee mucho
+    mejor. Pero Python resuelve una ruta relativa desde el directorio en el que
+    se arrancó el programa, y eso solo coincide con la carpeta de datos cuando
+    se ejecuta desde el código. Instalado, el programa arrancaba desde la
+    carpeta del ejecutable y decía que no encontraba su propio libro.
+    """
+
+    def _cargar(self, contenido):
+        import importlib
+        from krv.nucleo import config as modulo
+        with tempfile.TemporaryDirectory() as carpeta:
+            config = importlib.reload(modulo)
+            config.CARPETA_DATOS = Path(carpeta)
+            ruta = Path(carpeta) / "config.toml"
+            ruta.write_text(contenido, encoding="utf-8")
+            try:
+                return config.cargar(ruta), Path(carpeta)
+            finally:
+                importlib.reload(modulo)
+
+    def test_una_ruta_relativa_cuelga_de_la_carpeta_de_datos(self):
+        cfg, carpeta = self._cargar(
+            '[datos]\nlibro = "datos_krv.xlsx"\nbackups = "backups"\n')
+        self.assertEqual(cfg.datos.libro, carpeta / "datos_krv.xlsx")
+        self.assertEqual(cfg.datos.backups, carpeta / "backups")
+
+    def test_una_ruta_absoluta_se_respeta(self):
+        cfg, _ = self._cargar('[datos]\nlibro = "/tmp/otra/parte/d.xlsx"\n')
+        self.assertEqual(str(cfg.datos.libro), "/tmp/otra/parte/d.xlsx")
+
+    def test_todas_las_rutas_acaban_absolutas(self):
+        # Da igual qué ruta se configure: ninguna puede quedar a merced de
+        # desde dónde se haya arrancado el programa.
+        cfg, _ = self._cargar(
+            '[datos]\nlibro = "sub/carpeta/d.xlsx"\nbackups = "copias"\n')
+        for seccion in (cfg.negocio, cfg.datos, cfg.correo, cfg.ia):
+            for nombre, valor in vars(seccion).items():
+                if isinstance(valor, Path):
+                    with self.subTest(f"{nombre}"):
+                        self.assertTrue(valor.is_absolute(), f"{nombre}: {valor}")
+
+    def test_el_fichero_de_ejemplo_funciona_tal_cual(self):
+        # Es el que copia el asistente, así que es el camino real.
+        from krv.nucleo.config import RAIZ
+        ejemplo = (RAIZ / "config.ejemplo.toml").read_text(encoding="utf-8")
+        cfg, carpeta = self._cargar(ejemplo)
+        self.assertTrue(cfg.datos.libro.is_absolute())
+        self.assertEqual(cfg.datos.libro.parent, carpeta)
+
+    def test_sin_config_las_rutas_ya_son_absolutas(self):
+        import importlib
+        from krv.nucleo import config as modulo
+        with tempfile.TemporaryDirectory() as carpeta:
+            config = importlib.reload(modulo)
+            config.CARPETA_DATOS = Path(carpeta)
+            cfg = config.cargar(Path(carpeta) / "no_existe.toml")
+            self.assertTrue(cfg.datos.libro.is_absolute())
+            importlib.reload(modulo)
+
+
 class FicheroDeCredenciales(unittest.TestCase):
     """El .env escrito desde Windows llega de formas muy variadas.
 

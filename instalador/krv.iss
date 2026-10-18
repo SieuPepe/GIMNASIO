@@ -66,10 +66,13 @@ Source: "..\dist\KevinRuizValdenegro\*"; DestDir: "{app}"; \
     Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
-Name: "{group}\{#Nombre}"; Filename: "{app}\{#Ejecutable}"
+; WorkingDir explicito: el programa no deberia depender de desde donde se
+; arranque, pero dejarlo al azar es pedir problemas.
+Name: "{group}\{#Nombre}"; Filename: "{app}\{#Ejecutable}"; WorkingDir: "{app}"
 Name: "{group}\Carpeta de mis datos"; Filename: "{userdocs}\{#CarpetaDatos}"
 Name: "{group}\Desinstalar {#Nombre}"; Filename: "{uninstallexe}"
-Name: "{autodesktop}\{#Nombre}"; Filename: "{app}\{#Ejecutable}"; Tasks: escritorio
+Name: "{autodesktop}\{#Nombre}"; Filename: "{app}\{#Ejecutable}"; \
+    WorkingDir: "{app}"; Tasks: escritorio
 
 [Run]
 Filename: "{app}\{#Ejecutable}"; Description: "Abrir {#Nombre} ahora"; \
