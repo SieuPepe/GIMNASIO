@@ -988,6 +988,12 @@ abrir. Es para no machacar lo que haya hecho el otro.</p>
 <p><b>Si el programa pide migrar el libro</b> al arrancar, es que el fichero es
 de una versión anterior y le faltan columnas nuevas. Acepta: hace una copia
 antes de tocar nada.</p>
+
+<p><b>Los textos de tu marca</b> —nombre comercial, lema, contacto, horario—
+viven en <tt>config.toml</tt>, junto al programa. Ese fichero es tuyo y no se
+actualiza nunca solo, así que si cambias de lema hay que tocarlo a mano. El
+nombre y el lema aparecen en la cabecera de cada correo y en los PDF. En la
+portada de este manual se ve lo que el programa está usando ahora mismo.</p>
 """,
     ),
     Pagina(
@@ -1329,9 +1335,16 @@ nombre, pero conviene arreglarlo.</li>
 UTF-8, UTF-8 con marca y UTF-16, pero si lo ves raro, vuelve a escribirlo.</li>
 </ul>
 
-<p><b>La ventana lleva el nombre antiguo en el título.</b> Ese nombre sale de
-<tt>config.toml</tt>, que es tuyo y no se toca al actualizar. Cambia ahí
-<tt>nombre_comercial</tt>.</p>
+<p><b>El nombre o el lema salen antiguos</b> —en el título de la ventana, en
+la cabecera de los correos o en los PDF—. Esos textos salen de
+<tt>config.toml</tt>, que es <b>tuyo</b>: no se toca al actualizar el programa,
+precisamente para no pisarte tus ajustes. Cambia ahí <tt>nombre_comercial</tt> y
+<tt>lema</tt>, y vuelve a arrancar.</p>
+
+<p>Para ver qué está usando el programa ahora mismo y de qué fichero sale, mira
+el apartado <b>«Tu marca, tal y como la está usando el programa»</b> en la
+portada de este manual. Si borras una línea de <tt>config.toml</tt>, el programa
+usa su valor de fábrica, que ya es el correcto.</p>
 
 <p><b>Un botón parece no hacer nada.</b> Mírale el color: los botones de borde
 azul que necesitan una fila elegida se ven en <b>gris claro</b> cuando no hay

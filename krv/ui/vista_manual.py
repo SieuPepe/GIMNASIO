@@ -176,7 +176,39 @@ hay en cada sitio.</p>
 aparezca en el manual, también dentro de la descripción de los botones. Y en
 cualquier ventana del programa, el botón <b>«?»</b> de la esquina —o <b>F1</b>—
 abre directamente la ayuda de esa ventana.</p>
+
+<h2>Tu marca, tal y como la está usando el programa</h2>
+<p>Esto es lo que va impreso en los PDF y en la cabecera de cada correo. Si algo
+no cuadra, sale de tu fichero de configuración, que es tuyo y no se toca al
+actualizar el programa.</p>
+{self._html_marca()}
 """
+
+    def _html_marca(self) -> str:
+        """Lo que el programa está usando de verdad como marca, y de dónde sale.
+
+        Que el nombre o el lema se queden antiguos es un tropiezo fácil: la
+        configuración es del usuario y no se actualiza con el programa. Verlos
+        aquí, con el fichero del que salen, evita tener que adivinarlo.
+        """
+        negocio = self.cfg.negocio
+        origen = self.cfg.ruta_config
+        filas = [("Nombre comercial", negocio.nombre_comercial),
+                 ("Lema", negocio.lema),
+                 ("Contacto", negocio.contacto),
+                 ("Horario de sala", negocio.horario_sala or "—"),
+                 ("Remite los correos desde", self.cfg.correo.remitente)]
+        celdas = "".join(
+            f'<tr><td class="donde">{nombre}</td><td><b>{valor}</b></td></tr>'
+            for nombre, valor in filas)
+        if origen and Path(origen).exists():
+            pie = (f'<p class="donde">Sale de {origen}. Para cambiarlo, edita ese '
+                   "fichero y vuelve a arrancar el programa.</p>")
+        else:
+            pie = ('<p class="donde">No hay fichero de configuración, así que son '
+                   "los valores de fábrica. Para cambiarlos, copia "
+                   "<tt>config.ejemplo.toml</tt> como <tt>config.toml</tt>.</p>")
+        return f'<table cellpadding="4">{celdas}</table>{pie}'
 
     def _html_recorridos(self) -> str:
         bloques = []
