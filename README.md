@@ -73,8 +73,8 @@ powershell -ExecutionPolicy Bypass -File construir.ps1
 ```
 
 Pasa las pruebas, empaqueta el programa con PyInstaller (`krv.spec`) y monta el
-`.exe` con Inno Setup (`instalador/krv.iss`). Hace falta [Inno Setup
-6](https://jrsoftware.org/isdl.php) en la máquina donde se construye.
+`.exe` con Inno Setup (`instalador/krv.iss`). Hace falta [Inno Setup 6.3 o
+superior](https://jrsoftware.org/isdl.php) en la máquina donde se construye.
 
 ## Ayuda dentro del programa
 

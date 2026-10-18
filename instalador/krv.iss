@@ -1,6 +1,6 @@
 ; Instalador de Kevin Ruiz Valdenegro - Gestion de entrenamiento
 ;
-; Se compila con Inno Setup 6:
+; Se compila con Inno Setup 6.3 o superior:
 ;     "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" instalador\krv.iss
 ; o, mas comodo, con el guion que hace las dos cosas:
 ;     powershell -ExecutionPolicy Bypass -File construir.ps1
@@ -137,7 +137,8 @@ begin
   if not HayDatos() then
     Exit;
   Destino := CarpetaDeDatos() + '\datos_krv_antes_de_instalar_' + Sello() + '.xlsx';
-  if FileCopy(RutaLibro(), Destino, False) then
+  { CopyFile se llamaba FileCopy hasta Inno 6.3. }
+  if CopyFile(RutaLibro(), Destino, False) then
     Result := Destino;
 end;
 

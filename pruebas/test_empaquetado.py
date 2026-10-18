@@ -192,6 +192,15 @@ class Instalador(unittest.TestCase):
         self.assertNotIn("[UninstallDelete]", self.texto)
         self.assertIn("Tus datos NO se borran", self.texto)
 
+    def test_no_usa_funciones_con_nombre_viejo(self):
+        # Inno 6.3 renombro varias funciones de apoyo. Las viejas siguen
+        # funcionando, pero dejan un aviso en cada compilacion.
+        renombradas = {"FileCopy": "CopyFile"}
+        for vieja, nueva in renombradas.items():
+            with self.subTest(vieja):
+                self.assertNotIn(f"{vieja}(", self.texto,
+                                 f"usa {nueva}() en su lugar")
+
     def test_la_pagina_de_bienvenida_existe(self):
         # La pagina de los dos modos se ancla a ella (wpWelcome), y en Inno 6
         # viene escondida por defecto.
