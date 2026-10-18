@@ -413,6 +413,11 @@ VENTANAS: tuple[Ayuda, ...] = (
             Control("Probar la conexión de correo",
                     "Comprueba que la cuenta y la contraseña de aplicación "
                     "funcionan. Úsalo antes de enviar nada real."),
+            Control("Cambiar la cuenta",
+                    "Vuelve a abrir el asistente del principio para cambiar la "
+                    "cuenta desde la que escribes, su contraseña de aplicación "
+                    "o las direcciones de los formularios. Antes de esto había "
+                    "que editar un fichero a mano."),
             Control("Importar respuestas",
                     "Carga el CSV de respuestas del formulario de Google y las "
                     "interpreta: si alguien pide cita o declara una molestia, "

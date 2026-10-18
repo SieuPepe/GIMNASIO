@@ -74,6 +74,13 @@ class VistaCorreo(QWidget):
         probar.setProperty("plano", True)
         probar.clicked.connect(self.probar_conexion)
         superior.addWidget(probar)
+        cuenta = QPushButton("Cambiar la cuenta…")
+        self.btn_cuenta = cuenta
+        cuenta.setProperty("plano", True)
+        cuenta.setToolTip("La cuenta desde la que se escribe y su contraseña "
+                          "de aplicación")
+        cuenta.clicked.connect(self.configurar_cuenta)
+        superior.addWidget(cuenta)
         superior.addStretch()
         raiz.addLayout(superior)
 
@@ -353,6 +360,18 @@ class VistaCorreo(QWidget):
         DialogoPlantillas(self.repo, self).exec()
         self.guardar()
         self.refrescar()
+
+    def configurar_cuenta(self) -> None:
+        """Vuelve a abrir el asistente, solo para la cuenta de correo.
+
+        Cambiar de cuenta de Gmail obligaba a editar el fichero .env a mano, y
+        eso no es algo que haya que pedirle a nadie.
+        """
+        from .asistente import Asistente
+        paso = Asistente(self.cfg, self.repo, padre=self)
+        if paso.exec():
+            self.guardar()
+            self.refrescar()
 
     def probar_conexion(self) -> None:
         correcto, mensaje = srv_correo.probar_conexion(self.cfg)

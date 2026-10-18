@@ -257,6 +257,96 @@ class AsistenteDePrimeraVez(unittest.TestCase):
             importlib.reload(asistente)
 
 
+class ElAsistenteNoVuelveASalir(unittest.TestCase):
+    """Lo que de verdad importa: que una vez contestado, se acabe.
+
+    Un asistente que dice «todo listo» y vuelve a salir al siguiente arranque
+    es lo peor que puede hacer, porque no hay forma de saber qué ha fallado.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        from PySide6.QtWidgets import QApplication
+        cls.app = QApplication.instance() or QApplication([])
+
+    def setUp(self):
+        import importlib
+        import os
+        import shutil
+        import tempfile
+        from krv.nucleo import config as modulo
+        from krv.ui import asistente
+
+        self.temporal = tempfile.TemporaryDirectory()
+        self.base = Path(self.temporal.name)
+        shutil.copy(config.RAIZ / "config.ejemplo.toml",
+                    self.base / "config.ejemplo.toml")
+        for clave in ("GMAIL_USUARIO", "GMAIL_APP_PASSWORD"):
+            os.environ.pop(clave, None)
+        self.config = importlib.reload(modulo)
+        self.config.RAIZ = self.config.CARPETA_DATOS = self.base
+        self.config.releer_credenciales()
+        self.asistente = importlib.reload(asistente)
+
+    def tearDown(self):
+        import importlib
+        from krv.nucleo import config as modulo
+        from krv.ui import asistente
+        self.temporal.cleanup()
+        importlib.reload(modulo)
+        importlib.reload(asistente)
+
+    def test_hace_falta_cuando_no_hay_nada(self):
+        self.assertTrue(self.asistente.hace_falta())
+        self.assertIn("No hay ningún fichero", self.asistente.donde_se_busca())
+
+    def test_despues_de_contestarlo_ya_no_hace_falta(self):
+        from unittest import mock
+        paso = self.asistente.Asistente(self.config.cargar(), None)
+        paso.show()
+        paso.next()
+        self.app.processEvents()
+        paso.pagina_correo.cuenta.setText("yo@gmail.com")
+        paso.pagina_correo.clave.setText("abcd efgh ijkl mnop")
+        self.app.processEvents()
+        with mock.patch.object(self.asistente.QMessageBox, "information"), \
+             mock.patch.object(self.asistente.QMessageBox, "critical") as error:
+            paso.accept()
+        self.assertFalse(error.called, "no debería quejarse")
+        paso.close()
+
+        # Y ahora, como si el programa se cerrara y se volviera a abrir.
+        self.config.releer_credenciales()
+        self.assertFalse(self.asistente.hace_falta(),
+                         "volvería a salir el asistente")
+        self.assertIn("ya configurada", self.asistente.donde_se_busca())
+
+    def test_avisa_si_lo_escrito_no_se_vuelve_a_leer(self):
+        # Pasa cuando algo impide escribir en la carpeta: el antivirus, o el
+        # acceso controlado a carpetas de Windows.
+        from unittest import mock
+        paso = self.asistente.Asistente(self.config.cargar(), None)
+        paso.show()
+        paso.next()
+        self.app.processEvents()
+        paso.pagina_correo.cuenta.setText("yo@gmail.com")
+        paso.pagina_correo.clave.setText("abcd efgh ijkl mnop")
+        self.app.processEvents()
+        with mock.patch.object(self.asistente, "escribir_env",
+                               return_value=self.base / ".env"), \
+             mock.patch.object(self.asistente.QMessageBox, "information") as bien, \
+             mock.patch.object(self.asistente.QMessageBox, "critical") as error:
+            paso.accept()
+        self.assertTrue(error.called, "debería avisar de que no se relee")
+        self.assertFalse(bien.called, "no puede decir «todo listo»")
+        paso.close()
+
+    def test_se_puede_volver_a_abrir_desde_el_correo(self):
+        # Cambiar de cuenta de Gmail obligaba a editar un fichero a mano.
+        from krv.ui.vista_correo import VistaCorreo
+        self.assertTrue(hasattr(VistaCorreo, "configurar_cuenta"))
+
+
 class BotonesDelAsistente(unittest.TestCase):
     """Los dos botones que no respondían, y por qué.
 

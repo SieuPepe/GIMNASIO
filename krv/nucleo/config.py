@@ -301,6 +301,17 @@ def diagnostico_env() -> str:
             f"{', '.join(_ENV_CLAVES)}.")
 
 
+def releer_credenciales() -> None:
+    """Vuelve a leer el .env. Se usa tras escribirlo, para comprobarlo.
+
+    Sin esto, el programa se queda con lo que leyó al arrancar y no hay forma
+    de saber si lo que se acaba de guardar se va a encontrar la próxima vez.
+    """
+    global _ENV_CARGADO
+    _ENV_CARGADO = False
+    _cargar_env()
+
+
 def credencial(nombre: str, obligatoria: bool = False) -> str:
     """Único punto de acceso a credenciales. Ver docs/03."""
     if not _ENV_CARGADO:

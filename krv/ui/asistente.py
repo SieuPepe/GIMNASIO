@@ -39,6 +39,21 @@ def hace_falta() -> bool:
     return not config.credencial("GMAIL_APP_PASSWORD")
 
 
+def donde_se_busca() -> str:
+    """Qué fichero de credenciales se está usando, dicho en una línea.
+
+    Si el asistente vuelve a salir cuando no debería, esto es lo que lo
+    explica: o no hay fichero, o está en otro sitio del que se mira.
+    """
+    actual = config.ruta_env()
+    if actual is None:
+        return (f"No hay ningún fichero de credenciales en:\n"
+                f"{config.CARPETA_DATOS}")
+    if config.credencial("GMAIL_APP_PASSWORD"):
+        return f"Cuenta ya configurada en {actual}"
+    return f"{actual} existe, pero no trae GMAIL_APP_PASSWORD"
+
+
 class _Bienvenida(QWizardPage):
     """Lo primero que se ve. Deja claro qué es esta ventana.
 
@@ -65,7 +80,7 @@ class _Bienvenida(QWizardPage):
             ajustar=True))
         caja.addSpacing(14)
         caja.addWidget(etiqueta(
-            f"<b>Tus datos se guardan en:</b><br>{config.CARPETA_DATOS}"
+            f"<b>Por qué sale esta ventana:</b><br>{donde_se_busca()}"
             f"<br><br><b>El programa se está ejecutando desde:</b><br>"
             f"{config.RAIZ}", "subtitulo", ajustar=True))
         caja.addStretch()
@@ -273,8 +288,8 @@ class Asistente(QWizard):
     def accept(self) -> None:
         """Escribe los dos ficheros y guarda las URL en el libro."""
         try:
-            escribir_env(self.pagina_correo.cuenta.text().strip(),
-                         self.pagina_correo.clave_limpia())
+            ruta_env = escribir_env(self.pagina_correo.cuenta.text().strip(),
+                                    self.pagina_correo.clave_limpia())
             escribir_config(self.cfg, self.pagina_correo.cuenta.text().strip(),
                             self.pagina_negocio.nombre.text().strip(),
                             self.pagina_negocio.lema.text().strip(),
@@ -285,14 +300,30 @@ class Asistente(QWizard):
             QMessageBox.critical(self, "No se ha podido guardar", str(error))
             return
 
+        # Comprobar que lo escrito se vuelve a encontrar. Decir «todo listo» y
+        # que al siguiente arranque vuelva a salir esta ventana es lo peor que
+        # puede hacer un asistente.
+        config.releer_credenciales()
+        if not config.credencial("GMAIL_APP_PASSWORD"):
+            QMessageBox.critical(
+                self, "Se ha guardado, pero no se vuelve a leer",
+                f"He escrito el fichero en:\n{ruta_env}\n\n"
+                "Pero al releerlo no encuentro la contraseña, así que esta "
+                "ventana volvería a salir al abrir el programa.\n\n"
+                "Suele ser que algo impida escribir en esa carpeta: el "
+                "antivirus, o el «acceso controlado a carpetas» de Windows. "
+                "Cuéntamelo con esta ruta delante.")
+            return
+
         aviso = ""
         if not self.pagina_correo.probado:
             aviso = ("\n\nNo has llegado a probar la conexión. Si luego no sale "
                      "ningún correo, empieza por Correo → «Probar la conexión».")
         QMessageBox.information(
             self, "Todo listo",
-            f"Configuración guardada en:\n{config.CARPETA_DATOS}\n\n"
-            f"{formularios} formularios anotados.{aviso}")
+            f"Cuenta guardada en:\n{ruta_env}\n\n"
+            f"{formularios} formularios anotados.{aviso}\n\n"
+            "Esta ventana ya no volverá a salir.")
         super().accept()
 
 
