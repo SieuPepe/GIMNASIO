@@ -284,3 +284,69 @@ class Avisos(Base):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class FicheroDeCredenciales(unittest.TestCase):
+    """El .env escrito desde Windows llega de formas muy variadas.
+
+    Las tres trampas habituales —el «.txt» que añade el Bloc de notas, la marca
+    invisible del UTF-8 y el guardado en UTF-16— fallaban en silencio y dejaban
+    un «falta la credencial» con el fichero delante.
+    """
+
+    CONTENIDO = "GMAIL_USUARIO=a@b.com\nGMAIL_APP_PASSWORD=secreto\n"
+
+    def _leer(self, nombre, contenido, codificacion="utf-8"):
+        import importlib
+        import os
+        from krv.nucleo import config as modulo
+        with tempfile.TemporaryDirectory() as carpeta:
+            config = importlib.reload(modulo)
+            config.RAIZ = Path(carpeta)
+            for clave in ("GMAIL_USUARIO", "GMAIL_APP_PASSWORD"):
+                os.environ.pop(clave, None)
+            if nombre:
+                (Path(carpeta) / nombre).write_text(contenido, encoding=codificacion)
+            try:
+                return config.credencial("GMAIL_USUARIO", obligatoria=True), None
+            except RuntimeError as error:
+                return None, str(error)
+            finally:
+                for clave in ("GMAIL_USUARIO", "GMAIL_APP_PASSWORD"):
+                    os.environ.pop(clave, None)
+                importlib.reload(modulo)
+
+    def test_env_normal(self):
+        valor, _ = self._leer(".env", self.CONTENIDO)
+        self.assertEqual(valor, "a@b.com")
+
+    def test_env_con_marca_de_orden_de_bytes(self):
+        # Guardado como «UTF-8 con BOM»: la primera clave llevaba tres bytes
+        # invisibles delante y era como si no existiera.
+        valor, _ = self._leer(".env", self.CONTENIDO, "utf-8-sig")
+        self.assertEqual(valor, "a@b.com")
+
+    def test_env_guardado_en_utf16(self):
+        valor, _ = self._leer(".env", self.CONTENIDO, "utf-16")
+        self.assertEqual(valor, "a@b.com")
+
+    def test_env_con_el_txt_que_pone_el_bloc_de_notas(self):
+        valor, _ = self._leer(".env.txt", self.CONTENIDO)
+        self.assertEqual(valor, "a@b.com")
+
+    def test_env_admite_comillas_y_export(self):
+        valor, _ = self._leer(
+            ".env", 'export GMAIL_USUARIO="a@b.com"\nGMAIL_APP_PASSWORD=\'x\'\n')
+        self.assertEqual(valor, "a@b.com")
+
+    def test_sin_env_el_error_dice_donde_ha_buscado(self):
+        valor, error = self._leer(None, None)
+        self.assertIsNone(valor)
+        self.assertIn("No se encuentra", error)
+        self.assertIn(".env.txt", error, "debería avisar de la trampa del Bloc")
+
+    def test_si_falta_una_clave_el_error_dice_cuales_hay(self):
+        valor, error = self._leer(".env", "GMAIL_APP_PASSWORD=secreto\n")
+        self.assertIsNone(valor)
+        self.assertIn("GMAIL_APP_PASSWORD", error,
+                      "debería listar lo que sí ha leído")

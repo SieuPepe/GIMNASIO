@@ -88,23 +88,78 @@ def cargar(ruta: Path | None = None) -> Config:
 # --- Credenciales ------------------------------------------------------------
 
 _ENV_CARGADO = False
+_ENV_ORIGEN: Path | None = None       # de qué fichero se leyó, para poder decirlo
+_ENV_CLAVES: tuple[str, ...] = ()     # qué claves traía, para poder decirlo
+
+# El Bloc de notas de Windows añade «.txt» si no se elige «Todos los archivos»,
+# y es el tropiezo más habitual al crear el .env. Se acepta ese nombre también,
+# en vez de dejar al usuario delante de un error que no explica nada.
+NOMBRES_ENV = (".env", ".env.txt")
+
+
+def ruta_env() -> Path | None:
+    """El fichero de credenciales que se va a usar, si existe alguno."""
+    for nombre in NOMBRES_ENV:
+        candidato = RAIZ / nombre
+        if candidato.exists():
+            return candidato
+    return None
 
 
 def _cargar_env(ruta: Path | None = None) -> None:
     """Vuelca el .env en el entorno del proceso. No sobreescribe lo ya definido."""
-    global _ENV_CARGADO
-    ruta = ruta or RAIZ / ".env"
-    if not ruta.exists():
-        _ENV_CARGADO = True
+    global _ENV_CARGADO, _ENV_ORIGEN, _ENV_CLAVES
+    ruta = ruta or ruta_env()
+    _ENV_CARGADO = True
+    _ENV_ORIGEN = ruta
+    _ENV_CLAVES = ()
+    if ruta is None or not ruta.exists():
         return
-    for linea in ruta.read_text(encoding="utf-8").splitlines():
-        linea = linea.strip()
+    # «utf-8-sig» quita la marca invisible que el Bloc de notas puede poner al
+    # principio del fichero. Sin esto, la primera clave se lee con tres bytes
+    # pegados delante y es como si no estuviera: justo la que falla.
+    try:
+        contenido = ruta.read_text(encoding="utf-8-sig")
+    except UnicodeDecodeError:
+        # Guardado en UTF-16 («Unicode» en el desplegable del Bloc de notas).
+        contenido = ruta.read_text(encoding="utf-16")
+    leidas = []
+    for linea in contenido.splitlines():
+        linea = linea.strip().lstrip("\ufeff")
+        if linea.lower().startswith("export "):
+            linea = linea[len("export "):].strip()
         if not linea or linea.startswith("#") or "=" not in linea:
             continue
         clave, _, valor = linea.partition("=")
-        clave, valor = clave.strip(), valor.strip().strip('"').strip("'")
-        os.environ.setdefault(clave, valor)
-    _ENV_CARGADO = True
+        clave = clave.strip().lstrip("\ufeff")
+        valor = valor.strip().strip('"').strip("'")
+        if not clave:
+            continue
+        leidas.append(clave)
+        if os.environ.get(clave):
+            continue          # lo que ya venga del entorno manda
+        os.environ[clave] = valor
+    _ENV_CLAVES = tuple(leidas)
+
+
+def diagnostico_env() -> str:
+    """Explica dónde se ha buscado el .env y qué se ha encontrado.
+
+    Un «falta la credencial» cuando el fichero está escrito no dice nada útil.
+    Esto dice el camino exacto y lo que se ha leído, que es lo que permite ver
+    que el fichero se llama «.env.txt» o que está en otra carpeta.
+    """
+    if _ENV_ORIGEN is None:
+        return (f"No se encuentra ningún fichero de credenciales. Tiene que "
+                f"llamarse exactamente «.env» y estar en:\n{RAIZ}\n\n"
+                "Ojo: el Bloc de notas le añade «.txt» al guardar si no eliges "
+                "«Todos los archivos» en el tipo de archivo. Si el tuyo se llama "
+                "«.env.txt», renómbralo (aunque así también lo lee).")
+    if not _ENV_CLAVES:
+        return (f"El fichero {_ENV_ORIGEN} existe pero no se ha podido leer "
+                "ninguna línea con el formato CLAVE=valor.")
+    return (f"Se ha leído {_ENV_ORIGEN} y contiene: "
+            f"{', '.join(_ENV_CLAVES)}.")
 
 
 def credencial(nombre: str, obligatoria: bool = False) -> str:
@@ -114,7 +169,7 @@ def credencial(nombre: str, obligatoria: bool = False) -> str:
     valor = os.environ.get(nombre, "")
     if obligatoria and not valor:
         raise RuntimeError(
-            f"Falta la credencial {nombre}. Defínela en el fichero .env "
-            f"(hay una plantilla en .env.ejemplo)."
+            f"Falta la credencial {nombre}.\n\n{diagnostico_env()}\n\n"
+            "Hay una plantilla en .env.ejemplo."
         )
     return valor

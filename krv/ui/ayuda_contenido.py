@@ -280,7 +280,12 @@ VENTANAS: tuple[Ayuda, ...] = (
         controles=(
             Control("Árbol de ciclos (izquierda)",
                     "La estructura completa: macrociclo → mesociclos → "
-                    "microciclos. Al elegir un microciclo aparecen sus sesiones."),
+                    "microciclos. Al elegir un microciclo aparecen sus sesiones. "
+                    "La columna <b>Orden</b> enseña el puesto de cada ciclo entre "
+                    "sus hermanos, que es el que fija la secuencia; si sale en "
+                    "rojo, hay dos hermanos con el mismo número y conviene "
+                    "arreglarlo. Los macrociclos se ordenan por nombre, así que "
+                    "ahí la columna va vacía."),
             Control("Nuevo macrociclo", "Crea un programa nuevo, vacío."),
             Control("Añadir dentro",
                     "Crea un ciclo hijo del elegido: dentro de un macrociclo crea "
@@ -338,7 +343,14 @@ VENTANAS: tuple[Ayuda, ...] = (
             "una persona con fechas concretas. Al asignar se congela el calendario: "
             "cada ciclo queda con su fecha de inicio y de fin."),
         controles=(
-            Control("Estado", "Filtra por planificada, en curso, terminada o anulada."),
+            Control("Estado",
+                    "Filtro de <b>selección múltiple</b>: se despliega y se marcan "
+                    "con casillas los estados que quieres ver. Arranca con "
+                    "«Planificada» y «En curso» marcadas, que es lo que está vivo; "
+                    "lo finalizado y lo interrumpido sigue ahí, a un clic. El "
+                    "contador de arriba dice cuántas esconde el filtro."),
+            Control("Ver todas",
+                    "Marca los cuatro estados de golpe, sin ir casilla por casilla."),
             Control("Columna «Quedan»",
                     "Días hasta el final. Cuando baja de 14 el panel de inicio "
                     "empieza a pedir la encuesta de renovación."),
@@ -351,7 +363,8 @@ VENTANAS: tuple[Ayuda, ...] = (
                     "Saca el PDF de las semanas que elijas, con las cargas ya "
                     "resueltas en kilos."),
             Control("Cambiar estado",
-                    "Pasa la asignación a en curso, terminada o anulada."),
+                    "Pasa la asignación a planificada, en curso, finalizada o "
+                    "interrumpida."),
         ),
         reglas=(
             "El calendario se congela al asignar. Si luego cambias la plantilla, "
@@ -417,6 +430,13 @@ VENTANAS: tuple[Ayuda, ...] = (
             "respetando el consentimiento.",
         ),
         problemas=(
+            Problema("«Falta la credencial…» y el .env está escrito",
+                     "El propio aviso dice ahora dónde ha buscado el fichero y qué "
+                     "claves ha leído de él: eso suele resolverlo solo. Las dos "
+                     "causas habituales son que el Bloc de notas haya guardado el "
+                     "fichero como <tt>.env.txt</tt> (hay que elegir «Todos los "
+                     "archivos» en el tipo de archivo) o que esté en otra carpeta. "
+                     "El fichero tiene que estar junto a <tt>datos_krv.xlsx</tt>."),
             Problema("Falta la credencial GMAIL_APP_PASSWORD",
                      "Hay que crear una contraseña de aplicación en la cuenta de "
                      "Google y escribirla en el fichero <tt>.env</tt>. La "
@@ -701,9 +721,10 @@ DIALOGOS: tuple[Ayuda, ...] = (
         reglas=(
             "La duración del padre debería cuadrar con la suma de sus hijos. Si no "
             "cuadra, la banda de avisos de la ventana de programas te lo dice.",
-            "Dos ciclos hermanos con el mismo «orden» quedan en un orden "
-            "imprevisible entre ellos. Si el calendario de una asignación sale "
-            "raro, eso es lo primero que hay que mirar.",
+            "El orden es un <b>número entero</b> y <b>no se puede repetir</b> "
+            "entre hermanos: al guardar, el programa comprueba que esté libre y, "
+            "si no, dice quién lo tiene y cuál es el primer número disponible. Al "
+            "clonar un ciclo, la copia recibe el siguiente orden libre.",
         ),
         ver_tambien=("programas", "sesion"),
     ),
@@ -782,8 +803,11 @@ DIALOGOS: tuple[Ayuda, ...] = (
             "Antes de guardar puedes ver el calendario completo que se va a "
             "congelar."),
         controles=(
-            Control("Usuario *", "A quién."),
-            Control("Programa *", "Qué macrociclo."),
+            Control("Usuario *",
+                    "A quién. Se puede escribir dentro para filtrar la lista por "
+                    "cualquier parte del nombre o del apellido."),
+            Control("Programa *",
+                    "Qué macrociclo. También se puede escribir para filtrar."),
             Control("Fecha de inicio *",
                     "Desde cuándo. A partir de aquí se calculan todas las fechas."),
             Control("Objetivo asociado",
@@ -1291,6 +1315,23 @@ anterior. Acepta: hace copia antes de tocar nada.</p>
 de aplicación de Google (la contraseña normal de la cuenta no sirve): en la
 cuenta de Google, Seguridad → Verificación en dos pasos → Contraseñas de
 aplicaciones. Esos 16 caracteres van al fichero <tt>.env</tt>.</p>
+
+<p><b>Dice que falta la credencial pero el <tt>.env</tt> está escrito.</b> El
+aviso dice dónde ha buscado el fichero y qué claves ha leído; empieza por ahí.
+Lo que más pasa:</p>
+<ul>
+<li>El Bloc de notas lo ha guardado como <tt>.env.txt</tt>. Al guardar hay que
+poner el tipo de archivo en «Todos los archivos». El programa también lee ese
+nombre, pero conviene arreglarlo.</li>
+<li>El fichero está en otra carpeta. Tiene que estar junto a
+<tt>datos_krv.xlsx</tt>.</li>
+<li>Está guardado con una codificación rara. El programa ya se las apaña con
+UTF-8, UTF-8 con marca y UTF-16, pero si lo ves raro, vuelve a escribirlo.</li>
+</ul>
+
+<p><b>La ventana lleva el nombre antiguo en el título.</b> Ese nombre sale de
+<tt>config.toml</tt>, que es tuyo y no se toca al actualizar. Cambia ahí
+<tt>nombre_comercial</tt>.</p>
 
 <p><b>Un botón parece no hacer nada.</b> Mírale el color: los botones de borde
 azul que necesitan una fila elegida se ven en <b>gris claro</b> cuando no hay

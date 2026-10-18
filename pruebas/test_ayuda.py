@@ -233,3 +233,152 @@ class ObjetivosDeLosRecorridos(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class FiltrosYControles(unittest.TestCase):
+    """El filtro múltiple, los desplegables buscables y el aviso de orden."""
+
+    @classmethod
+    def setUpClass(cls):
+        from PySide6.QtWidgets import QApplication
+        cls.app = QApplication.instance() or QApplication([])
+
+    def test_el_desplegable_multiple_arranca_con_lo_marcado(self):
+        from krv.ui.comunes import DesplegableMultiple
+        combo = DesplegableMultiple(
+            [("A", "Uno"), ("B", "Dos"), ("C", "Tres")], marcadas=["A", "C"])
+        self.assertEqual(combo.marcadas(), ["A", "C"])
+        self.assertEqual(combo.lineEdit().text(), "Uno, Tres")
+
+    def test_el_desplegable_multiple_resume_los_extremos(self):
+        from krv.ui.comunes import DesplegableMultiple
+        combo = DesplegableMultiple([("A", "Uno"), ("B", "Dos")], marcadas=[],
+                                    texto_vacio="Nada", texto_todas="Todo")
+        self.assertEqual(combo.lineEdit().text(), "Nada")
+        combo.marcar(["A", "B"])
+        self.assertEqual(combo.lineEdit().text(), "Todo")
+
+    def test_el_desplegable_multiple_avisa_de_los_cambios(self):
+        from krv.ui.comunes import DesplegableMultiple
+        combo = DesplegableMultiple([("A", "Uno"), ("B", "Dos")], marcadas=["A"])
+        avisos = []
+        combo.cambiado.connect(lambda: avisos.append(combo.marcadas()))
+        combo.marcar(["B"])
+        self.assertEqual(avisos, [["B"]])
+
+    def test_el_filtro_de_asignaciones_arranca_en_lo_que_esta_vivo(self):
+        from krv.ui.vista_asignaciones import ESTADOS, ESTADOS_POR_DEFECTO
+        self.assertEqual(ESTADOS_POR_DEFECTO, ["PLANIFICADA", "EN_CURSO"])
+        # Y los cuatro estados del filtro son los que admite el libro.
+        from krv.datos.esquema import TABLAS
+        columna = next(c for t in TABLAS if t.nombre == "T_ASIGNACIONES"
+                       for c in t.columnas if c.nombre == "Estado")
+        self.assertEqual([c for c, _ in ESTADOS], list(columna.opciones))
+
+    def test_los_desplegables_buscables_no_admiten_texto_nuevo(self):
+        from PySide6.QtWidgets import QComboBox
+        from krv.ui.comunes import hacer_buscable
+        combo = hacer_buscable(QComboBox())
+        combo.addItem("Sentadilla trasera con barra", "EJ-1")
+        self.assertTrue(combo.isEditable())
+        self.assertEqual(combo.insertPolicy(), QComboBox.NoInsert)
+        combo.setCurrentText("algo que no existe")
+        combo.lineEdit().editingFinished.emit()
+        self.assertEqual(combo.count(), 1)
+
+    def test_el_buscable_filtra_por_cualquier_parte_del_nombre(self):
+        from PySide6.QtCore import Qt
+        from PySide6.QtWidgets import QComboBox
+        from krv.ui.comunes import hacer_buscable
+        combo = hacer_buscable(QComboBox())
+        for texto in ("Press de banca con barra", "Sentadilla trasera con barra",
+                      "Remo con mancuerna"):
+            combo.addItem(texto, texto)
+        completador = combo.completer()
+        self.assertEqual(completador.filterMode(), Qt.MatchContains)
+        self.assertEqual(completador.caseSensitivity(), Qt.CaseInsensitive)
+        completador.setCompletionPrefix("banca")
+        self.assertEqual(completador.completionCount(), 1)
+        completador.setCompletionPrefix("BARRA")
+        self.assertEqual(completador.completionCount(), 2)
+
+
+class AvisoDeOrdenRepetido(unittest.TestCase):
+    """El diálogo de ciclo no debe dejar guardar un orden ya ocupado."""
+
+    @classmethod
+    def setUpClass(cls):
+        import tempfile
+        from PySide6.QtWidgets import QApplication
+        from krv.datos import libro as ml, semillas
+        from krv.datos.repositorio import Repositorio
+        from krv.servicios import programas as srv
+
+        cls.app = QApplication.instance() or QApplication([])
+        cls.temporal = tempfile.TemporaryDirectory()
+        base = Path(cls.temporal.name)
+        ruta = base / "datos_krv.xlsx"
+        ml.crear(ruta)
+        cls.libro = ml.Libro(ruta, base / "bk")
+        cls.libro.cargar()
+        semillas.sembrar(cls.libro)
+        cls.repo = Repositorio(cls.libro)
+        cls.srv = srv
+        cls.macro = cls.repo.insertar("T_CICLOS", {
+            "Nombre": "Macro", "Tipo": "MACRO", "Orden": 1, "Duracion_Sem": 8,
+            "Origen": "MANUAL"})
+        cls.meso = cls.repo.insertar("T_CICLOS", {
+            "Nombre": "Acumulación", "Tipo": "MESO", "ID_Padre": cls.macro,
+            "Orden": 1, "Duracion_Sem": 4, "Origen": "MANUAL"})
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.temporal.cleanup()
+
+    def test_el_orden_solo_admite_enteros(self):
+        from PySide6.QtWidgets import QSpinBox
+        from krv.ui.dialogos_programa import DialogoCiclo
+        dialogo = DialogoCiclo(self.repo, tipo="MESO", id_padre=self.macro)
+        # QSpinBox es de enteros; un QDoubleSpinBox admitiría decimales.
+        self.assertIsInstance(dialogo.orden, QSpinBox)
+        self.assertNotIsInstance(dialogo.orden, type(None))
+        self.assertEqual(dialogo.orden.minimum(), 1)
+
+    def test_el_orden_propuesto_es_el_primero_libre(self):
+        from krv.ui.dialogos_programa import DialogoCiclo
+        dialogo = DialogoCiclo(self.repo, tipo="MESO", id_padre=self.macro)
+        self.assertEqual(dialogo.orden.value(),
+                         self.srv.siguiente_orden(self.repo, self.macro))
+
+    def test_no_guarda_un_orden_ocupado(self):
+        from unittest import mock
+        from krv.ui.dialogos_programa import DialogoCiclo
+        dialogo = DialogoCiclo(self.repo, tipo="MESO", id_padre=self.macro)
+        dialogo.nombre.setText("Intensificación")
+        dialogo.orden.setValue(1)                      # el que ya tiene el otro
+        antes = len(self.srv.hijos(self.repo, self.macro))
+        with mock.patch("krv.ui.dialogos_programa.QMessageBox.warning") as aviso:
+            dialogo._guardar()
+        self.assertTrue(aviso.called, "debería avisar de que el orden está cogido")
+        self.assertIn("Acumulación", str(aviso.call_args))
+        self.assertEqual(len(self.srv.hijos(self.repo, self.macro)), antes,
+                         "no debería haber guardado nada")
+
+    def test_guarda_cuando_el_orden_esta_libre(self):
+        from krv.ui.dialogos_programa import DialogoCiclo
+        dialogo = DialogoCiclo(self.repo, tipo="MESO", id_padre=self.macro)
+        dialogo.nombre.setText("Realización")
+        dialogo.orden.setValue(7)
+        antes = len(self.srv.hijos(self.repo, self.macro))
+        dialogo._guardar()
+        self.assertEqual(len(self.srv.hijos(self.repo, self.macro)), antes + 1)
+        self.assertEqual(self.srv.ordenes_repetidos(self.repo, self.macro), set())
+
+    def test_editar_sin_tocar_el_orden_no_se_queja(self):
+        from krv.ui.dialogos_programa import DialogoCiclo
+        dialogo = DialogoCiclo(self.repo, id_ciclo=self.meso, padre=None)
+        dialogo.nombre.setText("Acumulación (revisada)")
+        dialogo._guardar()
+        self.assertEqual(
+            self.repo.obtener("T_CICLOS", self.meso)["Nombre"],
+            "Acumulación (revisada)")

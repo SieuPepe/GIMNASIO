@@ -30,6 +30,44 @@ def hijos(repo: Repositorio, id_padre: str | None, tipo: str | None = None) -> l
         orden="Orden")
 
 
+def siguiente_orden(repo: Repositorio, id_padre: str | None) -> int:
+    """El primer número de orden libre entre los hijos de ese ciclo."""
+    usados = {int(h.get("Orden") or 0) for h in hijos(repo, id_padre)}
+    numero = 1
+    while numero in usados:
+        numero += 1
+    return numero
+
+
+def ciclo_con_ese_orden(repo: Repositorio, id_padre: str | None, orden: int,
+                        excluir: str | None = None) -> dict | None:
+    """El hermano que ya ocupa ese orden, si hay alguno.
+
+    Dos hermanos con el mismo orden quedarían en un orden imprevisible entre
+    ellos, y de ese orden salen las fechas al asignar. Así que se comprueba
+    antes de guardar.
+    """
+    for hermano in hijos(repo, id_padre):
+        if hermano["ID_Ciclo"] == excluir:
+            continue
+        if int(hermano.get("Orden") or 0) == int(orden):
+            return hermano
+    return None
+
+
+def ordenes_repetidos(repo: Repositorio, id_padre: str | None) -> set[int]:
+    """Los números de orden que aparecen más de una vez entre esos hermanos.
+
+    Sirve para señalar en el árbol lo que quedó repetido antes de que existiera
+    la comprobación.
+    """
+    vistos: dict[int, int] = {}
+    for hermano in hijos(repo, id_padre):
+        numero = int(hermano.get("Orden") or 0)
+        vistos[numero] = vistos.get(numero, 0) + 1
+    return {numero for numero, veces in vistos.items() if veces > 1}
+
+
 def raices(repo: Repositorio, solo_plantillas: bool = False) -> list[dict]:
     return repo.listar(
         "T_CICLOS",
@@ -103,6 +141,10 @@ def clonar(repo: Repositorio, id_ciclo: str, nuevo_nombre: str | None = None,
         copia["ID_Padre"] = id_padre
     if es_plantilla is not None:
         copia["Es_Plantilla_SN"] = es_plantilla
+    # La copia no puede quedarse con el orden del original: serían dos hermanos
+    # con el mismo número y el calendario saldría en un orden imprevisible.
+    if ciclo_con_ese_orden(repo, copia.get("ID_Padre"), copia.get("Orden") or 0):
+        copia["Orden"] = siguiente_orden(repo, copia.get("ID_Padre"))
     nuevo = repo.insertar("T_CICLOS", copia)
 
     for sesion in sesiones(repo, id_ciclo):

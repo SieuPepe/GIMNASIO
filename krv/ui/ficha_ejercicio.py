@@ -58,7 +58,8 @@ class FichaEjercicio(QDialog):
         super().__init__(padre)
         self.repo = repo
         self.id_ejercicio = id_ejercicio
-        self.datos = repo.obtener("T_EJERCICIOS", id_ejercicio) if id_ejercicio else {}
+        self.datos = ((repo.obtener("T_EJERCICIOS", id_ejercicio) or {})
+                      if id_ejercicio else {})
         self.setWindowTitle("Ejercicio" if id_ejercicio else "Nuevo ejercicio")
         self.setMinimumWidth(560)
         self._construir()

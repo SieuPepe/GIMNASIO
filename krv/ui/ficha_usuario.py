@@ -25,7 +25,7 @@ class FichaUsuario(QDialog):
         super().__init__(padre)
         self.repo = repo
         self.id_usuario = id_usuario
-        self.datos = repo.obtener("T_USUARIOS", id_usuario) if id_usuario else {}
+        self.datos = (repo.obtener("T_USUARIOS", id_usuario) or {}) if id_usuario else {}
         self.setWindowTitle("Ficha de usuario" if id_usuario else "Nuevo usuario")
         self.setMinimumWidth(560)
         self._construir()

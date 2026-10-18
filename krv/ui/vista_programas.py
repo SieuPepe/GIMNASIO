@@ -43,8 +43,13 @@ class VistaProgramas(QWidget):
         caja_izquierda = QVBoxLayout(izquierda)
         caja_izquierda.setContentsMargins(0, 0, 8, 0)
         self.arbol = QTreeWidget()
-        self.arbol.setHeaderLabels(["Ciclo", "Semanas"])
-        self.arbol.setColumnWidth(0, 290)
+        self.arbol.setHeaderLabels(["Ciclo", "Orden", "Semanas"])
+        self.arbol.setColumnWidth(0, 250)
+        self.arbol.setColumnWidth(1, 52)
+        self.arbol.headerItem().setToolTip(
+            1, "El puesto del ciclo entre sus hermanos: fija la secuencia y, con "
+               "ella, las fechas al asignar. Los macrociclos se ordenan por nombre, "
+               "así que ahí no se usa.")
         self.arbol.itemSelectionChanged.connect(self._cambio_seleccion)
         self.arbol.itemDoubleClicked.connect(lambda *_: self.editar_ciclo())
         caja_izquierda.addWidget(self.arbol)
@@ -152,12 +157,26 @@ class VistaProgramas(QWidget):
             self._seleccionar(seleccionado)
         self._cambio_seleccion()
 
-    def _nodo(self, ciclo: dict) -> QTreeWidgetItem:
+    def _nodo(self, ciclo: dict, repetidos: set[int] | None = None) -> QTreeWidgetItem:
         etiquetas = {"MACRO": "", "MESO": "", "MICRO": ""}
+        # Los macrociclos se listan por nombre, así que su orden no significa
+        # nada y enseñarlo solo confundiría.
+        orden = int(ciclo.get("Orden") or 0)
+        texto_orden = "" if ciclo["Tipo"] == "MACRO" or not orden else str(orden)
         item = QTreeWidgetItem([
             f"{etiquetas.get(ciclo['Tipo'], '')}{ciclo['Nombre']}",
+            texto_orden,
             str(ciclo.get("Duracion_Sem") or "")])
         item.setData(0, Qt.UserRole, ciclo["ID_Ciclo"])
+        item.setTextAlignment(1, Qt.AlignCenter)
+        if repetidos and orden in repetidos and texto_orden:
+            # Datos de antes de que existiera la comprobación: se señalan para
+            # que se puedan arreglar.
+            item.setForeground(1, QColor(estilo.ALERTA))
+            fuente_orden = QFont(); fuente_orden.setBold(True)
+            item.setFont(1, fuente_orden)
+            item.setToolTip(1, f"Hay otro ciclo hermano con el orden {orden}. "
+                               "Edítalos para darles números distintos.")
         if ciclo["Tipo"] == "MACRO":
             fuente = QFont(); fuente.setBold(True)
             item.setFont(0, fuente)
@@ -165,8 +184,9 @@ class VistaProgramas(QWidget):
                 item.setForeground(0, QColor(estilo.AZUL_OSCURO))
         elif ciclo["Tipo"] == "MICRO":
             item.setForeground(0, QColor("#4A5A66"))
+        repetidos_hijos = srv.ordenes_repetidos(self.repo, ciclo["ID_Ciclo"])
         for hijo in srv.hijos(self.repo, ciclo["ID_Ciclo"]):
-            item.addChild(self._nodo(hijo))
+            item.addChild(self._nodo(hijo, repetidos_hijos))
         return item
 
     def _seleccionar(self, id_ciclo: str) -> None:

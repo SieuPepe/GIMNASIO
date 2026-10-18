@@ -4,9 +4,11 @@ from __future__ import annotations
 
 from datetime import date
 
-from PySide6.QtCore import QDate, Qt
+from PySide6.QtCore import QDate, QEvent, Qt, Signal
+from PySide6.QtGui import QStandardItem, QStandardItemModel
 from PySide6.QtWidgets import (
-    QComboBox, QDateEdit, QLabel, QMessageBox, QTableWidget, QWidget,
+    QComboBox, QDateEdit, QLabel, QLineEdit, QListView, QMessageBox,
+    QTableWidget, QWidget,
 )
 
 from ..datos.libro import LibroBloqueado, LibroModificadoFuera
@@ -104,3 +106,104 @@ def abrir_fichero(ruta) -> None:
             subprocess.Popen(["xdg-open", str(ruta)])
     except Exception:
         pass
+
+
+def hacer_buscable(combo: QComboBox) -> QComboBox:
+    """Deja escribir dentro del desplegable para filtrar sus opciones.
+
+    Filtra por cualquier parte del texto y sin mirar mayúsculas ni acentos, y no
+    admite valores nuevos: lo que se escribe sirve para buscar, no para añadir.
+    """
+    combo.setEditable(True)
+    combo.setInsertPolicy(QComboBox.NoInsert)
+    completador = combo.completer()
+    if completador is not None:
+        completador.setCaseSensitivity(Qt.CaseInsensitive)
+        completador.setFilterMode(Qt.MatchContains)
+        completador.setCompletionMode(completador.CompletionMode.PopupCompletion)
+    return combo
+
+
+class DesplegableMultiple(QComboBox):
+    """Desplegable con casillas: se pueden elegir varias opciones a la vez.
+
+    Qt no trae nada parecido, así que esto es un desplegable normal con los
+    elementos marcables y la lista que no se cierra al pulsar. Arriba se ve el
+    resumen de lo elegido.
+    """
+
+    cambiado = Signal()
+
+    def __init__(self, opciones: list[tuple[str, str]],
+                 marcadas: list[str] | None = None,
+                 texto_vacio: str = "Nada seleccionado",
+                 texto_todas: str = "Todos", padre=None):
+        super().__init__(padre)
+        self.texto_vacio = texto_vacio
+        self.texto_todas = texto_todas
+
+        self.setModel(QStandardItemModel(self))
+        self.setView(QListView())
+        for clave, texto in opciones:
+            item = QStandardItem(texto)
+            item.setData(clave, Qt.UserRole)
+            item.setFlags(Qt.ItemIsUserCheckable | Qt.ItemIsEnabled)
+            item.setCheckState(
+                Qt.Checked if marcadas is None or clave in marcadas else Qt.Unchecked)
+            self.model().appendRow(item)
+
+        # Una caja de texto de solo lectura hace de resumen: el texto del
+        # desplegable normal no admite varias opciones.
+        self.setEditable(True)
+        self.setLineEdit(QLineEdit())
+        self.lineEdit().setReadOnly(True)
+        self.lineEdit().setCursor(Qt.PointingHandCursor)
+        self.lineEdit().installEventFilter(self)
+        self.view().viewport().installEventFilter(self)
+        self._resumir()
+
+    # -- lectura y escritura --
+    def marcadas(self) -> list[str]:
+        modelo = self.model()
+        return [modelo.item(i).data(Qt.UserRole) for i in range(modelo.rowCount())
+                if modelo.item(i).checkState() == Qt.Checked]
+
+    def marcar(self, claves: list[str]) -> None:
+        modelo = self.model()
+        for i in range(modelo.rowCount()):
+            item = modelo.item(i)
+            item.setCheckState(
+                Qt.Checked if item.data(Qt.UserRole) in claves else Qt.Unchecked)
+        self._resumir()
+        self.cambiado.emit()
+
+    # -- comportamiento --
+    def eventFilter(self, objeto, evento) -> bool:
+        if (objeto is self.view().viewport()
+                and evento.type() == QEvent.MouseButtonRelease):
+            indice = self.view().indexAt(evento.position().toPoint())
+            if indice.isValid():
+                item = self.model().itemFromIndex(indice)
+                item.setCheckState(Qt.Unchecked
+                                   if item.checkState() == Qt.Checked else Qt.Checked)
+                self._resumir()
+                self.cambiado.emit()
+            return True      # la lista se queda abierta para seguir marcando
+        if objeto is self.lineEdit() and evento.type() == QEvent.MouseButtonRelease:
+            self.showPopup()
+            return True
+        return super().eventFilter(objeto, evento)
+
+    def _resumir(self) -> None:
+        modelo = self.model()
+        marcadas = self.marcadas()
+        if not marcadas:
+            texto = self.texto_vacio
+        elif len(marcadas) == modelo.rowCount():
+            texto = self.texto_todas
+        else:
+            texto = ", ".join(
+                modelo.item(i).text() for i in range(modelo.rowCount())
+                if modelo.item(i).checkState() == Qt.Checked)
+        self.lineEdit().setText(texto)
+        self.setToolTip(texto)

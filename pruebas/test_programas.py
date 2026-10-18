@@ -8,7 +8,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from krv.datos import libro as ml, plantillas                      # noqa: E402
+from krv.datos import libro as ml, plantillas, semillas            # noqa: E402
 from krv.datos.repositorio import Repositorio                      # noqa: E402
 from krv.nucleo import config                                      # noqa: E402
 from krv.nucleo.config import RAIZ                                 # noqa: E402
@@ -265,3 +265,112 @@ class CargasConUsuario(Base):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class OrdenDeLosCiclos(unittest.TestCase):
+    """El orden fija la secuencia entre hermanos, y de ahí salen las fechas."""
+
+    def setUp(self):
+        self.temporal = tempfile.TemporaryDirectory()
+        base = Path(self.temporal.name)
+        ruta = base / "datos_krv.xlsx"
+        ml.crear(ruta)
+        self.libro = ml.Libro(ruta, base / "bk")
+        self.libro.cargar()
+        semillas.sembrar(self.libro)
+        self.repo = Repositorio(self.libro)
+        self.macro = self.repo.insertar("T_CICLOS", {
+            "Nombre": "Macro de prueba", "Tipo": "MACRO", "Orden": 1,
+            "Duracion_Sem": 8, "Origen": "MANUAL"})
+
+    def tearDown(self):
+        self.temporal.cleanup()
+
+    def _meso(self, nombre, orden):
+        return self.repo.insertar("T_CICLOS", {
+            "Nombre": nombre, "Tipo": "MESO", "ID_Padre": self.macro,
+            "Orden": orden, "Duracion_Sem": 4, "Origen": "MANUAL"})
+
+    def test_el_primer_orden_libre_es_el_uno_cuando_no_hay_nada(self):
+        self.assertEqual(srv.siguiente_orden(self.repo, self.macro), 1)
+
+    def test_el_primer_orden_libre_salta_los_ocupados(self):
+        self._meso("Acumulación", 1)
+        self._meso("Intensificación", 2)
+        self.assertEqual(srv.siguiente_orden(self.repo, self.macro), 3)
+
+    def test_el_primer_orden_libre_rellena_los_huecos(self):
+        # Si se borró el 2, el siguiente que se cree debería ocupar ese hueco.
+        self._meso("Acumulación", 1)
+        self._meso("Realización", 3)
+        self.assertEqual(srv.siguiente_orden(self.repo, self.macro), 2)
+
+    def test_detecta_quien_ocupa_un_orden(self):
+        self._meso("Acumulación", 1)
+        ocupado = srv.ciclo_con_ese_orden(self.repo, self.macro, 1)
+        self.assertIsNotNone(ocupado)
+        self.assertEqual(ocupado["Nombre"], "Acumulación")
+        self.assertIsNone(srv.ciclo_con_ese_orden(self.repo, self.macro, 2))
+
+    def test_un_ciclo_no_choca_consigo_mismo_al_editarlo(self):
+        meso = self._meso("Acumulación", 1)
+        self.assertIsNone(
+            srv.ciclo_con_ese_orden(self.repo, self.macro, 1, excluir=meso))
+
+    def test_el_orden_solo_choca_entre_hermanos(self):
+        # Dos microciclos de mesociclos distintos pueden ser los dos el 1:
+        # el orden solo tiene que ser único dentro de un mismo padre.
+        meso_a = self._meso("Bloque A", 1)
+        meso_b = self._meso("Bloque B", 2)
+        micros = {}
+        for clave, padre in (("a", meso_a), ("b", meso_b)):
+            micros[clave] = self.repo.insertar("T_CICLOS", {
+                "Nombre": "Semana 1", "Tipo": "MICRO", "ID_Padre": padre,
+                "Orden": 1, "Duracion_Sem": 1, "Origen": "MANUAL"})
+        # Cada padre ve como ocupante del orden 1 a su propio hijo, no al ajeno.
+        self.assertEqual(
+            srv.ciclo_con_ese_orden(self.repo, meso_a, 1)["ID_Ciclo"], micros["a"])
+        self.assertEqual(
+            srv.ciclo_con_ese_orden(self.repo, meso_b, 1)["ID_Ciclo"], micros["b"])
+        # Y ninguno de los dos cuenta como repetido.
+        self.assertEqual(srv.ordenes_repetidos(self.repo, meso_a), set())
+        self.assertEqual(srv.ordenes_repetidos(self.repo, meso_b), set())
+
+    def test_encuentra_los_ordenes_repetidos(self):
+        self._meso("Bloque A", 1)
+        self._meso("Bloque B", 1)
+        self._meso("Bloque C", 2)
+        self.assertEqual(srv.ordenes_repetidos(self.repo, self.macro), {1})
+
+    def test_sin_repetidos_no_senala_nada(self):
+        self._meso("Bloque A", 1)
+        self._meso("Bloque B", 2)
+        self.assertEqual(srv.ordenes_repetidos(self.repo, self.macro), set())
+
+    def test_clonar_no_duplica_el_orden(self):
+        meso = self._meso("Acumulación", 1)
+        copia = srv.clonar(self.repo, meso, "Acumulación bis", id_padre=self.macro)
+        self.assertNotEqual(self.repo.obtener("T_CICLOS", copia)["Orden"],
+                            self.repo.obtener("T_CICLOS", meso)["Orden"])
+        self.assertEqual(srv.ordenes_repetidos(self.repo, self.macro), set())
+
+    def test_clonar_a_otro_padre_conserva_el_orden_si_esta_libre(self):
+        meso_a = self._meso("Bloque A", 1)
+        meso_b = self._meso("Bloque B", 2)
+        micro = self.repo.insertar("T_CICLOS", {
+            "Nombre": "Semana 1", "Tipo": "MICRO", "ID_Padre": meso_a,
+            "Orden": 1, "Duracion_Sem": 1, "Origen": "MANUAL"})
+        copia = srv.clonar(self.repo, micro, "Semana 1", id_padre=meso_b)
+        self.assertEqual(self.repo.obtener("T_CICLOS", copia)["Orden"], 1)
+
+    def test_el_orden_decide_el_calendario(self):
+        # Lo que de verdad importa: cambiar el orden cambia las fechas.
+        primero = self._meso("Primero", 1)
+        segundo = self._meso("Segundo", 2)
+        fases = {f.id_ciclo: f for f in srv.calendario(self.repo, self.macro,
+                                                       date(2026, 1, 5))}
+        self.assertLess(fases[primero].inicio, fases[segundo].inicio)
+        self.repo.actualizar("T_CICLOS", primero, {"Orden": 9})
+        fases = {f.id_ciclo: f for f in srv.calendario(self.repo, self.macro,
+                                                       date(2026, 1, 5))}
+        self.assertLess(fases[segundo].inicio, fases[primero].inicio)

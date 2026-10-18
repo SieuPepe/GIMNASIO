@@ -22,11 +22,14 @@ from ..servicios import usuarios as srv_usuarios
 from . import ayuda as may
 from . import estilo
 from .comunes import (
-    avisar_error, campo_fecha, desplegable, etiqueta, leer_fecha, preseleccionar,
+    DesplegableMultiple, avisar_error, campo_fecha, desplegable, etiqueta,
+    hacer_buscable, leer_fecha, preseleccionar,
 )
 from .vista_valoraciones import VistaValoraciones
 
 COLUMNAS = ["ID", "Usuario", "Programa", "Inicio", "Fin", "Estado", "Fase actual", "Quedan"]
+# Lo que se ve al entrar: lo que está vivo.
+ESTADOS_POR_DEFECTO = ["PLANIFICADA", "EN_CURSO"]
 ESTADOS = [("PLANIFICADA", "Planificada"), ("EN_CURSO", "En curso"),
            ("FINALIZADA", "Finalizada"), ("INTERRUMPIDA", "Interrumpida")]
 
@@ -50,10 +53,12 @@ class DialogoAsignacion(QDialog):
                                                    u.get("Apellidos")) if x))
             for u in repo.listar("T_USUARIOS", lambda u: u.get("Estado") == "ACTIVO",
                                  orden="Apellidos")])
+        hacer_buscable(self.usuario)
         self.usuario.currentIndexChanged.connect(self._refrescar_objetivos)
         self.ciclo = desplegable([
             (c["ID_Ciclo"], f"{c['Nombre']}  ({c.get('Duracion_Sem')} semanas)")
             for c in srv.raices(repo)])
+        hacer_buscable(self.ciclo)
         self.ciclo.currentIndexChanged.connect(self._previsualizar)
         self.inicio = campo_fecha(date.today())
         self.inicio.dateChanged.connect(self._previsualizar)
@@ -183,6 +188,26 @@ class VistaAsignaciones(QWidget):
         self.contador = etiqueta("", "subtitulo")
         raiz.addWidget(self.contador)
 
+        filtros = QHBoxLayout()
+        filtros.addWidget(etiqueta("Estado:"))
+        # Arranca en lo que está vivo: lo terminado y lo anulado solo estorba
+        # en el día a día, pero sigue a un clic.
+        self.filtro_estado = DesplegableMultiple(
+            ESTADOS, marcadas=ESTADOS_POR_DEFECTO,
+            texto_vacio="Ningún estado: no se ve nada",
+            texto_todas="Todos los estados")
+        self.filtro_estado.setMinimumWidth(260)
+        self.filtro_estado.cambiado.connect(self.refrescar)
+        filtros.addWidget(self.filtro_estado)
+        self.btn_todos = QPushButton("Ver todas")
+        self.btn_todos.setProperty("plano", True)
+        self.btn_todos.setToolTip("Marca los cuatro estados")
+        self.btn_todos.clicked.connect(
+            lambda: self.filtro_estado.marcar([c for c, _ in ESTADOS]))
+        filtros.addWidget(self.btn_todos)
+        filtros.addStretch()
+        raiz.addLayout(filtros)
+
         self.tabla = QTableWidget(0, len(COLUMNAS))
         self.tabla.setHorizontalHeaderLabels(COLUMNAS)
         self.tabla.setSelectionBehavior(QAbstractItemView.SelectRows)
@@ -215,13 +240,23 @@ class VistaAsignaciones(QWidget):
         raiz.addLayout(botones)
 
     def refrescar(self) -> None:
-        asignaciones = self.repo.listar("T_ASIGNACIONES", orden="F_Inicio",
-                                        descendente=True)
-        self.contador.setText(
-            f"{len(asignaciones)} asignaciones · "
-            f"{len([a for a in asignaciones if a.get('Estado') == 'EN_CURSO'])} en curso"
-            if asignaciones else
-            "Nadie tiene programa asignado todavía.")
+        todas = self.repo.listar("T_ASIGNACIONES", orden="F_Inicio",
+                                 descendente=True)
+        estados = self.filtro_estado.marcadas()
+        asignaciones = [a for a in todas if (a.get("Estado") or "") in estados]
+        en_curso = len([a for a in asignaciones if a.get("Estado") == "EN_CURSO"])
+        if not todas:
+            self.contador.setText("Nadie tiene programa asignado todavía.")
+        elif not estados:
+            self.contador.setText(
+                "No hay ningún estado marcado en el filtro, así que no se ve nada.")
+        elif len(asignaciones) == len(todas):
+            self.contador.setText(f"{len(todas)} asignaciones · {en_curso} en curso")
+        else:
+            self.contador.setText(
+                f"{len(asignaciones)} de {len(todas)} asignaciones · "
+                f"{en_curso} en curso · el filtro esconde "
+                f"{len(todas) - len(asignaciones)}")
 
         self.tabla.blockSignals(True)
         self.tabla.setRowCount(len(asignaciones))

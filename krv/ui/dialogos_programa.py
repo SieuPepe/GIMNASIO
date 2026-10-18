@@ -2,10 +2,9 @@
 
 from __future__ import annotations
 
-from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QCheckBox, QComboBox, QDialog, QDialogButtonBox, QDoubleSpinBox, QFormLayout,
-    QLineEdit, QPlainTextEdit, QSpinBox, QVBoxLayout,
+    QLineEdit, QMessageBox, QPlainTextEdit, QSpinBox, QVBoxLayout,
 )
 
 from ..datos.esquema import BLOQUE, ENFOQUE, MODO_CARGA
@@ -13,7 +12,7 @@ from ..datos.repositorio import Repositorio
 from ..servicios import ejercicios as srv_ejercicios
 from ..servicios import programas as srv
 from . import ayuda as may
-from .comunes import avisar_error, desplegable, etiqueta
+from .comunes import avisar_error, desplegable, etiqueta, hacer_buscable
 from .ficha_ejercicio import texto_patron
 
 TIPOS_SESION = [("FUERZA", "Fuerza"), ("CARDIO", "Cardio"), ("MOVILIDAD", "Movilidad"),
@@ -39,7 +38,9 @@ class DialogoCiclo(QDialog):
         super().__init__(padre)
         self.repo = repo
         self.id_ciclo = id_ciclo
-        self.datos = repo.obtener("T_CICLOS", id_ciclo) if id_ciclo else {}
+        # El «or {}» importa: si el ciclo se borró desde otro sitio, obtener()
+        # devuelve None y el diálogo reventaría al construirse.
+        self.datos = (repo.obtener("T_CICLOS", id_ciclo) or {}) if id_ciclo else {}
         self.tipo = self.datos.get("Tipo") or tipo
         self.id_padre = self.datos.get("ID_Padre") or id_padre
         nombres = {"MACRO": "Macrociclo", "MESO": "Mesociclo", "MICRO": "Microciclo"}
@@ -57,9 +58,12 @@ class DialogoCiclo(QDialog):
         self.duracion = QSpinBox(); self.duracion.setRange(1, 104)
         self.duracion.setValue(int(self.datos.get("Duracion_Sem") or 4))
         self.duracion.setSuffix(" semanas")
-        self.orden = QSpinBox(); self.orden.setRange(1, 50)
+        self.orden = QSpinBox(); self.orden.setRange(1, 99)
         self.orden.setValue(int(self.datos.get("Orden") or
-                                len(srv.hijos(repo, self.id_padre)) + 1))
+                                srv.siguiente_orden(repo, self.id_padre)))
+        self.orden.setToolTip(
+            "El puesto de este ciclo entre sus hermanos, y por tanto el orden "
+            "cronológico. Números enteros, y no se puede repetir.")
         self.objetivo = QLineEdit(self.datos.get("Objetivo_Ciclo") or "")
         self.enfoque = desplegable([(e, e.capitalize()) for e in ENFOQUE],
                                    self.datos.get("Enfoque"), vacio=True)
@@ -81,7 +85,9 @@ class DialogoCiclo(QDialog):
         raiz.addLayout(form)
         raiz.addWidget(etiqueta(
             "La duración de los hijos debería sumar la del padre. Si no cuadra, la "
-            "aplicación avisa pero no impide guardar.", "subtitulo", ajustar=True))
+            "aplicación avisa pero no impide guardar.\n"
+            "El «orden» fija la secuencia entre ciclos hermanos: de ahí salen las "
+            "fechas al asignar. No puede repetirse.", "subtitulo", ajustar=True))
 
         botones = QDialogButtonBox(QDialogButtonBox.Save | QDialogButtonBox.Cancel)
         botones.button(QDialogButtonBox.Save).setText("Guardar")
@@ -100,6 +106,19 @@ class DialogoCiclo(QDialog):
             "Es_Plantilla_SN": self.plantilla.isChecked(),
             "Notas": self.notas.toPlainText().strip(),
         }
+        ocupado = srv.ciclo_con_ese_orden(
+            self.repo, self.id_padre, self.orden.value(), excluir=self.id_ciclo)
+        if ocupado is not None:
+            libre = srv.siguiente_orden(self.repo, self.id_padre)
+            QMessageBox.warning(
+                self, "Ese orden ya está ocupado",
+                f"«{ocupado['Nombre']}» ya tiene el orden {self.orden.value()}.\n\n"
+                "Dos ciclos hermanos con el mismo orden quedarían en una secuencia "
+                "imprevisible, y de esa secuencia salen las fechas al asignar.\n\n"
+                f"El primer número libre es el {libre}.")
+            self.orden.setFocus()
+            self.orden.selectAll()
+            return
         try:
             if self.id_ciclo:
                 self.repo.actualizar("T_CICLOS", self.id_ciclo, datos)
@@ -119,7 +138,7 @@ class DialogoSesion(QDialog):
         self.repo = repo
         self.id_ciclo = id_ciclo
         self.id_sesion = id_sesion
-        self.datos = repo.obtener("T_SESIONES", id_sesion) if id_sesion else {}
+        self.datos = (repo.obtener("T_SESIONES", id_sesion) or {}) if id_sesion else {}
         self.setWindowTitle("Sesión")
         self.setMinimumWidth(440)
 
@@ -173,7 +192,7 @@ class DialogoLinea(QDialog):
         self.repo = repo
         self.id_sesion = id_sesion
         self.id_linea = id_linea
-        self.datos = repo.obtener("T_SESION_DET", id_linea) if id_linea else {}
+        self.datos = (repo.obtener("T_SESION_DET", id_linea) or {}) if id_linea else {}
         self.setWindowTitle("Ejercicio de la sesión")
         self.setMinimumWidth(520)
 
@@ -191,11 +210,7 @@ class DialogoLinea(QDialog):
         indice = self.ejercicio.findData(self.datos.get("ID_Ejercicio"))
         if indice >= 0:
             self.ejercicio.setCurrentIndex(indice)
-        self.ejercicio.setEditable(True)
-        completador = self.ejercicio.completer()
-        if completador is not None:
-            completador.setCaseSensitivity(Qt.CaseInsensitive)
-            completador.setFilterMode(Qt.MatchContains)
+        hacer_buscable(self.ejercicio)
         self.ejercicio.currentIndexChanged.connect(self._pista_material)
 
         self.series = QSpinBox(); self.series.setRange(1, 12)
