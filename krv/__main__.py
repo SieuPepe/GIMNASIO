@@ -9,7 +9,7 @@ from PySide6.QtWidgets import QApplication, QMessageBox
 
 from .datos import libro as mod_libro
 from .nucleo import config, log
-from .ui import estilo
+from .ui import asistente, estilo
 from .ui.principal import VentanaPrincipal
 
 
@@ -71,6 +71,17 @@ def main() -> int:
             None, "El libro está abierto en Excel",
             "Puedes consultar datos, pero no podrás guardar hasta que cierres Excel.\n\n"
             "Para mirar los datos mientras trabajas, abre una copia y no el original.")
+
+    # La primera vez no hay cuenta de correo: se pregunta antes de abrir nada.
+    if asistente.hace_falta():
+        from .datos.repositorio import Repositorio
+        paso = asistente.Asistente(cfg, Repositorio(libro))
+        if paso.exec():
+            try:
+                libro.guardar()
+            except Exception as error:
+                registro.exception("No se ha podido guardar tras el asistente")
+                QMessageBox.warning(None, "No se ha podido guardar", str(error))
 
     ventana = VentanaPrincipal(cfg, libro)
     ventana.show()

@@ -31,9 +31,30 @@ física, planificación, comunicación por correo y panel de alertas.
 | 6 | Panel de alertas con navegación a cada ficha | Hecha |
 | — | Manual interactivo, ayuda por ventana y recorridos guiados | Hecha |
 | 7 | Módulo de IA | Pendiente |
-| 8 | Instalador | Pendiente |
-| 8.5 | Versión de demostración con datos de ejemplo | Pendiente |
+| 8 | Instalador con dos modos y asistente de configuración | Hecha |
+| 8.5 | Datos de demostración | Hecha |
 | 9 | App para el móvil | Pendiente |
+
+## Instalación
+
+```powershell
+powershell -ExecutionPolicy Bypass -File instalar.ps1
+```
+
+Pregunta qué quieres hacer:
+
+| Modo | Qué hace con tus datos |
+|---|---|
+| **Instalación desde cero** | Rehace el libro con un usuario de ejemplo que tiene de todo. Copia de seguridad y confirmación antes. |
+| **Actualizar la versión** | No toca el libro ni la configuración. Copia de seguridad antes, y añade las columnas nuevas si las hay. |
+
+En los dos modos: comprueba Python, prepara el entorno virtual, instala las
+dependencias y crea el acceso directo del Escritorio con el icono. Se niega a
+seguir si el libro está abierto en Excel.
+
+La primera vez, el programa abre un **asistente** que pregunta la cuenta de
+correo —y la prueba contra Gmail antes de guardarla—, las direcciones de los
+formularios de Google y los datos de la marca. No hace falta nada más.
 
 ## Ayuda dentro del programa
 

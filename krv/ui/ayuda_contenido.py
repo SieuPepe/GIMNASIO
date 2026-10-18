@@ -997,6 +997,51 @@ portada de este manual se ve lo que el programa está usando ahora mismo.</p>
 """,
     ),
     Pagina(
+        clave="instalar",
+        titulo="Instalar y actualizar",
+        cuerpo="""
+<p>El instalador es <tt>instalar.ps1</tt>, en la carpeta del programa. Se lanza
+con el botón derecho → «Ejecutar con PowerShell», o desde una consola:</p>
+
+<p><tt>powershell -ExecutionPolicy Bypass -File instalar.ps1</tt></p>
+
+<p>Pregunta qué quieres hacer, y hay dos caminos muy distintos:</p>
+
+<h2>1 · Instalación desde cero</h2>
+<p>Para un ordenador nuevo. Instala las dependencias, crea el acceso directo
+del Escritorio con el icono, y deja el libro de datos recién hecho con un
+<b>usuario de ejemplo que tiene de todo</b>: objetivos, salud, disponibilidad,
+dos valoraciones, dos programas asignados y correos en varios estados. Sirve
+para ver el programa entero funcionando antes de meter a nadie de verdad; ese
+usuario se borra cuando ya no haga falta.</p>
+
+<p><b>Este modo rehace el libro de datos.</b> Si ya había uno, se hace una copia
+de seguridad fechada antes de tocarlo y se pide confirmación expresa.</p>
+
+<p>Al arrancar sale el <b>asistente de primera configuración</b>, que pregunta
+la cuenta de correo desde la que vas a escribir y, si los tienes a mano, las
+direcciones de tus formularios de Google.</p>
+
+<h2>2 · Actualizar la versión</h2>
+<p>Renueva el programa y <b>no toca ni tus datos ni tu configuración</b>. Antes
+de nada hace una copia de seguridad del libro, y después le añade las columnas
+nuevas si esta versión las necesita. Tu <tt>config.toml</tt> y tu <tt>.env</tt>
+se quedan como están.</p>
+
+<h2>El cuidado con el Excel</h2>
+<p>El libro es el único sitio donde viven los datos, así que el instalador:</p>
+<ul>
+<li>Se niega a seguir si el libro está abierto en Excel.</li>
+<li>Hace una copia fechada <b>antes</b> de cualquier cosa, en los dos modos.</li>
+<li>Solo rehace el libro si eliges la instalación desde cero y lo confirmas.</li>
+</ul>
+
+<p>Si algo sale mal, la copia está junto al libro, con el nombre
+<tt>datos_krv_antes_de_instalar_<i>fecha</i>.xlsx</tt>: se recupera copiándola
+encima del original, con el programa cerrado.</p>
+""",
+    ),
+    Pagina(
         clave="primer_dia",
         titulo="El primer día: qué hacer por orden",
         cuerpo="""
@@ -1375,7 +1420,9 @@ ha pasado, con fecha. Es lo primero que conviene mirar.</p>
 PAGINAS: dict[str, Pagina] = {p.clave: p for p in _PAGINAS}
 
 CAPITULOS: tuple[Capitulo, ...] = (
-    Capitulo("Empezar aquí", ("que_es", "arranque", "primer_dia", "manual_ayuda"),
+    Capitulo("Empezar aquí",
+             ("que_es", "instalar", "arranque", "primer_dia",
+              "manual_ayuda"),
              "Qué es, cómo se arranca y qué hacer el primer día."),
     Capitulo("Cómo se hace",
              ("como_alta", "como_valorar", "como_programa", "como_asignar",

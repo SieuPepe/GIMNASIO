@@ -92,32 +92,44 @@ puntual, que se marcan como atendidas. Cada una lleva a su ficha en un clic.
 
 **Resultado:** lo que hace que este software no sea uno más.
 
-## Fase 8 — Empaquetado
-- PyInstaller, instalador, manual breve de uso.
-- Prueba en el PC real de destino.
+## Fase 8 — Instalador
+**Hecha**, salvo la prueba en el PC real de destino.
+- `instalar.ps1` con dos modos: instalación desde cero y actualización.
+- Comprobación de Python, entorno virtual y dependencias.
+- Acceso directo en el Escritorio con el icono del logotipo, sin consola.
+- Asistente de primera configuración dentro del programa: cuenta de correo
+  —probada contra Gmail antes de guardarla—, formularios y datos de marca.
+- Cuidado con el libro: se niega a seguir si está abierto en Excel, copia
+  fechada antes de nada en los dos modos, y solo lo rehace si se elige la
+  instalación desde cero y se confirma.
 
-## Fase 8.5 — Versión de demostración con datos de ejemplo
-Antes de pasar a producción, una copia del programa cargada con datos
-inventados para poder ver todas las funcionalidades funcionando sin tener que
-dar de alta a nadie de verdad.
+**Pendiente:** empaquetar con PyInstaller para no depender de que haya Python
+instalado. Hoy el instalador lo comprueba y avisa de dónde bajarlo.
 
-- **Un generador** (`herramientas/crear_demo.py`) que monta un libro aparte
-  —`datos_demo.xlsx`, nunca el real— con datos verosímiles: una veintena de
-  usuarios de edades y sexos repartidos, sus objetivos, su salud y su
-  disponibilidad.
-- **Cobertura deliberada de todos los casos**, que es lo que hace útil la demo:
-  valoraciones completas y a medias, alguna sin baremo para esa edad, usuarios
-  con y sin consentimiento, asignaciones terminadas, en curso y a punto de
-  vencer (una a 14 días justos, para ver saltar el aviso), correos en borrador,
-  aprobados, enviados y en error, respuestas de encuesta con molestia declarada
-  y con cita solicitada, 1RM registrados en unos usuarios y ausentes en otros.
-- **Arranque separado**, con la demo señalada en la propia ventana para que no
-  haya duda de en qué libro estás trabajando.
-- **Nombres claramente ficticios**, para que nadie confunda un dato de demo con
-  uno real.
+## Fase 8.5 — Datos de demostración
+**Hecha.** La instalación desde cero deja un usuario de ejemplo con todo lo que
+puede tener uno, y `herramientas/crear_demo.py` lo rehace cuando haga falta.
+
+Lo que trae y por qué, que es lo que lo hace útil:
+
+- **Un solo usuario**, «Prueba Demostración (datos de ejemplo)», con el nombre
+  diciendo lo que es para que nadie lo confunda con alguien real.
+- **Su correo es el de la propia cuenta de envío**: probar un correo de verdad
+  es escribirse a uno mismo, nunca molestar a nadie.
+- **Histórico, no solo una fila**: tres objetivos (uno cumplido), dos revisiones
+  de salud y dos de disponibilidad, para que se vea que se acumulan.
+- **Dos valoraciones completas**, la segunda mejor que la primera, con
+  asimetrías reales entre lados y una técnica con un 1 que enciende el aviso.
+- **Dos asignaciones**: una terminada y otra en curso que vence en 12 días, de
+  modo que el panel de inicio arranca con el aviso de los 14 días encendido.
+- **1RM registrados** para lo que el programa en curso necesita, menos uno
+  dejado fuera a propósito para ver el aviso de «falta una repetición máxima».
+- **Correos en los tres estados**: borrador, enviado y en error.
+- **Una encuesta contestada** con molestia declarada y cita solicitada, que son
+  los dos avisos que hay que marcar como atendidos.
 
 **Resultado:** se puede ver y enseñar el programa entero —incluido el panel de
-alertas con avisos de verdad— sin tocar los datos de nadie, y sirve de banco de
+alertas con avisos de verdad— sin dar de alta a nadie, y sirve de banco de
 pruebas cada vez que se cambia algo.
 
 ## Fase 9 — App para el móvil

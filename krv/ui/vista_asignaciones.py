@@ -253,10 +253,21 @@ class VistaAsignaciones(QWidget):
         elif len(asignaciones) == len(todas):
             self.contador.setText(f"{len(todas)} asignaciones · {en_curso} en curso")
         else:
+            # Decir cuántas esconde no basta: lo útil es saber de qué estado
+            # son, que es justo lo que uno se pregunta al ver la tabla vacía.
+            nombres = dict(ESTADOS)
+            escondidas: dict[str, int] = {}
+            for a in todas:
+                estado = a.get("Estado") or ""
+                if estado not in estados:
+                    escondidas[estado] = escondidas.get(estado, 0) + 1
+            detalle = ", ".join(
+                f"{veces} {nombres.get(estado, estado).lower()}"
+                for estado, veces in sorted(escondidas.items(),
+                                            key=lambda x: -x[1]))
             self.contador.setText(
                 f"{len(asignaciones)} de {len(todas)} asignaciones · "
-                f"{en_curso} en curso · el filtro esconde "
-                f"{len(todas) - len(asignaciones)}")
+                f"{en_curso} en curso · el filtro esconde {detalle}")
 
         self.tabla.blockSignals(True)
         self.tabla.setRowCount(len(asignaciones))
