@@ -13,7 +13,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import date, timedelta
 
-from ..nucleo.config import Config
+from ..nucleo.config import Config, Correo
 from ..servicios import cola as srv_cola
 from ..servicios import programas as srv_programas
 from ..servicios import valoracion as srv_valoracion
@@ -119,13 +119,23 @@ def crear(repo: Repositorio, cfg: Config, hoy: date | None = None) -> Resultado:
 
 # ------------------------------------------------------------------ las partes
 
+def correo_de_pruebas(cfg: Config) -> str:
+    """La dirección del usuario de ejemplo: la propia cuenta de envío.
+
+    Si la configuración no tiene remitente —un config.toml a medio hacer, por
+    ejemplo— se usa el de fábrica. Un usuario de demostración sin correo no
+    sirve para enseñar la mitad del programa.
+    """
+    return cfg.correo.remitente.strip() or Correo().remitente
+
+
 def _usuario(repo: Repositorio, cfg: Config, hoy: date) -> str:
     anterior = existe(repo)
     datos = {
         "Nombre": NOMBRE, "Apellidos": APELLIDOS,
         "F_Nacimiento": date(hoy.year - 42, 5, 17), "Sexo": "M",
         # El propio remitente: probar un correo es escribirse a uno mismo.
-        "Email": cfg.correo.remitente, "Telefono": "600 000 000",
+        "Email": correo_de_pruebas(cfg), "Telefono": "600 000 000",
         "F_Alta": hoy - timedelta(days=210), "Estado": "ACTIVO",
         "Consentimiento_SN": True, "F_Consentimiento": hoy - timedelta(days=210),
         "Origen_Consentimiento": "PRESENCIAL", "Acepta_Emails_SN": True,
@@ -359,6 +369,14 @@ def _correos(repo: Repositorio, cfg: Config, id_usuario: str,
         return len(repo.listar("T_COLA_MAIL",
                                lambda c: c.get("ID_Usuario") == id_usuario))
     srv_cola.generar_borradores(repo, cfg)
+    if not _hay_borrador(repo, id_usuario):
+        # Según cómo esté la configuración puede no salir ninguno, y entonces
+        # la bandeja de la demostración no enseñaría el estado más importante.
+        repo.insertar("T_COLA_MAIL", {
+            "ID_Usuario": id_usuario, "Codigo_Plantilla": "ENCUESTA_T14",
+            "F_Generado": hoy, "F_Programada": hoy, "Estado": "BORRADOR",
+            "Asunto_Final": "¿Cómo ha ido este ciclo?",
+            "Cuerpo_Final": "<p>Ejemplo de correo pendiente de tu revisión.</p>"})
     repo.insertar("T_COLA_MAIL", {
         "ID_Usuario": id_usuario, "Codigo_Plantilla": "BIENVENIDA",
         "F_Generado": hoy - timedelta(days=210),
@@ -392,6 +410,12 @@ def _respuestas(repo: Repositorio, id_usuario: str, hoy: date) -> None:
 
 
 # ------------------------------------------------------------------- auxiliares
+
+def _hay_borrador(repo: Repositorio, id_usuario: str) -> bool:
+    return bool(repo.listar(
+        "T_COLA_MAIL", lambda c: (c.get("ID_Usuario") == id_usuario
+                                  and c.get("Estado") == "BORRADOR")))
+
 
 def _ya_tiene(repo: Repositorio, tabla: str, id_usuario: str) -> bool:
     return bool(repo.listar(tabla, lambda f: f.get("ID_Usuario") == id_usuario))

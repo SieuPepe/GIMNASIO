@@ -28,6 +28,22 @@ $ErrorActionPreference = 'Stop'
 $raiz = $PSScriptRoot
 $nombre = 'Kevin Ruiz Valdenegro'
 
+function Texto($objeto) {
+    <#
+        Convierte en texto legible lo que llega de un programa externo.
+
+        Lo que el programa escribe por la salida de errores llega envuelto en un
+        objeto de error, y si se pasa a cadena a secas sale
+        "System.Management.Automation.RemoteException" en vez del mensaje.
+    #>
+    if ($objeto -is [System.Management.Automation.ErrorRecord]) {
+        if ($objeto.Exception -and $objeto.Exception.Message) {
+            return $objeto.Exception.Message
+        }
+    }
+    return "$objeto"
+}
+
 function Ejecuta {
     <#
         Lanza un programa externo y devuelve su codigo de salida.
@@ -54,9 +70,9 @@ function Ejecuta {
     $codigo = 0
     try {
         if ($Mostrar) {
-            & $Exe @Argumentos 2>&1 | ForEach-Object { Write-Host "   $_" }
+            & $Exe @Argumentos 2>&1 | ForEach-Object { Write-Host "   $(Texto $_)" }
         } else {
-            $salida = & $Exe @Argumentos 2>&1 | ForEach-Object { "$_" }
+            $salida = & $Exe @Argumentos 2>&1 | ForEach-Object { Texto $_ }
         }
         $codigo = $LASTEXITCODE
     } catch {

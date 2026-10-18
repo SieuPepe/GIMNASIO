@@ -11,7 +11,7 @@
 $ErrorActionPreference = 'Stop'
 $texto = Get-Content (Join-Path (Split-Path -Parent $PSScriptRoot) 'instalar.ps1') -Raw
 # Desde la definicion de Ejecuta, que es de la que dependen las demas.
-$desde = $texto.IndexOf('function Ejecuta')
+$desde = $texto.IndexOf('function Texto')
 $hasta = $texto.IndexOf('# --------------------------------------------------------------------- el modo')
 Invoke-Expression $texto.Substring($desde, $hasta - $desde)
 
@@ -26,6 +26,13 @@ function Comprueba($que, $esperado, $obtenido) {
 $python = Busca-Python
 if ($python) { Write-Host "OK    Busca-Python -> $($python.Etiqueta) $($python.Version)" -ForegroundColor Green }
 else { Write-Host 'FALLA Busca-Python: no encuentra ninguno' -ForegroundColor Red; $fallos++ }
+
+# -- Texto: sin esto, lo que el programa escribe por la salida de errores
+#    sale como "System.Management.Automation.RemoteException".
+$registro = New-Object System.Management.Automation.ErrorRecord(
+    (New-Object System.Exception 'mensaje de verdad'), 'id', 'NotSpecified', $null)
+Comprueba 'Texto: saca el mensaje del error' 'mensaje de verdad' (Texto $registro)
+Comprueba 'Texto: deja pasar lo normal' 'hola' (Texto 'hola')
 
 # -- Ejecuta: lo que rompio construir.ps1 en Windows PowerShell 5.
 #    Ahi, con ErrorActionPreference en 'Stop', lo que un programa escribe por la

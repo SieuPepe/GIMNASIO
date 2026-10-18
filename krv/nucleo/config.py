@@ -34,6 +34,65 @@ def _raiz() -> Path:
     return Path(__file__).resolve().parents[2]
 
 
+def _documentos_segun_windows() -> Path | None:
+    """La carpeta Documentos de verdad, preguntándosela a Windows.
+
+    No vale componer «usuario\\Documents»: si OneDrive se ha llevado la carpeta
+    —lo hace él solo en muchos equipos— la de verdad está en otro sitio. El
+    instalador sí se la pregunta a Windows, así que si aquí lo adivináramos el
+    programa y el instalador acabarían usando carpetas distintas: las copias de
+    seguridad en una y el libro en otra.
+    """
+    if not sys.platform.startswith("win"):
+        return None
+    try:
+        import ctypes
+        from ctypes import wintypes
+
+        class _GUID(ctypes.Structure):
+            # c_ubyte y no c_byte: con bytes con signo habría que escribir los
+            # valores altos en negativo y es muy fácil colarse.
+            _fields_ = [("Data1", wintypes.DWORD), ("Data2", wintypes.WORD),
+                        ("Data3", wintypes.WORD), ("Data4", ctypes.c_ubyte * 8)]
+
+        # FOLDERID_Documents = {FDD39AD0-238F-46AF-ADB4-6C85480369C7}
+        carpeta = _GUID(0xFDD39AD0, 0x238F, 0x46AF, (ctypes.c_ubyte * 8)(
+            0xAD, 0xB4, 0x6C, 0x85, 0x48, 0x03, 0x69, 0xC7))
+        destino = ctypes.c_wchar_p()
+        if ctypes.windll.shell32.SHGetKnownFolderPath(
+                ctypes.byref(carpeta), 0, None, ctypes.byref(destino)) != 0:
+            return None
+        ruta = Path(destino.value)
+        ctypes.windll.ole32.CoTaskMemFree(destino)
+        return ruta
+    except Exception:
+        return None
+
+
+def _documentos_segun_registro() -> Path | None:
+    """Lo mismo, por el registro, por si lo de arriba falla."""
+    if not sys.platform.startswith("win"):
+        return None
+    try:
+        import winreg
+        clave = (r"Software\Microsoft\Windows\CurrentVersion\Explorer"
+                 r"\User Shell Folders")
+        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, clave) as abierta:
+            valor, _ = winreg.QueryValueEx(abierta, "Personal")
+        return Path(os.path.expandvars(valor))
+    except Exception:
+        return None
+
+
+def carpeta_documentos() -> Path:
+    """La carpeta de documentos del usuario, de la forma más fiable posible."""
+    for candidata in (_documentos_segun_windows(), _documentos_segun_registro()):
+        if candidata is not None and candidata.exists():
+            return candidata
+    clasica = Path.home() / "Documents"
+    return clasica if clasica.exists() else Path.home()
+
+
 def _carpeta_datos() -> Path:
     """Dónde vive lo del usuario: su libro, su configuración, sus copias.
 
@@ -41,13 +100,19 @@ def _carpeta_datos() -> Path:
     deja escribir. Empaquetado va a Documentos, que además es donde la persona
     espera encontrar un Excel suyo. Sin empaquetar, todo sigue en la carpeta del
     proyecto, como hasta ahora.
+
+    La variable de entorno KRV_DATOS manda sobre todo lo demás: es la salida
+    para quien quiera tener sus datos en otro sitio, por ejemplo en una unidad
+    de red.
     """
+    forzada = os.environ.get("KRV_DATOS", "").strip()
+    if forzada:
+        carpeta = Path(forzada).expanduser()
+        carpeta.mkdir(parents=True, exist_ok=True)
+        return carpeta
     if not empaquetado():
         return _raiz()
-    documentos = Path.home() / "Documents"
-    if not documentos.exists():                      # Windows en otro idioma
-        documentos = Path(os.environ.get("USERPROFILE", Path.home()))
-    carpeta = documentos / NOMBRE_CARPETA
+    carpeta = carpeta_documentos() / NOMBRE_CARPETA
     carpeta.mkdir(parents=True, exist_ok=True)
     return carpeta
 

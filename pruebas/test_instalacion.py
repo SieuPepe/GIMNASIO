@@ -36,7 +36,9 @@ class UsuarioDeDemostracion(unittest.TestCase):
         base = Path(cls.temporal.name)
         ruta = base / "datos_krv.xlsx"
         ml.crear(ruta)
-        cls.cfg = config.cargar()
+        # Sin tocar el config.toml de quien ejecute las pruebas: si el suyo
+        # trae el remitente vacío, media demostración se queda sin correo.
+        cls.cfg = config.Config()
         cls.cfg.datos.libro = ruta
         cls.cfg.datos.backups = base / "bk"
         cls.libro = ml.Libro(ruta, cls.cfg.datos.backups)
@@ -66,7 +68,16 @@ class UsuarioDeDemostracion(unittest.TestCase):
     def test_el_correo_es_el_de_la_cuenta_de_envio(self):
         # Probar un correo tiene que ser escribirse a uno mismo, nunca a nadie.
         usuario = self.repo.obtener("T_USUARIOS", self.resultado.id_usuario)
-        self.assertEqual(usuario["Email"], self.cfg.correo.remitente)
+        self.assertEqual(usuario["Email"], demo.correo_de_pruebas(self.cfg))
+        self.assertTrue(usuario["Email"], "el usuario de ejemplo necesita correo")
+
+    def test_el_correo_sale_aunque_el_config_no_tenga_remitente(self):
+        # Le pasó a un config.toml a medio hacer: el usuario de ejemplo se
+        # quedaba sin correo y la mitad del programa no se podía enseñar.
+        vacio = config.Config()
+        vacio.correo.remitente = ""
+        self.assertTrue(demo.correo_de_pruebas(vacio))
+        self.assertIn("@", demo.correo_de_pruebas(vacio))
 
     def test_puede_recibir_correos(self):
         usuario = self.repo.obtener("T_USUARIOS", self.resultado.id_usuario)

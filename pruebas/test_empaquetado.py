@@ -181,6 +181,30 @@ class Instalador(unittest.TestCase):
         self.assertIn(f'name="{nombre}"', SPEC.read_text(encoding="utf-8"))
 
 
+class CodigoLimpio(unittest.TestCase):
+    """Avisos del propio Python que es facil dejar pasar.
+
+    Una ruta de Windows dentro de una cadena normal («Documentos\\Kevin...»)
+    deja un aviso de secuencia de escape invalida que ensucia cada arranque y
+    que en alguna version futura de Python pasara a ser un error.
+    """
+
+    def test_ningun_fichero_deja_avisos_al_compilar(self):
+        import warnings
+        problemas = []
+        for fichero in sorted(RAIZ.rglob("*.py")):
+            if any(p in fichero.parts for p in (".venv", "__pycache__", "build",
+                                                "dist")):
+                continue
+            with warnings.catch_warnings(record=True) as avisos:
+                warnings.simplefilter("always")
+                compile(fichero.read_text(encoding="utf-8"), str(fichero), "exec")
+            for aviso in avisos:
+                problemas.append(
+                    f"{fichero.relative_to(RAIZ)}:{aviso.lineno}: {aviso.message}")
+        self.assertEqual(problemas, [])
+
+
 class GuionesDePowerShell(unittest.TestCase):
     """Lo que rompió el guion en Windows y no se veía aquí.
 

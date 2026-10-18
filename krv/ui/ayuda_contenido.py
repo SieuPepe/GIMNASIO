@@ -1047,7 +1047,7 @@ cero rehace el libro, el anterior tampoco se borra: se aparta con el nombre
 <ul>
 <li><b>El programa</b> va donde van los programas. No hay nada tuyo ahí, así que
 se puede desinstalar y reinstalar sin miedo.</li>
-<li><b>Tus datos</b> van a <tt>Documentos\Kevin Ruiz Valdenegro</tt>: el Excel,
+<li><b>Tus datos</b> van a <tt>Documentos\\Kevin Ruiz Valdenegro</tt>: el Excel,
 la configuración, las copias de seguridad, los registros y los PDF que generes.
 Esa carpeta tiene su propio acceso directo en el menú de inicio.</li>
 </ul>
