@@ -31,6 +31,10 @@ AppPublisher={#Editor}
 DefaultDirName={autopf}\{#Nombre}
 DefaultGroupName={#Nombre}
 DisableProgramGroupPage=yes
+; Inno 6 esconde la pagina de bienvenida por defecto, y la pagina de los dos
+; modos se coloca justo detras de ella: mejor que exista, y de paso se explica
+; que es esto antes de preguntar nada.
+DisableWelcomePage=no
 PrivilegesRequired=lowest
 PrivilegesRequiredOverridesAllowed=dialog
 OutputDir=..\dist
@@ -75,6 +79,24 @@ Filename: "{app}\{#Ejecutable}"; Description: "Abrir {#Nombre} ahora"; \
 var
   PaginaModo: TInputOptionWizardPage;
   CopiaHecha: String;
+
+{ Los saltos de linea, como funcion y no escritos sueltos.
+
+  El preprocesador de Inno mira la primera letra de cada linea: si es una
+  almohadilla, la toma por una directiva suya. Un salto de linea escrito con
+  codigos de caracter, al principio de una linea de continuacion, basta para
+  que aborte con "Unknown preprocessor directive", y el mensaje no da ninguna
+  pista de donde esta el problema. }
+
+function Salto(): String;
+begin
+  Result := Chr(13) + Chr(10);
+end;
+
+function Parrafo(): String;
+begin
+  Result := Salto() + Salto();
+end;
 
 function CarpetaDeDatos(): String;
 begin
@@ -128,13 +150,13 @@ begin
     True, False);
 
   PaginaModo.Add(
-    'Instalacion desde cero.' + #13#10 +
-    'Para un ordenador nuevo. Deja el programa listo con un usuario de ejemplo' + #13#10 +
+    'Instalacion desde cero.' + Salto() +
+    'Para un ordenador nuevo. Deja el programa listo con un usuario de ejemplo' + Salto() +
     'que tiene de todo, para poder verlo funcionando. REHACE el libro de datos.');
 
   PaginaModo.Add(
-    'Actualizar la version.' + #13#10 +
-    'Renueva el programa y NO toca tus datos ni tu configuracion.' + #13#10 +
+    'Actualizar la version.' + Salto() +
+    'Renueva el programa y NO toca tus datos ni tu configuracion.' + Salto() +
     'Hace una copia de seguridad del libro antes de nada.');
 
   { Si ya hay datos, lo sensato es actualizar; si no, no hay nada que actualizar. }
@@ -152,7 +174,7 @@ begin
 
   if ExcelTieneElLibroAbierto() then
   begin
-    MsgBox('Tu libro de datos esta abierto en Excel.' + #13#10#13#10 +
+    MsgBox('Tu libro de datos esta abierto en Excel.' + Parrafo() +
            'Cierralo y vuelve a pulsar Siguiente: mientras este abierto no se ' +
            'puede tocar sin arriesgar los datos.', mbError, MB_OK);
     Result := False;
@@ -162,10 +184,10 @@ begin
   if EsInstalacionDesdeCero() and HayDatos() then
   begin
     if MsgBox('Has elegido la instalacion desde cero, y ya hay un libro de datos:' +
-              #13#10#13#10 + RutaLibro() + #13#10#13#10 +
+              Parrafo() + RutaLibro() + Parrafo() +
               'Se va a guardar una copia de seguridad con la fecha, y despues el ' +
               'libro se rehara con los datos de ejemplo. Todo lo que tengas dentro ' +
-              'dejara de estar en el fichero actual.' + #13#10#13#10 +
+              'dejara de estar en el fichero actual.' + Parrafo() +
               'Quieres seguir?', mbConfirmation, MB_YESNO) <> IDYES then
       Result := False;
   end;
@@ -173,7 +195,7 @@ begin
   if (not EsInstalacionDesdeCero()) and (not HayDatos()) then
   begin
     MsgBox('Has elegido actualizar, pero no encuentro ningun libro de datos en:' +
-           #13#10#13#10 + CarpetaDeDatos() + #13#10#13#10 +
+           Parrafo() + CarpetaDeDatos() + Parrafo() +
            'No pasa nada: se instalara el programa igualmente y el primer dia ' +
            'te ofrecera crear el libro.', mbInformation, MB_OK);
   end;
@@ -195,7 +217,7 @@ begin
       Apartado := CarpetaDeDatos() + '\datos_krv_reemplazado_' + Sello() + '.xlsx';
       if not RenameFile(RutaLibro(), Apartado) then
         MsgBox('No he podido apartar el libro anterior. Comprueba que no este ' +
-               'abierto en Excel.' + #13#10#13#10 +
+               'abierto en Excel.' + Parrafo() +
                'El programa se instalara igual, pero seguira usando el libro de ' +
                'siempre.', mbError, MB_OK);
     end;
@@ -212,25 +234,25 @@ begin
   if EsInstalacionDesdeCero() then
     Texto := 'Al abrirlo te preguntara la cuenta de correo desde la que vas a ' +
              'escribir a tus usuarios. Ten a mano la contrasena de aplicacion de ' +
-             'Gmail (16 letras).' + #13#10#13#10 +
+             'Gmail (16 letras).' + Parrafo() +
              'Dentro encontraras al usuario "Prueba Demostracion" con programas, ' +
              'valoraciones y correos, para ver como funciona todo.'
   else
     Texto := 'Tus datos y tu configuracion siguen como estaban.';
 
   if CopiaHecha <> '' then
-    Texto := Texto + #13#10#13#10 + 'Copia de seguridad del libro:' + #13#10 +
+    Texto := Texto + Parrafo() + 'Copia de seguridad del libro:' + Salto() +
              ExtractFileName(CopiaHecha);
 
   WizardForm.FinishedLabel.Caption := WizardForm.FinishedLabel.Caption +
-    #13#10#13#10 + Texto;
+    Parrafo() + Texto;
 end;
 
 function InitializeUninstall(): Boolean;
 begin
   Result := True;
-  MsgBox('Se va a quitar el programa.' + #13#10#13#10 +
+  MsgBox('Se va a quitar el programa.' + Parrafo() +
          'Tus datos NO se borran: el libro de Excel, la configuracion y las ' +
-         'copias de seguridad se quedan en' + #13#10#13#10 +
+         'copias de seguridad se quedan en' + Parrafo() +
          ExpandConstant('{userdocs}\{#CarpetaDatos}'), mbInformation, MB_OK);
 end;

@@ -192,6 +192,12 @@ class Instalador(unittest.TestCase):
         self.assertNotIn("[UninstallDelete]", self.texto)
         self.assertIn("Tus datos NO se borran", self.texto)
 
+    def test_la_pagina_de_bienvenida_existe(self):
+        # La pagina de los dos modos se ancla a ella (wpWelcome), y en Inno 6
+        # viene escondida por defecto.
+        self.assertIn("DisableWelcomePage=no", self.texto)
+        self.assertIn("CreateInputOptionPage(wpWelcome", self.texto)
+
     def test_las_dos_opciones_estan_en_la_pagina(self):
         self.assertIn("Instalacion desde cero", self.texto)
         self.assertIn("Actualizar la version", self.texto)
@@ -202,6 +208,34 @@ class Instalador(unittest.TestCase):
         definido = re.search(r'#define\s+CarpetaDatos\s+"([^"]+)"', self.texto)
         self.assertIsNotNone(definido)
         self.assertEqual(definido.group(1), config.NOMBRE_CARPETA)
+
+    def test_ninguna_linea_de_codigo_empieza_por_almohadilla(self):
+        """Lo que abortaba la compilación.
+
+        El preprocesador de Inno mira la primera letra de cada línea: si es una
+        almohadilla, la toma por una directiva suya. Una constante de Pascal
+        como #13#10 al principio de una línea de continuación basta para que
+        falle con «Unknown preprocessor directive», y el mensaje no da ninguna
+        pista de que el problema sea ese.
+        """
+        culpables = []
+        for numero, linea in enumerate(self.texto.splitlines(), start=1):
+            if not linea.strip().startswith("#"):
+                continue
+            if linea.startswith("#"):
+                continue        # directiva de verdad, en la primera columna
+            culpables.append(f"línea {numero}: {linea.strip()[:50]}")
+        self.assertEqual(culpables, [])
+
+    def test_los_saltos_de_linea_van_por_funcion(self):
+        # Escribirlos sueltos es lo que lleva a la trampa de arriba. Chr(13)
+        # además es sintaxis que no deja lugar a dudas.
+        codigo = self.texto.split("[Code]", 1)[1]
+        self.assertIn("function Salto(): String;", codigo)
+        self.assertIn("Chr(13) + Chr(10)", codigo)
+        self.assertIn("Parrafo()", codigo)
+        # Y en todo el fichero no queda ni una almohadilla suelta.
+        self.assertNotIn("#13", codigo)
 
     def test_el_ejecutable_coincide_con_el_que_produce_el_spec(self):
         definido = re.search(r'#define\s+Ejecutable\s+"([^"]+)"', self.texto)
