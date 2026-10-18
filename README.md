@@ -29,7 +29,25 @@ física, planificación, comunicación por correo y panel de alertas.
 | 4 | Planificación en árbol, cargas, asignaciones y PDF | Hecha |
 | 5 | Correo, formularios, cola de revisión y modo vacaciones | Hecha |
 | 6 | Panel de alertas con navegación a cada ficha | Hecha |
+| — | Manual interactivo, ayuda por ventana y recorridos guiados | Hecha |
 | 7 | Módulo de IA | Pendiente |
+| 8 | Instalador | Pendiente |
+| 8.5 | Versión de demostración con datos de ejemplo | Pendiente |
+| 9 | App para el móvil | Pendiente |
+
+## Ayuda dentro del programa
+
+No hace falta leer esta documentación para usarlo:
+
+- **Botón «?»** arriba a la derecha de cada ventana, o la tecla **F1**: explica
+  todos los controles de esa ventana, uno por uno. Hay página para las 22
+  ventanas del programa.
+- **«Ayuda y manual»**, último botón de la barra lateral: el manual completo,
+  con buscador. Desde cada página se puede abrir la ventana de la que habla, y
+  se puede volcar entero a un HTML para imprimirlo o guardarlo en PDF.
+- **Seis recorridos guiados** que oscurecen la ventana, señalan el control del
+  que hablan y lo explican: darse una vuelta, dar de alta a alguien, valorar,
+  montar un programa, asignarlo y el aviso de los 14 días.
 
 ## Puesta en marcha
 
@@ -103,6 +121,10 @@ krv/
 ├── datos/      Esquema del libro, acceso a Excel y repositorio
 ├── servicios/  Lógica de negocio
 ├── ui/         Ventanas (PySide6). No toca openpyxl nunca
+│   ├── ayuda_contenido.py   Todo el texto del manual y de la ayuda
+│   ├── ayuda.py             Panel «?» de cada ventana
+│   ├── vista_manual.py      El manual navegable
+│   └── recorrido.py         Motor y guiones de los recorridos guiados
 herramientas/   Utilidades de línea de comandos
 datos_iniciales/  Catálogo de ejercicios de partida (CSV)
 pruebas/        Pruebas automáticas

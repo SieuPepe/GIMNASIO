@@ -12,6 +12,7 @@ from PySide6.QtWidgets import (
 from ..datos.repositorio import Repositorio
 from ..nucleo.fechas import edad as calcular_edad
 from ..servicios import usuarios as srv
+from . import ayuda as may
 from .comunes import avisar_error, campo_fecha, desplegable, etiqueta, leer_fecha
 
 ESTADOS = [("ACTIVO", "Activo"), ("INACTIVO", "Inactivo"), ("BAJA", "Baja")]
@@ -32,7 +33,7 @@ class FichaUsuario(QDialog):
     def _construir(self) -> None:
         raiz = QVBoxLayout(self)
         titulo = "Editar usuario" if self.id_usuario else "Alta de usuario"
-        raiz.addWidget(etiqueta(titulo, "titulo"))
+        raiz.addLayout(may.cabecera(titulo, "ficha_usuario", self))
         if self.id_usuario:
             raiz.addWidget(etiqueta(f"Identificador {self.id_usuario}", "subtitulo"))
 

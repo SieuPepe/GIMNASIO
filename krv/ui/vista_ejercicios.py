@@ -17,6 +17,7 @@ from ..datos.repositorio import Repositorio
 from ..nucleo.config import RAIZ
 from ..servicios import ejercicios as srv
 from ..servicios.importacion import importar_ejercicios
+from . import ayuda as may
 from . import estilo
 from .comunes import avisar_error, confirmar, desplegable, etiqueta, preseleccionar
 from .ficha_ejercicio import FichaEjercicio, texto_patron
@@ -37,7 +38,7 @@ class DialogoSustitutos(QDialog):
         self.setMinimumWidth(660)
 
         raiz = QVBoxLayout(self)
-        raiz.addWidget(etiqueta("Ejercicios equivalentes", "titulo"))
+        raiz.addLayout(may.cabecera("Ejercicios equivalentes", "sustitutos", self))
         raiz.addWidget(etiqueta(
             f"{original.get('Nombre')} · {texto_patron(original.get('Patron'))} · "
             f"{srv.legible(original.get('Material'))}", "subtitulo"))
@@ -93,7 +94,7 @@ class VistaEjercicios(QWidget):
     def _construir(self) -> None:
         raiz = QVBoxLayout(self)
         raiz.setContentsMargins(24, 20, 24, 20)
-        raiz.addWidget(etiqueta("Catálogo de ejercicios", "titulo"))
+        raiz.addLayout(may.cabecera("Catálogo de ejercicios", "ejercicios", self))
         self.contador = etiqueta("", "subtitulo")
         raiz.addWidget(self.contador)
 
@@ -150,6 +151,7 @@ class VistaEjercicios(QWidget):
 
         botones = QHBoxLayout()
         nuevo = QPushButton("Nuevo ejercicio")
+        self.btn_nuevo = nuevo  # lo señala el recorrido guiado
         nuevo.clicked.connect(self.nuevo)
         botones.addWidget(nuevo)
         self.acciones = []
@@ -163,6 +165,7 @@ class VistaEjercicios(QWidget):
             self.acciones.append(boton)
         botones.addStretch()
         importar = QPushButton("Importar desde CSV…")
+        self.btn_importar = importar  # lo señala el recorrido guiado
         importar.setProperty("plano", True)
         importar.clicked.connect(self.importar)
         botones.addWidget(importar)

@@ -80,6 +80,34 @@ QPushButton[plano="true"]:disabled {{
     background: transparent; color: #AEB9C1; border: 1px solid #DCE3E8;
 }}
 
+/* El «?» de la ayuda: redondo, discreto, en el mismo sitio en todas las
+   ventanas, para que se encuentre sin buscarlo. */
+QPushButton#ayuda {{
+    background: {GRIS_FONDO}; color: {AZUL_OSCURO};
+    border: 1px solid #C3CDD4; border-radius: 13px;
+    font-size: 14px; font-weight: bold; padding: 0;
+}}
+QPushButton#ayuda:hover {{ background: {AZUL}; color: white; border-color: {AZUL}; }}
+
+QTreeWidget {{ border: 1px solid #D5DDE3; border-radius: 3px; }}
+QTreeWidget::item {{ padding: 3px 2px; }}
+QTextBrowser {{ border: 1px solid #D5DDE3; border-radius: 3px; padding: 6px 10px; }}
+
+/* La burbuja de los recorridos guiados */
+#burbuja {{
+    background: {BLANCO}; border: 1px solid {AZUL_OSCURO}; border-radius: 6px;
+}}
+#burbuja_titulo {{ font-size: 15px; font-weight: bold; color: {AZUL_OSCURO}; }}
+#burbuja_texto {{ font-size: 13px; color: {GRIS_TEXTO}; }}
+#burbuja_contador {{ color: #6C7A85; font-size: 11px; }}
+#burbuja QPushButton[burbuja_plano="true"] {{
+    background: transparent; color: {AZUL}; border: 1px solid {AZUL};
+}}
+#burbuja QPushButton[burbuja_plano="true"]:hover {{ background: {AZUL_CLARO}; }}
+#burbuja QPushButton[burbuja_plano="true"]:disabled {{
+    background: transparent; color: #AEB9C1; border: 1px solid #DCE3E8;
+}}
+
 QLineEdit, QComboBox, QDateEdit, QSpinBox, QDoubleSpinBox, QTextEdit, QPlainTextEdit {{
     border: 1px solid #C3CDD4; border-radius: 3px; padding: 5px; background: white;
 }}

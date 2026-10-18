@@ -17,6 +17,7 @@ from ..datos.esquema import tabla as buscar_tabla
 from ..datos.repositorio import Repositorio
 from ..nucleo.fechas import formatear
 from ..servicios import usuarios as srv
+from . import ayuda as may
 from .comunes import (avisar_error, campo_fecha, confirmar, desplegable,
                       etiqueta, leer_fecha)
 
@@ -54,6 +55,7 @@ def _tabla(cabeceras: list[str]) -> QTableWidget:
 
 
 class _DialogoHistorico(QDialog):
+    CLAVE_AYUDA = "usuarios"
     """Base de las tres ventanas: histórico arriba, formulario abajo."""
 
     TABLA = ""
@@ -72,7 +74,8 @@ class _DialogoHistorico(QDialog):
 
     def _montar(self, cabeceras: list[str], formulario: QWidget) -> None:
         raiz = QVBoxLayout(self)
-        raiz.addWidget(etiqueta(self.windowTitle().split(" — ")[0], "titulo"))
+        raiz.addLayout(may.cabecera(
+            self.windowTitle().split(" — ")[0], self.CLAVE_AYUDA, self))
         raiz.addWidget(etiqueta(self.nombre_usuario, "subtitulo"))
 
         self.tabla = _tabla(cabeceras)
@@ -190,6 +193,7 @@ class _DialogoHistorico(QDialog):
 
 
 class DialogoObjetivos(_DialogoHistorico):
+    CLAVE_AYUDA = "objetivos"
     TABLA = "T_OBJETIVOS"
 
     def __init__(self, repo, id_usuario, padre=None):
@@ -247,6 +251,7 @@ class DialogoObjetivos(_DialogoHistorico):
 
 
 class DialogoDisponibilidad(_DialogoHistorico):
+    CLAVE_AYUDA = "disponibilidad"
     TABLA = "T_DISPONIBILIDAD"
 
     def __init__(self, repo, id_usuario, padre=None):
@@ -304,6 +309,7 @@ class DialogoDisponibilidad(_DialogoHistorico):
 
 
 class DialogoSalud(_DialogoHistorico):
+    CLAVE_AYUDA = "salud"
     """Cribado PAR-Q+, constantes y antecedentes. Ver docs/11 §1."""
 
     TABLA = "T_SALUD"

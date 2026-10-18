@@ -11,6 +11,7 @@ from PySide6.QtWidgets import (
 
 from ..datos.repositorio import Repositorio
 from ..servicios import correo as srv_correo
+from . import ayuda as may
 from .comunes import avisar_error, etiqueta
 
 NOMBRES = {
@@ -33,7 +34,7 @@ class DialogoPlantillas(QDialog):
         self.setMinimumSize(820, 620)
 
         raiz = QVBoxLayout(self)
-        raiz.addWidget(etiqueta("Plantillas de correo", "titulo"))
+        raiz.addLayout(may.cabecera("Plantillas de correo", "plantillas", self))
         raiz.addWidget(etiqueta(
             "El texto de cada correo se edita en la hoja T_PLANTILLAS_MAIL del "
             "libro. Aquí se configura lo que hace falta para poder enviarlos.",

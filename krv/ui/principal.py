@@ -14,8 +14,10 @@ from ..datos.repositorio import Repositorio
 from ..nucleo.config import Config
 from . import estilo
 from .comunes import avisar_error
+from .recorrido import RECORRIDOS, Recorrido
 from .vista_ejercicios import VistaEjercicios
 from .vista_inicio import VistaInicio
+from .vista_manual import VistaManual
 from .vista_asignaciones import VistaAsignaciones
 from .vista_correo import VistaCorreo
 from .vista_programas import VistaProgramas
@@ -28,7 +30,7 @@ PENDIENTES: list[tuple[str, str]] = []
 
 # Nombre de sección -> página, para que las alertas sepan adónde llevar.
 SECCIONES = {"inicio": 0, "usuarios": 1, "ejercicios": 2, "valoraciones": 3,
-             "programas": 4, "asignaciones": 5, "correo": 6}
+             "programas": 4, "asignaciones": 5, "correo": 6, "manual": 7}
 
 
 class VentanaPrincipal(QMainWindow):
@@ -48,7 +50,7 @@ class VentanaPrincipal(QMainWindow):
         disposicion.setContentsMargins(0, 0, 0, 0)
         disposicion.setSpacing(0)
 
-        lateral = QWidget()
+        lateral = self.lateral = QWidget()
         lateral.setObjectName("lateral")
         lateral.setFixedWidth(235)
         caja = QVBoxLayout(lateral)
@@ -81,6 +83,7 @@ class VentanaPrincipal(QMainWindow):
         self.vista_programas = VistaProgramas(self.repo, self.guardar)
         self.vista_asignaciones = VistaAsignaciones(self.repo, self.cfg, self.guardar)
         self.vista_correo = VistaCorreo(self.repo, self.cfg, self.guardar)
+        self.vista_manual = VistaManual(self.cfg, self.ir_a, self.iniciar_recorrido)
         self.paginas.addWidget(self.vista_inicio)
         self.paginas.addWidget(self.vista_usuarios)
         self.paginas.addWidget(self.vista_ejercicios)
@@ -88,13 +91,14 @@ class VentanaPrincipal(QMainWindow):
         self.paginas.addWidget(self.vista_programas)
         self.paginas.addWidget(self.vista_asignaciones)
         self.paginas.addWidget(self.vista_correo)
+        self.paginas.addWidget(self.vista_manual)
 
         grupo = QButtonGroup(self)
         grupo.setExclusive(True)
         self.botones_seccion: list[QPushButton] = []
         for indice, texto in enumerate(
                 ("Inicio", "Usuarios", "Ejercicios", "Valoraciones",
-                 "Programas", "Asignaciones", "Correo")):
+                 "Programas", "Asignaciones", "Correo", "Ayuda y manual")):
             boton = QPushButton(texto)
             boton.setCheckable(True)
             boton.clicked.connect(lambda _=False, i=indice: self._ir(i))
@@ -146,3 +150,27 @@ class VentanaPrincipal(QMainWindow):
         self.statusBar().showMessage(f"Guardado en {self.libro.ruta}", 4000)
         self.vista_inicio.refrescar()
         return True
+
+    # ------------------------------------------------------------------- ayuda
+    def abrir_manual(self, clave: str | None = None) -> None:
+        """Lleva al manual, opcionalmente a una página concreta."""
+        self._ir(SECCIONES["manual"])
+        if clave:
+            self.vista_manual.ir_al_tema(clave)
+
+    def iniciar_recorrido(self, clave: str) -> None:
+        """Arranca un recorrido guiado sobre la ventana real.
+
+        Si ya había uno abierto se cierra primero: dos capas de penumbra a la
+        vez no se entienden.
+        """
+        guion = RECORRIDOS.get(clave)
+        if guion is None:
+            return
+        anterior = getattr(self, "_recorrido", None)
+        if anterior is not None:
+            try:
+                anterior.terminar()
+            except RuntimeError:
+                pass
+        self._recorrido = Recorrido(self, guion)

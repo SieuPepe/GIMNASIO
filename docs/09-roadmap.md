@@ -96,6 +96,30 @@ puntual, que se marcan como atendidas. Cada una lleva a su ficha en un clic.
 - PyInstaller, instalador, manual breve de uso.
 - Prueba en el PC real de destino.
 
+## Fase 8.5 — Versión de demostración con datos de ejemplo
+Antes de pasar a producción, una copia del programa cargada con datos
+inventados para poder ver todas las funcionalidades funcionando sin tener que
+dar de alta a nadie de verdad.
+
+- **Un generador** (`herramientas/crear_demo.py`) que monta un libro aparte
+  —`datos_demo.xlsx`, nunca el real— con datos verosímiles: una veintena de
+  usuarios de edades y sexos repartidos, sus objetivos, su salud y su
+  disponibilidad.
+- **Cobertura deliberada de todos los casos**, que es lo que hace útil la demo:
+  valoraciones completas y a medias, alguna sin baremo para esa edad, usuarios
+  con y sin consentimiento, asignaciones terminadas, en curso y a punto de
+  vencer (una a 14 días justos, para ver saltar el aviso), correos en borrador,
+  aprobados, enviados y en error, respuestas de encuesta con molestia declarada
+  y con cita solicitada, 1RM registrados en unos usuarios y ausentes en otros.
+- **Arranque separado**, con la demo señalada en la propia ventana para que no
+  haya duda de en qué libro estás trabajando.
+- **Nombres claramente ficticios**, para que nadie confunda un dato de demo con
+  uno real.
+
+**Resultado:** se puede ver y enseñar el programa entero —incluido el panel de
+alertas con avisos de verdad— sin tocar los datos de nadie, y sirve de banco de
+pruebas cada vez que se cambia algo.
+
 ## Fase 9 — App para el móvil
 Pendiente de definir con detalle; de momento queda anotado el alcance y lo que
 hay que decidir antes de empezar.

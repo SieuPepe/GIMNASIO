@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import subprocess
-import sys
 from typing import Callable
 
 from PySide6.QtCore import Qt
@@ -19,8 +17,9 @@ from ..nucleo.config import Config
 from ..nucleo.fechas import formatear
 from ..servicios import informes
 from ..servicios import valoracion as srv
+from . import ayuda as may
 from . import estilo
-from .comunes import avisar_error, etiqueta, preseleccionar
+from .comunes import abrir_fichero, avisar_error, etiqueta, preseleccionar
 from .dialogo_valoracion import DialogoValoracion
 
 COLUMNAS = ["ID", "Fecha", "Usuario", "Tipo", "Protocolo", "Pruebas", "Global", "Hallazgos"]
@@ -39,7 +38,7 @@ class VistaValoraciones(QWidget):
     def _construir(self) -> None:
         raiz = QVBoxLayout(self)
         raiz.setContentsMargins(24, 20, 24, 20)
-        raiz.addWidget(etiqueta("Valoraciones físicas", "titulo"))
+        raiz.addLayout(may.cabecera("Valoraciones físicas", "valoraciones", self))
         self.contador = etiqueta("", "subtitulo")
         raiz.addWidget(self.contador)
 
@@ -69,6 +68,7 @@ class VistaValoraciones(QWidget):
 
         botones = QHBoxLayout()
         nueva = QPushButton("Nueva valoración")
+        self.btn_nueva = nueva  # lo señala el recorrido guiado
         nueva.clicked.connect(self.nueva)
         botones.addWidget(nueva)
         self.acciones = []
@@ -225,17 +225,5 @@ class VistaValoraciones(QWidget):
                 self, "Informe generado",
                 f"Informe guardado en:\n{ruta}\n\n¿Quieres abrirlo?",
                 QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes) == QMessageBox.Yes:
-            self._abrir(ruta)
+            abrir_fichero(ruta)
 
-    @staticmethod
-    def _abrir(ruta) -> None:
-        try:
-            if sys.platform.startswith("win"):
-                import os
-                os.startfile(str(ruta))          # noqa: S606
-            elif sys.platform == "darwin":
-                subprocess.Popen(["open", str(ruta)])
-            else:
-                subprocess.Popen(["xdg-open", str(ruta)])
-        except Exception:
-            pass

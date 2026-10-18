@@ -19,6 +19,7 @@ from ..nucleo.fechas import formatear
 from ..servicios import informes
 from ..servicios import programas as srv
 from ..servicios import usuarios as srv_usuarios
+from . import ayuda as may
 from . import estilo
 from .comunes import (
     avisar_error, campo_fecha, desplegable, etiqueta, leer_fecha, preseleccionar,
@@ -41,7 +42,7 @@ class DialogoAsignacion(QDialog):
         self.setMinimumWidth(660)
 
         raiz = QVBoxLayout(self)
-        raiz.addWidget(etiqueta("Asignar un programa", "titulo"))
+        raiz.addLayout(may.cabecera("Asignar un programa", "asignar", self))
 
         form = QFormLayout()
         self.usuario = desplegable([
@@ -147,7 +148,7 @@ class DialogoImprimir(QDialog):
         super().__init__(padre)
         self.setWindowTitle("Imprimir programa")
         raiz = QVBoxLayout(self)
-        raiz.addWidget(etiqueta("¿Qué semanas quieres imprimir?", "titulo"))
+        raiz.addLayout(may.cabecera("¿Qué semanas quieres imprimir?", "imprimir", self))
         form = QFormLayout()
         self.desde = QSpinBox(); self.desde.setRange(1, total); self.desde.setValue(actual)
         self.hasta = QSpinBox(); self.hasta.setRange(1, total)
@@ -178,7 +179,7 @@ class VistaAsignaciones(QWidget):
     def _construir(self) -> None:
         raiz = QVBoxLayout(self)
         raiz.setContentsMargins(24, 20, 24, 20)
-        raiz.addWidget(etiqueta("Asignaciones", "titulo"))
+        raiz.addLayout(may.cabecera("Asignaciones", "asignaciones", self))
         self.contador = etiqueta("", "subtitulo")
         raiz.addWidget(self.contador)
 
@@ -199,6 +200,7 @@ class VistaAsignaciones(QWidget):
 
         botones = QHBoxLayout()
         nueva = QPushButton("Asignar programa")
+        self.btn_nueva = nueva  # lo señala el recorrido guiado
         nueva.clicked.connect(self.nueva)
         botones.addWidget(nueva)
         self.acciones = []

@@ -19,6 +19,7 @@ from ..nucleo.fechas import formatear_largo, plural
 from ..servicios import alertas as srv
 from ..servicios import cola as srv_cola
 from . import estilo
+from . import ayuda as may
 from .comunes import etiqueta
 
 COLUMNAS = ["", "Dónde", "Qué pasa", "Detalle"]
@@ -84,8 +85,10 @@ class VistaInicio(QWidget):
         actualizar.clicked.connect(self.refrescar)
         cabecera.addWidget(actualizar)
         buscar = QPushButton("Buscar avisos de correo")
+        self.btn_buscar = buscar  # lo señala el recorrido guiado
         buscar.clicked.connect(self.buscar_correos)
         cabecera.addWidget(buscar)
+        cabecera.addWidget(may.boton_ayuda("inicio", self), 0, Qt.AlignTop)
         raiz.addLayout(cabecera)
 
         self.rejilla = QGridLayout()

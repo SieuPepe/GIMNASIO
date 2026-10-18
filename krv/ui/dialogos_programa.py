@@ -12,6 +12,7 @@ from ..datos.esquema import BLOQUE, ENFOQUE, MODO_CARGA
 from ..datos.repositorio import Repositorio
 from ..servicios import ejercicios as srv_ejercicios
 from ..servicios import programas as srv
+from . import ayuda as may
 from .comunes import avisar_error, desplegable, etiqueta
 from .ficha_ejercicio import texto_patron
 
@@ -46,7 +47,7 @@ class DialogoCiclo(QDialog):
         self.setMinimumWidth(480)
 
         raiz = QVBoxLayout(self)
-        raiz.addWidget(etiqueta(nombres[self.tipo], "titulo"))
+        raiz.addLayout(may.cabecera(nombres[self.tipo], "ciclo", self))
         if self.id_padre:
             padre_ciclo = repo.obtener("T_CICLOS", self.id_padre) or {}
             raiz.addWidget(etiqueta(f"Dentro de «{padre_ciclo.get('Nombre')}»", "subtitulo"))
@@ -123,7 +124,7 @@ class DialogoSesion(QDialog):
         self.setMinimumWidth(440)
 
         raiz = QVBoxLayout(self)
-        raiz.addWidget(etiqueta("Sesión", "titulo"))
+        raiz.addLayout(may.cabecera("Sesión", "sesion", self))
         form = QFormLayout()
         self.dia = QSpinBox(); self.dia.setRange(1, 7)
         self.dia.setValue(int(self.datos.get("Num_Dia") or
@@ -177,7 +178,7 @@ class DialogoLinea(QDialog):
         self.setMinimumWidth(520)
 
         raiz = QVBoxLayout(self)
-        raiz.addWidget(etiqueta("Ejercicio de la sesión", "titulo"))
+        raiz.addLayout(may.cabecera("Ejercicio de la sesión", "linea", self))
         form = QFormLayout()
 
         self.bloque = desplegable([(b, b.replace("_", " ").capitalize()) for b in BLOQUE],

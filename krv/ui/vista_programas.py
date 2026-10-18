@@ -14,6 +14,7 @@ from PySide6.QtWidgets import (
 
 from ..datos.repositorio import Repositorio
 from ..servicios import programas as srv
+from . import ayuda as may
 from . import estilo
 from .comunes import avisar_error, confirmar, etiqueta
 from .dialogos_programa import DialogoCiclo, DialogoLinea, DialogoSesion
@@ -32,7 +33,7 @@ class VistaProgramas(QWidget):
     def _construir(self) -> None:
         raiz = QVBoxLayout(self)
         raiz.setContentsMargins(24, 20, 24, 20)
-        raiz.addWidget(etiqueta("Programas de entrenamiento", "titulo"))
+        raiz.addLayout(may.cabecera("Programas de entrenamiento", "programas", self))
         self.contador = etiqueta("", "subtitulo")
         raiz.addWidget(self.contador)
 
@@ -50,6 +51,7 @@ class VistaProgramas(QWidget):
 
         fila1 = QHBoxLayout()
         nuevo = QPushButton("Nuevo macrociclo")
+        self.btn_nuevo = nuevo  # lo señala el recorrido guiado
         nuevo.clicked.connect(lambda: self.nuevo_ciclo("MACRO"))
         fila1.addWidget(nuevo)
         self.btn_hijo = QPushButton("Añadir dentro")
@@ -229,8 +231,21 @@ class VistaProgramas(QWidget):
             raiz_macro = ciclo["ID_Padre"]
             ciclo = self.repo.obtener("T_CICLOS", raiz_macro) or {}
         avisos = srv.avisos_estructura(self.repo, raiz_macro) if raiz_macro else []
-        self.avisos.setText("\n".join(avisos[:4]))
-        self.avisos.setVisible(bool(avisos))
+        # Cuando no hay avisos la banda dice que está todo bien, en vez de
+        # desaparecer: si no, no se sabe si la comprobación se ha hecho.
+        if avisos:
+            self.avisos.setText("\n".join(avisos[:4]))
+            self.avisos.setObjectName("aviso")
+        elif raiz_macro:
+            self.avisos.setText(
+                "Sin avisos: la estructura de este programa es coherente.")
+            self.avisos.setObjectName("correcto")
+        else:
+            self.avisos.setText("Elige un programa del árbol para revisarlo.")
+            self.avisos.setObjectName("correcto")
+        # Cambiar el objectName no reaplica la hoja de estilos por sí solo.
+        self.avisos.style().unpolish(self.avisos)
+        self.avisos.style().polish(self.avisos)
 
     # -- sesiones y líneas --
     def sesion_seleccionada(self) -> str | None:

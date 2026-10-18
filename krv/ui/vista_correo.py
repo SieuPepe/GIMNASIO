@@ -20,6 +20,7 @@ from ..nucleo.fechas import formatear
 from ..servicios import cola as srv
 from ..servicios import correo as srv_correo
 from ..servicios import respuestas as srv_respuestas
+from . import ayuda as may
 from . import estilo
 from .comunes import avisar_error, confirmar, etiqueta, preseleccionar
 from .dialogo_plantillas import DialogoPlantillas
@@ -47,7 +48,7 @@ class VistaCorreo(QWidget):
     def _construir(self) -> None:
         raiz = QVBoxLayout(self)
         raiz.setContentsMargins(24, 20, 24, 20)
-        raiz.addWidget(etiqueta("Bandeja de salida", "titulo"))
+        raiz.addLayout(may.cabecera("Bandeja de salida", "correo", self))
         self.contador = etiqueta("", "subtitulo")
         raiz.addWidget(self.contador)
         self.banda_vacaciones = etiqueta("", "aviso", ajustar=True)
@@ -55,17 +56,21 @@ class VistaCorreo(QWidget):
 
         superior = QHBoxLayout()
         buscar = QPushButton("Buscar avisos pendientes")
+        self.btn_buscar = buscar  # lo señala el recorrido guiado
         buscar.clicked.connect(self.buscar)
         superior.addWidget(buscar)
         importar = QPushButton("Importar respuestas…")
+        self.btn_importar = importar  # lo señala el recorrido guiado
         importar.setProperty("plano", True)
         importar.clicked.connect(self.importar_respuestas)
         superior.addWidget(importar)
         plantillas = QPushButton("Plantillas de correo…")
+        self.btn_plantillas = plantillas  # lo señala el recorrido guiado
         plantillas.setProperty("plano", True)
         plantillas.clicked.connect(self.editar_plantillas)
         superior.addWidget(plantillas)
         probar = QPushButton("Probar la conexión de correo")
+        self.btn_probar = probar  # lo señala el recorrido guiado
         probar.setProperty("plano", True)
         probar.clicked.connect(self.probar_conexion)
         superior.addWidget(probar)
@@ -102,6 +107,7 @@ class VistaCorreo(QWidget):
 
         fila = QHBoxLayout()
         actualizar = QPushButton("Actualizar vista previa")
+        self.btn_actualizar = actualizar  # lo señala el recorrido guiado
         actualizar.setProperty("plano", True)
         actualizar.clicked.connect(self.guardar_nota)
         fila.addWidget(actualizar)

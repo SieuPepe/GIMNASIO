@@ -88,3 +88,19 @@ def preseleccionar(tabla: QTableWidget) -> None:
     """
     if tabla.rowCount() and not tabla.selectionModel().selectedRows():
         tabla.selectRow(0)
+
+
+def abrir_fichero(ruta) -> None:
+    """Abre un fichero con el programa que le corresponda en el sistema."""
+    import subprocess
+    import sys
+    try:
+        if sys.platform.startswith("win"):
+            import os
+            os.startfile(str(ruta))          # noqa: S606
+        elif sys.platform == "darwin":
+            subprocess.Popen(["open", str(ruta)])
+        else:
+            subprocess.Popen(["xdg-open", str(ruta)])
+    except Exception:
+        pass

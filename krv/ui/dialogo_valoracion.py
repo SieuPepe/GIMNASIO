@@ -15,6 +15,7 @@ from ..datos.repositorio import Repositorio
 from ..nucleo.fechas import edad as calcular_edad
 from ..servicios import usuarios as srv_usuarios
 from ..servicios import valoracion as srv
+from . import ayuda as may
 from . import estilo
 from .comunes import avisar_error, campo_fecha, desplegable, etiqueta, leer_fecha
 
@@ -49,7 +50,7 @@ class DialogoCriterios(QDialog):
         self.setWindowTitle(f"Compensaciones — {prueba.get('Nombre')}")
         self.setMinimumWidth(460)
         raiz = QVBoxLayout(self)
-        raiz.addWidget(etiqueta("Marca lo que has observado", "titulo"))
+        raiz.addLayout(may.cabecera("Marca lo que has observado", "criterios", self))
         raiz.addWidget(etiqueta(prueba.get("Protocolo") or "", "subtitulo", ajustar=True))
 
         self.casillas: dict[str, QCheckBox] = {}
@@ -224,7 +225,7 @@ class DialogoValoracion(QDialog):
                      if usuario.get("F_Nacimiento") else None)
         self.sexo = usuario.get("Sexo")
 
-        raiz.addWidget(etiqueta("Valoración física", "titulo"))
+        raiz.addLayout(may.cabecera("Valoración física", "valoracion", self))
         raiz.addWidget(etiqueta(
             f"{nombre} · {self.edad} años · "
             f"{'Hombre' if self.sexo == 'H' else 'Mujer'}", "subtitulo"))

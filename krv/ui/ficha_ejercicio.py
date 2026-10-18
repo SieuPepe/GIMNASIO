@@ -9,6 +9,7 @@ from PySide6.QtWidgets import (
 
 from ..datos.repositorio import Repositorio
 from ..servicios import ejercicios as srv
+from . import ayuda as may
 from .comunes import avisar_error, desplegable, etiqueta
 
 ETIQUETAS_PATRON = {
@@ -64,8 +65,9 @@ class FichaEjercicio(QDialog):
 
     def _construir(self) -> None:
         raiz = QVBoxLayout(self)
-        raiz.addWidget(etiqueta(
-            "Editar ejercicio" if self.id_ejercicio else "Nuevo ejercicio", "titulo"))
+        raiz.addLayout(may.cabecera(
+            "Editar ejercicio" if self.id_ejercicio else "Nuevo ejercicio",
+            "ficha_ejercicio", self))
         if self.id_ejercicio:
             raiz.addWidget(etiqueta(self.id_ejercicio, "subtitulo"))
 

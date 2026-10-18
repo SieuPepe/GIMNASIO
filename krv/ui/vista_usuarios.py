@@ -13,6 +13,7 @@ from PySide6.QtWidgets import (
 
 from ..datos.repositorio import Repositorio
 from ..servicios import usuarios as srv
+from . import ayuda as may
 from . import estilo
 from .comunes import avisar_error, confirmar, etiqueta, preseleccionar
 from .dialogos_usuario import DialogoDisponibilidad, DialogoObjetivos, DialogoSalud
@@ -32,7 +33,7 @@ class VistaUsuarios(QWidget):
     def _construir(self) -> None:
         raiz = QVBoxLayout(self)
         raiz.setContentsMargins(24, 20, 24, 20)
-        raiz.addWidget(etiqueta("Usuarios", "titulo"))
+        raiz.addLayout(may.cabecera("Usuarios", "usuarios", self))
         self.contador = etiqueta("", "subtitulo")
         raiz.addWidget(self.contador)
 
@@ -67,6 +68,7 @@ class VistaUsuarios(QWidget):
 
         botones = QHBoxLayout()
         nuevo = QPushButton("Nuevo usuario")
+        self.btn_nuevo = nuevo  # lo señala el recorrido guiado
         nuevo.clicked.connect(self.nuevo)
         botones.addWidget(nuevo)
 
