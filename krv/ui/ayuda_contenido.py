@@ -1197,6 +1197,65 @@ inventarse un peso.</p>
         recorrido="asignar",
     ),
     Pagina(
+        clave="formularios",
+        titulo="Montar los formularios de Google",
+        cuerpo="""
+<p>Los formularios <b>no los crea ni los guarda el programa</b>: viven en tu
+Google Drive y son tuyos. Lo único que guarda el programa es su dirección, para
+meterla en el botón del correo ya rellenada con la identificación de cada
+persona.</p>
+
+<p>Si cambias de cuenta de Google, los formularios antiguos se quedan en la
+cuenta antigua. O los compartes desde allí, o —normalmente más cómodo— los
+rehaces en la nueva: son tres y se montan en media hora.</p>
+
+<h2>Tres formularios, cuatro casillas</h2>
+<ul>
+<li><b>Consentimiento</b> — la autorización para tratar sus datos.</li>
+<li><b>Encuesta de fin de ciclo</b> — las 14 preguntas del cuestionario. Su
+dirección va en <b>dos</b> casillas: «Encuesta T-14» y «Recordatorio», porque el
+recordatorio es un segundo aviso de la misma encuesta.</li>
+<li><b>Check-in de mitad</b> — tres preguntas, nada más.</li>
+</ul>
+
+<h2>Las dos preguntas que llevan los tres</h2>
+<p>Al principio de cada formulario, dos preguntas de <b>respuesta corta</b> y
+<b>no obligatorias</b>, tituladas <tt>ID_Usuario</tt> e <tt>ID_Envio</tt>. Las
+rellena el programa por la dirección del enlace; es lo que permite enganchar
+cada respuesta con su persona sin pedirle que se identifique.</p>
+
+<h2>El enlace prerrellenado</h2>
+<p>El enlace normal del formulario <b>no sirve</b>. Hace falta este, que es el
+paso que no se encuentra a la primera:</p>
+<ol>
+<li>Abre el formulario <b>en modo edición</b>.</li>
+<li>Arriba a la derecha, el botón de <b>tres puntos</b> (⋮).</li>
+<li><b>«Obtener enlace prerrellenado»</b>.</li>
+<li>Escribe cualquier cosa en <tt>ID_Usuario</tt> e <tt>ID_Envio</tt>, por
+ejemplo <tt>AAA</tt> y <tt>BBB</tt>. No rellenes nada más.</li>
+<li>Abajo, <b>«Obtener vínculo»</b> y <b>«Copiar vínculo»</b>.</li>
+</ol>
+<p>Pega esa dirección tal cual en Correo → «Plantillas de correo…» → «URL del
+formulario». El programa cambia esos valores por los de cada persona al enviar.</p>
+
+<h2>Ojo con reescribir las preguntas</h2>
+<p>El programa reconoce cada pregunta <b>por las palabras de su enunciado</b>,
+no por su número. Si le quitas su palabra clave, la respuesta llegará pero no
+sabrá qué hacer con ella. Las dos que más importan son la de <b>molestias</b>
+(«molestias», «dolores») y la de la <b>cita</b> («hablemos»), porque son las que
+encienden avisos en el panel.</p>
+
+<p>La lista completa de palabras, con el texto de las 14 preguntas, está en el
+documento <tt>docs/14-formularios-google.md</tt> de la carpeta del programa.</p>
+
+<h2>Traer las respuestas</h2>
+<p>En el formulario, pestaña «Respuestas» → descargar en CSV. En el programa,
+Correo → «Importar respuestas…». Se puede importar el mismo fichero dos veces
+sin miedo: lo repetido se reconoce y no se duplica.</p>
+""",
+        seccion="correo",
+    ),
+    Pagina(
         clave="como_encuesta",
         titulo="Cómo funciona el aviso de los 14 días",
         cuerpo="""
@@ -1452,7 +1511,7 @@ CAPITULOS: tuple[Capitulo, ...] = (
              "Qué es, cómo se arranca y qué hacer el primer día."),
     Capitulo("Cómo se hace",
              ("como_alta", "como_valorar", "como_programa", "como_asignar",
-              "como_encuesta"),
+              "como_encuesta", "formularios"),
              "Las cinco tareas del día a día, paso a paso."),
     Capitulo("Las ventanas principales",
              ("inicio", "usuarios", "ejercicios", "valoraciones", "programas",
