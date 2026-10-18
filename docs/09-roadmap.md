@@ -143,6 +143,37 @@ Lo que trae y por qué, que es lo que lo hace útil:
 alertas con avisos de verdad— sin dar de alta a nadie, y sirve de banco de
 pruebas cada vez que se cambia algo.
 
+## Fase 8.7 — Copias de seguridad de verdad
+Hoy ya se hace una copia fechada del libro en cada guardado, y el instalador
+hace otra antes de tocar nada. Eso protege de un error al editar, pero **no
+protege de perder el ordenador**: todas las copias están en el mismo disco que
+el original.
+
+Lo que falta:
+
+- **Copia fuera del equipo.** Una carpeta de destino configurable —un disco
+  externo, una unidad de red o una carpeta sincronizada con la nube— a la que
+  se lleve el libro de forma automática. Sin esto, un disco roto se lleva todo.
+- **Cuándo.** Al cerrar el programa, y con una frecuencia mínima garantizada
+  (una vez al día aunque no se cierre). No en cada guardado: a una unidad de
+  red eso sería insoportable.
+- **Qué se copia.** El libro, `config.toml` y las plantillas de correo. El
+  `.env` lleva una contraseña, así que ahí hay que decidir expresamente.
+- **Cuántas se guardan.** Hoy se conservan las 30 últimas, todas del mismo día
+  si se trabaja mucho. Conviene pasar a un esquema que conserve también
+  copias antiguas: las de los últimos días, una por semana del último mes y una
+  por mes del último año.
+- **Aviso en el panel de inicio** cuando la última copia fuera del equipo sea
+  más antigua de lo acordado. Una copia que nadie vigila no es una copia.
+- **Restaurar desde el programa.** Hoy se recupera copiando ficheros a mano con
+  el programa cerrado; debería ser una opción con su confirmación, que además
+  guarde el estado actual antes de pisarlo.
+- **Comprobar que la copia sirve.** Abrirla y verificar que el esquema está
+  completo, porque una copia corrupta descubierta el día que hace falta no vale
+  de nada.
+
+**Resultado:** que perder el ordenador sea una molestia y no un desastre.
+
 ## Fase 9 — App para el móvil
 Pendiente de definir con detalle; de momento queda anotado el alcance y lo que
 hay que decidir antes de empezar.

@@ -47,31 +47,59 @@ class RepartoDeCarpetas(unittest.TestCase):
         self.assertEqual(cfg.datos.backups.parent, config.CARPETA_DATOS)
 
     def test_empaquetado_los_datos_no_van_dentro_del_programa(self):
-        # Se simula el modo empaquetado sin tener que empaquetar, y con un
-        # «home» de mentira para no dejar carpetas sueltas por ahí.
+        # Se simula el modo empaquetado sin tener que empaquetar. No se mira a
+        # qué carpeta concreta va —eso lo decide Windows y cambia de un equipo
+        # a otro— sino que salga de Documentos y no de dentro del programa.
+        import importlib
+        from unittest import mock
+        with mock.patch.object(sys, "frozen", True, create=True), \
+             mock.patch.object(sys, "_MEIPASS", str(RAIZ), create=True):
+            recargado = importlib.reload(config)
+            carpeta = recargado.CARPETA_DATOS
+            documentos = recargado.carpeta_documentos()
+            esta_empaquetado = recargado.empaquetado()
+            raiz = recargado.RAIZ
+            libro = recargado.Config().datos.libro
+        importlib.reload(config)      # ya sin el parche puesto
+
+        self.assertTrue(esta_empaquetado)
+        self.assertEqual(raiz, RAIZ)
+        self.assertNotEqual(carpeta, raiz)
+        self.assertEqual(carpeta, documentos / config.NOMBRE_CARPETA)
+        self.assertEqual(libro.parent, carpeta)
+
+    def test_resolver_la_ruta_no_crea_carpetas(self):
+        # Importar un módulo no debería dejar carpetas sueltas por el disco.
         import importlib
         import tempfile
         from unittest import mock
-        with tempfile.TemporaryDirectory() as casa:
-            documentos = Path(casa) / "Documents"
-            documentos.mkdir()
-            try:
-                with mock.patch.object(sys, "frozen", True, create=True), \
-                     mock.patch.object(sys, "_MEIPASS", str(RAIZ), create=True), \
-                     mock.patch.object(Path, "home", staticmethod(lambda: Path(casa))):
-                    recargado = importlib.reload(config)
-                    self.assertTrue(recargado.empaquetado())
-                    self.assertEqual(recargado.RAIZ, RAIZ)
-                    self.assertNotEqual(recargado.CARPETA_DATOS, recargado.RAIZ)
-                    self.assertEqual(recargado.CARPETA_DATOS,
-                                     documentos / recargado.NOMBRE_CARPETA)
-                    self.assertTrue(recargado.CARPETA_DATOS.exists())
-                    # Y el libro por defecto cae ahí, no en el programa.
-                    self.assertEqual(recargado.Config().datos.libro.parent,
-                                     recargado.CARPETA_DATOS)
-            finally:
-                # El parche ya no está puesto: esta recarga deja el módulo bien.
-                importlib.reload(config)
+        with tempfile.TemporaryDirectory() as temporal:
+            inventada = Path(temporal) / "no_deberia_existir"
+            with mock.patch.dict("os.environ", {"KRV_DATOS": str(inventada)}):
+                recargado = importlib.reload(config)
+                self.assertEqual(recargado.CARPETA_DATOS, inventada)
+                self.assertFalse(inventada.exists())
+                # Y cuando de verdad se va a escribir, se crea.
+                self.assertTrue(recargado.asegurar_carpeta_datos().exists())
+            importlib.reload(config)
+
+    def test_la_carpeta_de_datos_se_puede_llevar_a_otro_sitio(self):
+        # Para quien quiera el libro en una unidad de red, por ejemplo.
+        import importlib
+        import tempfile
+        from unittest import mock
+        with tempfile.TemporaryDirectory() as temporal:
+            with mock.patch.dict("os.environ", {"KRV_DATOS": temporal}):
+                recargado = importlib.reload(config)
+                self.assertEqual(recargado.CARPETA_DATOS, Path(temporal))
+                self.assertEqual(recargado.Config().datos.libro.parent,
+                                 Path(temporal))
+            importlib.reload(config)
+
+    def test_la_carpeta_de_documentos_es_una_carpeta_de_verdad(self):
+        documentos = config.carpeta_documentos()
+        self.assertTrue(documentos.is_absolute())
+        self.assertTrue(documentos.exists())
 
 
 class Spec(unittest.TestCase):

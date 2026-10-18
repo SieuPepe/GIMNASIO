@@ -977,9 +977,15 @@ sale un aviso explicando por qué: lo habitual es tener el fichero abierto en
 Excel.</p>
 
 <p><b>Copias de seguridad.</b> Cada guardado deja una copia fechada en la
-carpeta de copias, y el programa va borrando las más viejas para que no crezca
-sin control. Si algo sale mal, se recupera copiando una de esas copias encima
-del fichero de datos, con el programa cerrado.</p>
+carpeta <tt>backups</tt>, y el programa va borrando las más viejas para que no
+crezca sin control. Si algo sale mal, se recupera copiando una de esas copias
+encima del fichero de datos, con el programa cerrado.</p>
+
+<p><b>Ojo con lo que esas copias no cubren.</b> Están en el mismo disco que el
+original, así que te protegen de un error al editar pero no de que se rompa el
+ordenador. Hasta que el programa sepa copiarse fuera solo, <b>copia de vez en
+cuando tu carpeta de datos</b> a un disco externo o a una carpeta en la nube.
+Es una sola carpeta: la que abre «Carpeta de mis datos» en el menú de inicio.</p>
 
 <p><b>Si alguien ha tocado el Excel por fuera</b> mientras el programa estaba
 abierto, al guardar te avisa y te pide que cierres sin guardar y vuelvas a

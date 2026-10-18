@@ -107,18 +107,24 @@ def _carpeta_datos() -> Path:
     """
     forzada = os.environ.get("KRV_DATOS", "").strip()
     if forzada:
-        carpeta = Path(forzada).expanduser()
-        carpeta.mkdir(parents=True, exist_ok=True)
-        return carpeta
+        return Path(forzada).expanduser()
     if not empaquetado():
         return _raiz()
-    carpeta = carpeta_documentos() / NOMBRE_CARPETA
-    carpeta.mkdir(parents=True, exist_ok=True)
-    return carpeta
+    return carpeta_documentos() / NOMBRE_CARPETA
 
 
 RAIZ = _raiz()                  # recursos, solo lectura
 CARPETA_DATOS = _carpeta_datos()  # lo del usuario, se escribe
+
+
+def asegurar_carpeta_datos() -> Path:
+    """Crea la carpeta del usuario si aún no está. Se llama antes de escribir.
+
+    Resolver la ruta no crea nada a propósito: importar un módulo no debería
+    dejar carpetas por el disco.
+    """
+    CARPETA_DATOS.mkdir(parents=True, exist_ok=True)
+    return CARPETA_DATOS
 
 
 @dataclass

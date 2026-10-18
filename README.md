@@ -33,6 +33,7 @@ física, planificación, comunicación por correo y panel de alertas.
 | 7 | Módulo de IA | Pendiente |
 | 8 | Instalador .exe con dos modos y asistente de configuración | Hecha |
 | 8.5 | Datos de demostración | Hecha |
+| 8.7 | Copias de seguridad fuera del equipo | Pendiente |
 | 9 | App para el móvil | Pendiente |
 
 ## Instalación
