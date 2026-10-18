@@ -181,5 +181,59 @@ class Instalador(unittest.TestCase):
         self.assertIn(f'name="{nombre}"', SPEC.read_text(encoding="utf-8"))
 
 
+class GuionesDePowerShell(unittest.TestCase):
+    """Lo que rompió el guion en Windows y no se veía aquí.
+
+    Windows PowerShell 5, con ErrorActionPreference en «Stop», convierte en
+    error propio todo lo que un programa escriba por la salida de errores,
+    aunque termine bien. unittest, pip y PyInstaller la usan para sus mensajes
+    normales, así que el guion se paraba en seco en cuanto cualquiera hablaba.
+    La solución es llamarlos siempre a través de `Ejecuta`.
+    """
+
+    GUIONES = ("instalar.ps1", "construir.ps1")
+
+    def test_los_dos_guiones_llevan_el_ayudante(self):
+        for nombre in self.GUIONES:
+            with self.subTest(nombre):
+                texto = (RAIZ / nombre).read_text(encoding="utf-8")
+                self.assertIn("function Ejecuta", texto)
+
+    def test_no_queda_ninguna_llamada_externa_sin_proteger(self):
+        # Un «& $algo» suelto es justo lo que reventaba.
+        suelta = re.compile(r'^\s*&\s*\$(?!null)', re.MULTILINE)
+        for nombre in self.GUIONES:
+            with self.subTest(nombre):
+                texto = (RAIZ / nombre).read_text(encoding="utf-8")
+                dentro_de_ejecuta = texto.split("function Ejecuta", 1)[1]
+                fin = dentro_de_ejecuta.index("\n}")
+                resto = (texto.split("function Ejecuta", 1)[0]
+                         + dentro_de_ejecuta[fin:])
+                self.assertEqual(suelta.findall(resto), [],
+                                 "hay llamadas externas fuera de Ejecuta")
+
+    def test_nadie_usa_el_truco_de_tragarse_los_errores(self):
+        # «2>$null» no basta en PowerShell 5: el error salta igual.
+        for nombre in self.GUIONES:
+            with self.subTest(nombre):
+                texto = (RAIZ / nombre).read_text(encoding="utf-8")
+                self.assertNotIn("2>$null", texto)
+
+    def test_construir_pasa_las_pruebas_antes_de_empaquetar(self):
+        texto = (RAIZ / "construir.ps1").read_text(encoding="utf-8")
+        orden_pruebas = texto.index("unittest")
+        orden_paquete = texto.index("PyInstaller', (Join-Path")
+        self.assertLess(orden_pruebas, orden_paquete,
+                        "empaquetar algo roto es perder media hora")
+
+    def test_hay_pruebas_del_propio_instalador(self):
+        prueba = RAIZ / "pruebas" / "test_instalador.ps1"
+        self.assertTrue(prueba.exists())
+        texto = prueba.read_text(encoding="utf-8")
+        for funcion in ("Ejecuta", "Copia-Libro", "Excel-Abierto", "Ruta-Libro"):
+            with self.subTest(funcion):
+                self.assertIn(funcion, texto)
+
+
 if __name__ == "__main__":
     unittest.main()

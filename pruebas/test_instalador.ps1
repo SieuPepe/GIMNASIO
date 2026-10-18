@@ -10,7 +10,8 @@
 #>
 $ErrorActionPreference = 'Stop'
 $texto = Get-Content (Join-Path (Split-Path -Parent $PSScriptRoot) 'instalar.ps1') -Raw
-$desde = $texto.IndexOf('# ---------------------------------------------------------------- comprobaciones')
+# Desde la definicion de Ejecuta, que es de la que dependen las demas.
+$desde = $texto.IndexOf('function Ejecuta')
 $hasta = $texto.IndexOf('# --------------------------------------------------------------------- el modo')
 Invoke-Expression $texto.Substring($desde, $hasta - $desde)
 
@@ -25,6 +26,26 @@ function Comprueba($que, $esperado, $obtenido) {
 $python = Busca-Python
 if ($python) { Write-Host "OK    Busca-Python -> $($python.Etiqueta) $($python.Version)" -ForegroundColor Green }
 else { Write-Host 'FALLA Busca-Python: no encuentra ninguno' -ForegroundColor Red; $fallos++ }
+
+# -- Ejecuta: lo que rompio construir.ps1 en Windows PowerShell 5.
+#    Ahi, con ErrorActionPreference en 'Stop', lo que un programa escribe por la
+#    salida de errores se convierte en error de PowerShell aunque termine bien.
+#    unittest, pip y PyInstaller escriben ahi sus mensajes normales.
+$r = Ejecuta 'python3' @('-c', 'print("hola")')
+Comprueba 'Ejecuta: programa correcto' 0 $r.Codigo
+Comprueba 'Ejecuta: captura la salida' 'hola' $r.Salida.Trim()
+
+$r = Ejecuta 'python3' @('-c', 'import sys; sys.stderr.write("aviso\n")')
+Comprueba 'Ejecuta: stderr no es un fallo' 0 $r.Codigo
+Comprueba 'Ejecuta: stderr se captura' 'aviso' $r.Salida.Trim()
+
+$r = Ejecuta 'python3' @('-c', 'import sys; sys.exit(3)')
+Comprueba 'Ejecuta: devuelve el codigo de error' 3 $r.Codigo
+
+$r = Ejecuta 'no_existe_este_programa_12345'
+Comprueba 'Ejecuta: programa inexistente' -1 $r.Codigo
+
+Comprueba 'Ejecuta: no deja tocado el ErrorActionPreference' 'Stop' $ErrorActionPreference
 
 # -- Ruta-Libro: con y sin config.toml, con ruta relativa y absoluta
 $banco = Join-Path ([System.IO.Path]::GetTempPath()) ('inst_' + [guid]::NewGuid().ToString('N'))

@@ -28,6 +28,46 @@ $ErrorActionPreference = 'Stop'
 $raiz = $PSScriptRoot
 $nombre = 'Kevin Ruiz Valdenegro'
 
+function Ejecuta {
+    <#
+        Lanza un programa externo y devuelve su codigo de salida.
+
+        Hace falta porque Windows PowerShell 5, con ErrorActionPreference en
+        'Stop', convierte en error propio TODO lo que el programa escriba por la
+        salida de errores, aunque sean mensajes normales y aunque termine bien.
+        Y muchos la usan asi: unittest escribe ahi sus puntos, PyInstaller sus
+        avisos y pip los suyos. Sin esto, el guion se para en seco en cuanto
+        cualquiera de ellos dice algo.
+
+        Con -Mostrar la salida va saliendo en pantalla segun se produce, que es
+        lo que se quiere en los pasos largos.
+    #>
+    param(
+        [Parameter(Mandatory = $true)] [string]$Exe,
+        [string[]]$Argumentos = @(),
+        [switch]$Mostrar
+    )
+    $previo = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    $global:LASTEXITCODE = 0
+    $salida = @()
+    $codigo = 0
+    try {
+        if ($Mostrar) {
+            & $Exe @Argumentos 2>&1 | ForEach-Object { Write-Host "   $_" }
+        } else {
+            $salida = & $Exe @Argumentos 2>&1 | ForEach-Object { "$_" }
+        }
+        $codigo = $LASTEXITCODE
+    } catch {
+        $salida = @($_.Exception.Message)
+        $codigo = -1
+    } finally {
+        $ErrorActionPreference = $previo
+    }
+    return @{ Codigo = $codigo; Salida = ($salida -join [Environment]::NewLine) }
+}
+
 function Escribe($texto, $color = 'Gray') { Write-Host $texto -ForegroundColor $color }
 function Titulo($texto) {
     Write-Host ''
@@ -54,14 +94,11 @@ function Busca-Python {
     )
     foreach ($candidato in $candidatos) {
         if (-not (Get-Command $candidato.Exe -ErrorAction SilentlyContinue)) { continue }
-        $version = $null
-        try {
-            $argumentos = @($candidato.Args) + @(
-                '-c', "import sys; print('%d.%d' % sys.version_info[:2])")
-            $version = & $candidato.Exe @argumentos 2>$null
-        } catch { continue }
-        if (-not $version) { continue }
-        $version = ($version | Select-Object -First 1).Trim()
+        $argumentos = @($candidato.Args) + @(
+            '-c', "import sys; print('%d.%d' % sys.version_info[:2])")
+        $r = Ejecuta $candidato.Exe $argumentos
+        if ($r.Codigo -ne 0 -or -not $r.Salida) { continue }
+        $version = ($r.Salida -split "`n" | Select-Object -First 1).Trim()
         if ($version -as [version] -and [version]$version -ge [version]'3.11') {
             return @{ Exe = $candidato.Exe; Args = $candidato.Args; Version = $version
                       Etiqueta = (@($candidato.Exe) + $candidato.Args) -join ' ' }
@@ -180,14 +217,19 @@ Titulo 'Entorno e instalacion de dependencias'
 $venv = Join-Path $raiz '.venv'
 if (-not (Test-Path (Join-Path $venv 'Scripts\python.exe'))) {
     Escribe '   Creando el entorno virtual...'
-    $argumentos = @($python.Args) + @('-m', 'venv', $venv)
-    & $python.Exe @argumentos
+    $r = Ejecuta $python.Exe (@($python.Args) + @('-m', 'venv', $venv))
+    if ($r.Codigo -ne 0) {
+        Escribe '   No he podido crear el entorno virtual.' Red
+        Write-Host $r.Salida
+        exit 1
+    }
 }
 $py = Join-Path $venv 'Scripts\python.exe'
 Escribe '   Instalando dependencias (tarda un poco la primera vez)...'
-& $py -m pip install --upgrade pip --quiet
-& $py -m pip install -r (Join-Path $raiz 'requirements.txt') --quiet
-if ($LASTEXITCODE -ne 0) {
+Ejecuta $py @('-m', 'pip', 'install', '--upgrade', 'pip', '--quiet') | Out-Null
+$r = Ejecuta $py @('-m', 'pip', 'install', '-r',
+                   (Join-Path $raiz 'requirements.txt')) -Mostrar
+if ($r.Codigo -ne 0) {
     Escribe '   Fallo al instalar las dependencias.' Red
     exit 1
 }
@@ -197,8 +239,9 @@ Escribe '   Dependencias listas.' Green
 
 if ($Modo -eq 'blanco') {
     Titulo 'Datos de partida y usuario de ejemplo'
-    & $py (Join-Path $raiz 'herramientas\crear_demo.py') --salida $libro --nuevo --forzar
-    if ($LASTEXITCODE -ne 0) { Escribe '   Fallo al preparar los datos.' Red; exit 1 }
+    $r = Ejecuta $py @((Join-Path $raiz 'herramientas\crear_demo.py'),
+                       '--salida', $libro, '--nuevo', '--forzar') -Mostrar
+    if ($r.Codigo -ne 0) { Escribe '   Fallo al preparar los datos.' Red; exit 1 }
 
     if (-not (Test-Path (Join-Path $raiz 'config.toml'))) {
         Copy-Item (Join-Path $raiz 'config.ejemplo.toml') (Join-Path $raiz 'config.toml')
@@ -207,8 +250,8 @@ if ($Modo -eq 'blanco') {
 } else {
     Titulo 'Revision del libro'
     if (Test-Path $libro) {
-        & $py (Join-Path $raiz 'herramientas\migrar_libro.py') $libro
-        if ($LASTEXITCODE -ne 0) {
+        $r = Ejecuta $py @((Join-Path $raiz 'herramientas\migrar_libro.py'), $libro) -Mostrar
+        if ($r.Codigo -ne 0) {
             Escribe '   No se ha podido revisar el libro. Tus datos siguen intactos' Yellow
             Escribe "   y tienes la copia en $(Split-Path -Leaf $copia)." Yellow
         }
@@ -222,7 +265,11 @@ if ($Modo -eq 'blanco') {
 # -------------------------------------------------------------- acceso directo
 
 Titulo 'Acceso directo'
-& powershell -ExecutionPolicy Bypass -File (Join-Path $raiz 'herramientas\crear_acceso_directo.ps1')
+$r = Ejecuta 'powershell' @('-ExecutionPolicy', 'Bypass', '-File',
+                            (Join-Path $raiz 'herramientas\crear_acceso_directo.ps1')) -Mostrar
+if ($r.Codigo -ne 0) {
+    Escribe '   No se ha podido crear el acceso directo. Puedes arrancar con ARRANCAR.bat.' Yellow
+}
 
 # ----------------------------------------------------------------------- final
 

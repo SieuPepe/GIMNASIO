@@ -30,6 +30,46 @@ param(
 $ErrorActionPreference = 'Stop'
 $raiz = $PSScriptRoot
 
+function Ejecuta {
+    <#
+        Lanza un programa externo y devuelve su codigo de salida.
+
+        Hace falta porque Windows PowerShell 5, con ErrorActionPreference en
+        'Stop', convierte en error propio TODO lo que el programa escriba por la
+        salida de errores, aunque sean mensajes normales y aunque termine bien.
+        Y muchos la usan asi: unittest escribe ahi sus puntos, PyInstaller sus
+        avisos y pip los suyos. Sin esto, el guion se para en seco en cuanto
+        cualquiera de ellos dice algo.
+
+        Con -Mostrar la salida va saliendo en pantalla segun se produce, que es
+        lo que se quiere en los pasos largos.
+    #>
+    param(
+        [Parameter(Mandatory = $true)] [string]$Exe,
+        [string[]]$Argumentos = @(),
+        [switch]$Mostrar
+    )
+    $previo = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    $global:LASTEXITCODE = 0
+    $salida = @()
+    $codigo = 0
+    try {
+        if ($Mostrar) {
+            & $Exe @Argumentos 2>&1 | ForEach-Object { Write-Host "   $_" }
+        } else {
+            $salida = & $Exe @Argumentos 2>&1 | ForEach-Object { "$_" }
+        }
+        $codigo = $LASTEXITCODE
+    } catch {
+        $salida = @($_.Exception.Message)
+        $codigo = -1
+    } finally {
+        $ErrorActionPreference = $previo
+    }
+    return @{ Codigo = $codigo; Salida = ($salida -join [Environment]::NewLine) }
+}
+
 function Titulo($texto) {
     Write-Host ''
     Write-Host "== $texto" -ForegroundColor Cyan
@@ -55,22 +95,22 @@ if (-not (Test-Path $py)) {
 }
 Escribe "Python: $py" Green
 
-& $py -c "import PyInstaller" 2>$null
-if ($LASTEXITCODE -ne 0) {
+if ((Ejecuta $py @('-c', 'import PyInstaller')).Codigo -ne 0) {
     Escribe 'Falta PyInstaller. Lo instalo...' Yellow
-    & $py -m pip install pyinstaller --quiet
-    if ($LASTEXITCODE -ne 0) { Escribe 'No he podido instalarlo.' Red; exit 1 }
+    $r = Ejecuta $py @('-m', 'pip', 'install', 'pyinstaller') -Mostrar
+    if ($r.Codigo -ne 0) { Escribe 'No he podido instalarlo.' Red; exit 1 }
 }
 Escribe 'PyInstaller disponible.' Green
 
 # Las pruebas antes de empaquetar: empaquetar algo roto es perder media hora.
 Titulo 'Pruebas'
-& $py -m unittest discover -s (Join-Path $raiz 'pruebas') -q
-if ($LASTEXITCODE -ne 0) {
+$r = Ejecuta $py @('-m', 'unittest', 'discover', '-s', (Join-Path $raiz 'pruebas'), '-q')
+if ($r.Codigo -ne 0) {
     Escribe 'Hay pruebas que fallan. No sigo: arreglalas antes de empaquetar.' Red
+    Write-Host $r.Salida
     exit 1
 }
-Escribe 'Todas en verde.' Green
+Escribe (($r.Salida -split "`n" | Where-Object { $_ -match 'Ran|OK' }) -join ' · ') Green
 
 # ------------------------------------------------------------------ limpieza
 
@@ -86,12 +126,18 @@ if ($Limpiar) {
 
 Titulo '1 de 2 · Empaquetando el programa'
 Escribe 'Esto tarda unos minutos la primera vez.'
-& $py -m PyInstaller (Join-Path $raiz 'krv.spec') --noconfirm --log-level WARN
-if ($LASTEXITCODE -ne 0) { Escribe 'Fallo al empaquetar.' Red; exit 1 }
+$r = Ejecuta $py @('-m', 'PyInstaller', (Join-Path $raiz 'krv.spec'),
+                   '--noconfirm', '--log-level', 'WARN') -Mostrar
+if ($r.Codigo -ne 0) { Escribe 'Fallo al empaquetar.' Red; exit 1 }
 
-$programa = Join-Path $raiz 'dist\KevinRuizValdenegro\KevinRuizValdenegro.exe'
+# $IsWindows no existe en Windows PowerShell 5, donde siempre es Windows.
+$enWindows = ($null -eq $IsWindows) -or $IsWindows
+$programa = Join-Path $raiz 'dist/KevinRuizValdenegro'
+$programa = Join-Path $programa ('KevinRuizValdenegro' + $(if ($enWindows) { '.exe' } else { '' }))
 if (-not (Test-Path $programa)) {
-    Escribe "No encuentro $programa" Red
+    Escribe "He empaquetado, pero no encuentro el ejecutable en:" Red
+    Escribe "   $programa" Red
+    Escribe 'Mira los avisos de arriba: suele ser que falte alguna dependencia.' Yellow
     exit 1
 }
 $tamano = [math]::Round((Get-ChildItem (Split-Path $programa) -Recurse |
@@ -131,8 +177,8 @@ if (-not $iscc) {
 }
 Escribe "Inno Setup: $iscc" Green
 
-& $iscc (Join-Path $raiz 'instalador\krv.iss')
-if ($LASTEXITCODE -ne 0) { Escribe 'Fallo al montar el instalador.' Red; exit 1 }
+$r = Ejecuta $iscc @((Join-Path $raiz 'instalador\krv.iss')) -Mostrar
+if ($r.Codigo -ne 0) { Escribe 'Fallo al montar el instalador.' Red; exit 1 }
 
 $instalador = Get-ChildItem (Join-Path $raiz 'dist') -Filter '*Instalador*.exe' |
     Sort-Object LastWriteTime -Descending | Select-Object -First 1
