@@ -40,19 +40,34 @@ def hace_falta() -> bool:
 
 
 class _Bienvenida(QWizardPage):
+    """Lo primero que se ve. Deja claro qué es esta ventana.
+
+    Es fácil confundirla con el instalador —sale justo después y se le parece—,
+    así que dice quién es, de dónde está corriendo el programa y dónde va a
+    guardar. Con eso, si algún día sale cuando no toca, se ve de un vistazo por
+    qué.
+    """
+
     def __init__(self, cfg: config.Config):
         super().__init__()
-        self.setTitle("Vamos a dejarlo listo")
+        self.setTitle("Configuración inicial del programa")
+        self.setSubTitle(
+            "Esto no es el instalador: el programa ya está instalado. Es la "
+            "única pregunta que hay que contestar la primera vez.")
         caja = QVBoxLayout(self)
         caja.addWidget(etiqueta(
-            f"Esto es la primera puesta en marcha de <b>"
-            f"{cfg.negocio.nombre_comercial}</b>.<br><br>"
             "Hay una sola cosa que el programa no puede averiguar solo: la "
-            "cuenta de correo desde la que vas a escribir a tus usuarios. "
-            "También te preguntará por las direcciones de tus formularios de "
-            "Google, aunque eso se puede dejar para después.<br><br>"
+            "<b>cuenta de correo</b> desde la que vas a escribir a tus "
+            "usuarios. También te preguntará por las direcciones de tus "
+            "formularios de Google, aunque eso se puede dejar para después."
+            "<br><br>"
             "Todo lo demás ya viene puesto y se puede cambiar cuando quieras.",
             ajustar=True))
+        caja.addSpacing(14)
+        caja.addWidget(etiqueta(
+            f"<b>Tus datos se guardan en:</b><br>{config.CARPETA_DATOS}"
+            f"<br><br><b>El programa se está ejecutando desde:</b><br>"
+            f"{config.RAIZ}", "subtitulo", ajustar=True))
         caja.addStretch()
 
 

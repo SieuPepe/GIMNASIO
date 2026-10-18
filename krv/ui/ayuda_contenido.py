@@ -1224,7 +1224,13 @@ recordatorio es un segundo aviso de la misma encuesta.</li>
 rellena el programa por la dirección del enlace; es lo que permite enganchar
 cada respuesta con su persona sin pedirle que se identifique.</p>
 
-<h2>El enlace prerrellenado</h2>
+<h2>El camino rápido</h2>
+<p>En la carpeta del programa, <tt>herramientas/formularios_google.gs</tt> es un
+guion que <b>te crea los tres formularios</b> con todas sus preguntas y te da
+las direcciones ya listas. Se pega en <tt>script.google.com</tt> y se ejecuta.
+Los pasos exactos están en <tt>docs/14-formularios-google.md</tt>.</p>
+
+<h2>Si los haces a mano: el enlace prerrellenado</h2>
 <p>El enlace normal del formulario <b>no sirve</b>. Hace falta este, que es el
 paso que no se encuentra a la primera:</p>
 <ol>
@@ -1235,8 +1241,14 @@ paso que no se encuentra a la primera:</p>
 ejemplo <tt>AAA</tt> y <tt>BBB</tt>. No rellenes nada más.</li>
 <li>Abajo, <b>«Obtener vínculo»</b> y <b>«Copiar vínculo»</b>.</li>
 </ol>
-<p>Pega esa dirección tal cual en Correo → «Plantillas de correo…» → «URL del
-formulario». El programa cambia esos valores por los de cada persona al enviar.</p>
+<p><b>Antes de pegarla</b>, cambia los dos valores de prueba por los marcadores
+que el programa sustituye: donde pusiste <tt>AAA</tt> escribe
+<tt>{{id_usuario}}</tt>, y donde pusiste <tt>BBB</tt>, <tt>{{id_envio}}</tt>.
+Esos son los huecos donde el programa pone la identificación de cada persona.</p>
+
+<p>Luego se pega en Correo → «Plantillas de correo…» → «URL del formulario». Si
+se te olvida ponerlos, el programa no envía ese correo y lo dice en la bandeja:
+no se manda un enlace que no identifica a nadie.</p>
 
 <h2>Ojo con reescribir las preguntas</h2>
 <p>El programa reconoce cada pregunta <b>por las palabras de su enunciado</b>,

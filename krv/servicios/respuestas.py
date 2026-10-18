@@ -39,7 +39,8 @@ CLAVES = {
     "QUIERE_CITA": ("hablemos", "quieres que te llame", "cita con"),
     "PROXIMO_CICLO": ("te gustaria trabajar", "te gustaria probar", "proximo ciclo"),
     "OBJETIVO": ("objetivo",),
-    "CONSENTIMIENTO": ("autorizo", "autorizacion", "consentimiento"),
+    # «autoriza» cubre también autorizas, autorizar y autorización.
+    "CONSENTIMIENTO": ("autoriza", "autorizo", "consentimiento"),
 }
 COLUMNAS_ID = {"ID_Usuario": ("id_usuario", "idusuario", "usuario_id"),
                "ID_Envio": ("id_envio", "idenvio", "envio_id")}
@@ -124,10 +125,14 @@ def importar(repo: Repositorio, cfg: Config, ruta: Path,
         if not codigo:
             continue
         if codigo in mapa_preguntas.values():
+            # Antes se quedaba con la primera y tiraba el resto, y eso es
+            # justo lo que pasa con las preguntas que llevan detalle: «¿has
+            # tenido molestias?» y «cuéntame dónde», o el objetivo y cuál es
+            # el nuevo. Ahora se juntan: nada se pierde y el aviso del panel
+            # sale con la explicación dentro.
             resultado.avisos.append(
-                f"Dos columnas apuntan a «{codigo}»; se usa la primera: "
-                f"«{cabecera}» se ignora")
-            continue
+                f"«{cabecera}» se junta con la respuesta «{codigo}», que ya "
+                "tenía otra columna")
         mapa_preguntas[cabecera] = codigo
     sin_reconocer = [c for c in cabeceras
                      if c not in mapa_id and c not in mapa_preguntas
@@ -164,12 +169,18 @@ def importar(repo: Repositorio, cfg: Config, ruta: Path,
                 lambda r: (r.get("ID_Usuario") == id_usuario
                            and r.get("ID_Envio") == (id_envio or None)))}
 
+        # Primero se juntan los valores de la fila, y solo después se guardan:
+        # una respuesta repartida en dos columnas tiene que acabar en una sola
+        # fila, o la acción que dispara vería solo la mitad.
         valores: dict[str, str] = {}
         for columna, codigo in mapa_preguntas.items():
             valor = (fila.get(columna) or "").strip()
             if not valor:
                 continue
-            valores[codigo] = valor
+            valores[codigo] = (f"{valores[codigo]} · {valor}"
+                               if codigo in valores else valor)
+
+        for codigo, valor in valores.items():
             if codigo in ya_registradas:
                 continue
             repo.insertar("T_RESPUESTAS", {

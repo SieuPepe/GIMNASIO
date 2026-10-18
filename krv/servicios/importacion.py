@@ -37,11 +37,24 @@ class Resultado:
         return ", ".join(partes)
 
 
+def delimitador_de(cabecera: str) -> str:
+    """El separador que usa el fichero, mirando su primera línea.
+
+    Los CSV que trae el programa van con punto y coma, que es lo que escribe
+    Excel en español. Los de Google Forms van con coma. Dar por hecho uno de
+    los dos significa que el otro se lee como una sola columna gigante y no se
+    importa nada, sin dar error.
+    """
+    return ";" if cabecera.count(";") >= cabecera.count(",") else ","
+
+
 def leer_csv(ruta: Path) -> list[dict]:
     with open(ruta, encoding="utf-8-sig", newline="") as fichero:
+        primera = fichero.readline()
+        fichero.seek(0)
         return [
             {clave.strip(): (valor or "").strip() for clave, valor in fila.items() if clave}
-            for fila in csv.DictReader(fichero, delimiter=";")
+            for fila in csv.DictReader(fichero, delimiter=delimitador_de(primera))
         ]
 
 

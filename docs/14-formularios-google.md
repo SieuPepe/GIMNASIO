@@ -15,6 +15,29 @@ cuenta:
 2. **Rehacerlos** en la cuenta nueva. Son tres formularios y se montan en media
    hora. Todo queda en el mismo sitio y no dependes de la cuenta anterior.
 
+## El camino rápido: que te los cree un guion
+
+En `herramientas/formularios_google.gs` hay un guion que **crea los tres
+formularios en tu cuenta**, con todas sus preguntas, y escribe las direcciones
+ya listas para pegar. Evita la media hora de montarlos a mano y, sobre todo,
+evita equivocarse en el enunciado de una pregunta.
+
+1. Entra en <https://script.google.com> **con la cuenta donde quieres los
+   formularios**. La cuenta importa: quedan en su Drive.
+2. «Nuevo proyecto».
+3. Borra lo que haya y pega el contenido de `formularios_google.gs`.
+4. Arriba, elige la función **`crearFormularios`** y pulsa **Ejecutar**.
+5. La primera vez Google pide permiso. Es tu propio guion creando tus propios
+   formularios, en tu cuenta: hay que aceptarlo.
+6. Al terminar, abajo aparece el **«Registro de ejecución»** con las tres
+   direcciones y el enlace para editar cada formulario.
+
+Las direcciones salen ya con los marcadores puestos. Se pegan tal cual en el
+programa y no hay que tocarlas.
+
+Si prefieres hacerlos a mano, o quieres entender qué crea el guion, sigue
+leyendo.
+
 ## Cuántos hacen falta
 
 Tres formularios, cuatro casillas en el programa:
@@ -147,8 +170,26 @@ Te queda una dirección parecida a esta:
 https://docs.google.com/forms/d/e/1FAIp.../viewform?usp=pp_url&entry.123456=AAA&entry.789012=BBB
 ```
 
-Pégala tal cual en el programa: él se encarga de cambiar `AAA` y `BBB` por la
-identificación de cada persona al enviar cada correo.
+**Y aquí hay un paso que no se puede saltar.** Antes de pegarla, cambia los dos
+valores de prueba por los marcadores que el programa sabe sustituir:
+
+- donde pusiste `AAA` (el de `ID_Usuario`) → `{{id_usuario}}`
+- donde pusiste `BBB` (el de `ID_Envio`) → `{{id_envio}}`
+
+Queda así:
+
+```
+...viewform?usp=pp_url&entry.123456={{id_usuario}}&entry.789012={{id_envio}}
+```
+
+Esos marcadores son los huecos: el programa pone ahí la identificación de cada
+persona al enviar cada correo. Sin ellos, todo el mundo recibiría el mismo
+enlace vacío y las respuestas llegarían sin saber de quién son.
+
+No pasa nada si se te olvida: el programa comprueba cada correo antes de
+enviarlo y, si el enlace no lleva el identificador, no lo manda y lo dice en la
+bandeja. Pero es más cómodo dejarlo bien a la primera —o usar el guion de
+arriba, que ya los pone.
 
 ## Dónde se pega en el programa
 
@@ -173,6 +214,10 @@ Las respuestas se quedan en Google hasta que las traes:
 El programa engancha cada respuesta con su persona por `ID_Usuario`, y si
 alguien ha declarado molestias o ha pedido cita, aparece como aviso en el panel
 de inicio.
+
+Las preguntas que llevan detalle ocupan dos columnas en el CSV —«¿has tenido
+molestias?» y «cuéntame dónde»— y el programa las junta en una sola respuesta,
+así que el aviso del panel sale con la explicación dentro.
 
 Se pueden importar las mismas respuestas dos veces sin miedo: las repetidas se
 reconocen y no se duplican.
