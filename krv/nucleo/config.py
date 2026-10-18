@@ -19,9 +19,9 @@ RAIZ = Path(__file__).resolve().parents[2]
 @dataclass
 class Negocio:
     nombre_comercial: str = "Kevin Ruiz Valdenegro"
-    lema: str = "Licenciado en Ciencias del Deporte y la Actividad Física"
+    lema: str = "Movimiento es vida"
     horario_sala: str = ""
-    contacto: str = ""
+    contacto: str = "Kevin Ruiz Valdenegro · 644 300 765 · movimientoesvida.krv@gmail.com"
 
 
 @dataclass
@@ -33,7 +33,7 @@ class Datos:
 
 @dataclass
 class Correo:
-    remitente: str = ""
+    remitente: str = "movimientoesvida.krv@gmail.com"
     smtp_host: str = "smtp.gmail.com"
     smtp_puerto: int = 465
     dias_aviso_previo: int = 14

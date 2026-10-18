@@ -96,6 +96,33 @@ puntual, que se marcan como atendidas. Cada una lleva a su ficha en un clic.
 - PyInstaller, instalador, manual breve de uso.
 - Prueba en el PC real de destino.
 
+## Fase 9 — App para el móvil
+Pendiente de definir con detalle; de momento queda anotado el alcance y lo que
+hay que decidir antes de empezar.
+
+- **Para quién y para qué.** Lo natural es una app *para el usuario del
+  gimnasio*: que vea su sesión del día, la marque como hecha y anote las cargas
+  que ha movido. Eso es justamente el "registro de lo ejecutado" que hoy está
+  en *Más adelante*: la app sería la forma cómoda de recogerlo.
+- **El problema a resolver primero: dónde viven los datos.** El Excel está en
+  un PC local y el móvil no lo puede leer. Hace falta un punto intermedio, y
+  esa decisión condiciona todo lo demás:
+  - *Solo lectura*: el programa genera un PDF o una página y se envía por
+    correo. No requiere nada nuevo y se podría hacer casi hoy.
+  - *Carpeta en la nube* (Drive, OneDrive) con un fichero por usuario que la
+    app lee y escribe. Sin servidor, pero la sincronización es delicada.
+  - *Servicio propio* con una API y un pequeño almacén, con el Excel como copia
+    maestra. Es lo que permite una app de verdad, y es lo que rompe el "sin
+    bases de datos" que pusimos como norma: habría que acordarlo antes.
+- **Cómo se construiría.** Una web que se instala en el móvil (PWA) evita las
+  tiendas de aplicaciones, el alta de desarrollador y los dos desarrollos
+  separados de Android y iPhone. Es la vía recomendada para empezar.
+- **Qué tendría que haber hecho antes.** Fases 7 y 8 cerradas, y el registro de
+  lo ejecutado definido: la app sin eso es un visor de PDF.
+
+**Resultado:** el usuario lleva su entrenamiento encima y el entrenador recibe
+lo que de verdad se ha hecho, no solo lo que estaba previsto.
+
 ## Más adelante (fuera de esta planificación)
 - Registro de lo **ejecutado**: asistencia, cargas reales, adherencia medida.
   Desbloquea el bloque de progreso real en los correos y multiplica la calidad de

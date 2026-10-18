@@ -6,9 +6,8 @@
 Física*
 
 El nombre comercial es el del propio entrenador, así que en los correos y en los
-informes la firma y la marca son la misma cosa. La línea de titulación hace de
-subtítulo donde antes iba un lema: aparece bajo el nombre en la cabecera de los
-correos y en el pie de los PDF.
+informes la firma y la marca son la misma cosa. El lema **«Movimiento es vida»** es lo que aparece bajo el nombre en la cabecera
+de los correos y en el pie de los PDF. La titulación va en el propio logotipo.
 
 Ambos se configuran en `config.toml`, sección `[negocio]`, de modo que cambiarlos
 no exige tocar código.
@@ -78,8 +77,11 @@ depende solo del color.
 | Hoja de entrenamiento | Igual |
 | Correos | Cabecera marina con el nombre y la titulación debajo; botones en azul |
 
-## Pendiente
+## Contacto
 
-Los **datos de contacto** que van en el pie de los informes y en la firma de los
-correos: teléfono, correo y dirección, si procede. Se configuran en
-`config.toml`, clave `contacto`, dentro de `[negocio]`.
+En el pie de los informes y en la firma de los correos:
+
+> Kevin Ruiz Valdenegro · 644 300 765 · movimientoesvida.krv@gmail.com
+
+Se configura en `config.toml`, clave `contacto` de `[negocio]`. El correo desde
+el que sale todo es **movimientoesvida.krv@gmail.com**.

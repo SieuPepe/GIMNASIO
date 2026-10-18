@@ -9,8 +9,9 @@ from typing import Callable
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor
 from PySide6.QtWidgets import (
-    QAbstractItemView, QComboBox, QHBoxLayout, QHeaderView, QMessageBox,
-    QPushButton, QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget,
+    QAbstractItemView, QComboBox, QHBoxLayout, QHeaderView, QInputDialog,
+    QMessageBox, QPushButton, QTableWidget, QTableWidgetItem, QVBoxLayout,
+    QWidget,
 )
 
 from ..datos.repositorio import Repositorio
@@ -19,7 +20,7 @@ from ..nucleo.fechas import formatear
 from ..servicios import informes
 from ..servicios import valoracion as srv
 from . import estilo
-from .comunes import avisar_error, etiqueta
+from .comunes import avisar_error, etiqueta, preseleccionar
 from .dialogo_valoracion import DialogoValoracion
 
 COLUMNAS = ["ID", "Fecha", "Usuario", "Tipo", "Protocolo", "Pruebas", "Global", "Hallazgos"]
@@ -135,6 +136,7 @@ class VistaValoraciones(QWidget):
                     item.setToolTip("\n".join(f"{h.titulo}: {h.detalle}" for h in alertas))
                 self.tabla.setItem(fila, columna, item)
         self.tabla.blockSignals(False)
+        preseleccionar(self.tabla)
         self._actualizar_botones()
 
     def seleccionada(self) -> str | None:
@@ -173,15 +175,29 @@ class VistaValoraciones(QWidget):
                 "No hay protocolos de valoración cargados.\n\n"
                 "Ejecuta: python herramientas/importar_valoracion.py")
             return
-        id_usuario = self.filtro_usuario.currentData()
+        id_usuario = self.filtro_usuario.currentData() or self._pedir_usuario(usuarios)
         if not id_usuario:
-            QMessageBox.information(
-                self, "Elige un usuario",
-                "Selecciona arriba a quién vas a valorar y vuelve a pulsar.")
             return
         dialogo = DialogoValoracion(self.repo, id_usuario=id_usuario, padre=self)
         if dialogo.exec() and self.guardar():
             self.refrescar()
+
+    def _pedir_usuario(self, usuarios: list[dict]) -> str | None:
+        """Pregunta a quién se valora.
+
+        El filtro arranca en «todos los usuarios», así que lo normal es pulsar
+        «Nueva valoración» sin haber elegido a nadie. Se pregunta aquí en vez de
+        mandar al entrenador a cambiar el filtro y volver a pulsar.
+        """
+        por_nombre = {}
+        for usuario in usuarios:
+            nombre = " ".join(x for x in (usuario.get("Nombre"),
+                                          usuario.get("Apellidos")) if x)
+            por_nombre[f"{nombre} · {usuario['ID_Usuario']}"] = usuario["ID_Usuario"]
+        elegido, aceptado = QInputDialog.getItem(
+            self, "Nueva valoración", "¿A quién vas a valorar?",
+            list(por_nombre), 0, False)
+        return por_nombre.get(elegido) if aceptado else None
 
     def editar(self) -> None:
         identificador = self.seleccionada()

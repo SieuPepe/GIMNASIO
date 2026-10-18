@@ -74,12 +74,84 @@ QPushButton[plano="true"] {{
     background: transparent; color: {AZUL}; border: 1px solid {AZUL};
 }}
 QPushButton[plano="true"]:hover {{ background: {AZUL_CLARO}; }}
+/* Sin esto un boton plano desactivado se ve igual que uno activo: el
+   usuario lo pulsa, no pasa nada y parece que el programa esta roto. */
+QPushButton[plano="true"]:disabled {{
+    background: transparent; color: #AEB9C1; border: 1px solid #DCE3E8;
+}}
 
 QLineEdit, QComboBox, QDateEdit, QSpinBox, QDoubleSpinBox, QTextEdit, QPlainTextEdit {{
     border: 1px solid #C3CDD4; border-radius: 3px; padding: 5px; background: white;
 }}
 QLineEdit:focus, QComboBox:focus, QDateEdit:focus, QSpinBox:focus,
 QTextEdit:focus, QPlainTextEdit:focus {{ border: 1px solid {AZUL}; }}
+
+/* Las flechas necesitan su propio sitio: sin esto el relleno del campo se las
+   come y la de subir se queda sin zona donde pulsar. */
+QSpinBox, QDoubleSpinBox {{ padding-right: 22px; }}
+QSpinBox::up-button, QDoubleSpinBox::up-button,
+QSpinBox::down-button, QDoubleSpinBox::down-button {{
+    subcontrol-origin: border; width: 19px; background: #F2F5F7;
+    border-left: 1px solid #C3CDD4;
+}}
+QSpinBox::up-button, QDoubleSpinBox::up-button {{
+    subcontrol-position: top right; height: 13px;
+    border-top-right-radius: 3px; border-bottom: 1px solid #DDE4EA;
+}}
+QSpinBox::down-button, QDoubleSpinBox::down-button {{
+    subcontrol-position: bottom right; height: 13px;
+    border-bottom-right-radius: 3px;
+}}
+QSpinBox::up-button:hover, QDoubleSpinBox::up-button:hover,
+QSpinBox::down-button:hover, QDoubleSpinBox::down-button:hover {{
+    background: {AZUL_CLARO};
+}}
+QSpinBox::up-button:pressed, QDoubleSpinBox::up-button:pressed,
+QSpinBox::down-button:pressed, QDoubleSpinBox::down-button:pressed {{
+    background: {AZUL}; 
+}}
+QSpinBox::up-arrow, QDoubleSpinBox::up-arrow {{
+    image: none; width: 0; height: 0;
+    border-left: 4px solid transparent; border-right: 4px solid transparent;
+    border-bottom: 5px solid {AZUL_OSCURO};
+}}
+QSpinBox::down-arrow, QDoubleSpinBox::down-arrow {{
+    image: none; width: 0; height: 0;
+    border-left: 4px solid transparent; border-right: 4px solid transparent;
+    border-top: 5px solid {AZUL_OSCURO};
+}}
+QSpinBox::up-arrow:disabled, QDoubleSpinBox::up-arrow:disabled {{
+    border-bottom-color: #B9C6CE;
+}}
+QSpinBox::down-arrow:disabled, QDoubleSpinBox::down-arrow:disabled {{
+    border-top-color: #B9C6CE;
+}}
+
+/* El desplegable de las fechas, por el mismo motivo */
+QDateEdit {{ padding-right: 22px; }}
+QDateEdit::drop-down {{
+    subcontrol-origin: border; subcontrol-position: center right;
+    width: 20px; background: #F2F5F7; border-left: 1px solid #C3CDD4;
+    border-top-right-radius: 3px; border-bottom-right-radius: 3px;
+}}
+QDateEdit::drop-down:hover {{ background: {AZUL_CLARO}; }}
+QDateEdit::down-arrow {{
+    image: none; width: 0; height: 0;
+    border-left: 4px solid transparent; border-right: 4px solid transparent;
+    border-top: 5px solid {AZUL_OSCURO};
+}}
+QComboBox::drop-down {{
+    subcontrol-origin: border; subcontrol-position: center right;
+    width: 20px; border-left: 1px solid #C3CDD4; background: #F2F5F7;
+    border-top-right-radius: 3px; border-bottom-right-radius: 3px;
+}}
+QComboBox::drop-down:hover {{ background: {AZUL_CLARO}; }}
+QComboBox::down-arrow {{
+    image: none; width: 0; height: 0;
+    border-left: 4px solid transparent; border-right: 4px solid transparent;
+    border-top: 5px solid {AZUL_OSCURO};
+}}
+QComboBox {{ padding-right: 22px; }}
 
 QTableWidget {{ gridline-color: #E2E8EC; selection-background-color: {AZUL_CLARO};
                 selection-color: {GRIS_TEXTO}; }}

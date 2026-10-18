@@ -21,7 +21,7 @@ from ..servicios import cola as srv
 from ..servicios import correo as srv_correo
 from ..servicios import respuestas as srv_respuestas
 from . import estilo
-from .comunes import avisar_error, confirmar, etiqueta
+from .comunes import avisar_error, confirmar, etiqueta, preseleccionar
 from .dialogo_plantillas import DialogoPlantillas
 
 COLUMNAS = ["ID", "Usuario", "Tipo", "Programado", "Estado", "Aviso"]
@@ -183,6 +183,7 @@ class VistaCorreo(QWidget):
                     item.setForeground(QColor(estilo.BAJO))
                 self.tabla.setItem(fila, columna, item)
         self.tabla.blockSignals(False)
+        preseleccionar(self.tabla)
         self._cargar_seleccion()
 
     def seleccionar_usuario(self, id_usuario: str) -> None:

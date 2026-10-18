@@ -14,7 +14,7 @@ from PySide6.QtWidgets import (
 from ..datos.repositorio import Repositorio
 from ..servicios import usuarios as srv
 from . import estilo
-from .comunes import avisar_error, confirmar, etiqueta
+from .comunes import avisar_error, confirmar, etiqueta, preseleccionar
 from .dialogos_usuario import DialogoDisponibilidad, DialogoObjetivos, DialogoSalud
 from .ficha_usuario import FichaUsuario
 
@@ -137,6 +137,7 @@ class VistaUsuarios(QWidget):
                         item.setToolTip("El cribado exige informe médico")
                 self.tabla.setItem(fila, columna, item)
         self.tabla.blockSignals(False)
+        preseleccionar(self.tabla)
         self._actualizar_botones()
 
     def seleccionado(self) -> str | None:

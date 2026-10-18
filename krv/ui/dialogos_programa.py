@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QCheckBox, QComboBox, QDialog, QDialogButtonBox, QDoubleSpinBox, QFormLayout,
     QLineEdit, QPlainTextEdit, QSpinBox, QVBoxLayout,
@@ -190,7 +191,10 @@ class DialogoLinea(QDialog):
         if indice >= 0:
             self.ejercicio.setCurrentIndex(indice)
         self.ejercicio.setEditable(True)
-        self.ejercicio.completer().setCaseSensitivity(False)
+        completador = self.ejercicio.completer()
+        if completador is not None:
+            completador.setCaseSensitivity(Qt.CaseInsensitive)
+            completador.setFilterMode(Qt.MatchContains)
         self.ejercicio.currentIndexChanged.connect(self._pista_material)
 
         self.series = QSpinBox(); self.series.setRange(1, 12)

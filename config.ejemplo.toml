@@ -3,9 +3,9 @@
 
 [negocio]
 nombre_comercial = "Kevin Ruiz Valdenegro"
-lema             = "Licenciado en Ciencias del Deporte y la Actividad Física"
+lema             = "Movimiento es vida"
 horario_sala     = "Lunes a sábado de 07:00 a 21:00 · Domingo de 07:00 a 14:00"
-contacto         = ""
+contacto         = "Kevin Ruiz Valdenegro · 644 300 765 · movimientoesvida.krv@gmail.com"
 
 [datos]
 libro              = "datos_krv.xlsx"
@@ -13,7 +13,7 @@ backups            = "backups"
 copias_a_conservar = 30
 
 [correo]
-remitente         = ""
+remitente         = "movimientoesvida.krv@gmail.com"
 smtp_host         = "smtp.gmail.com"
 smtp_puerto       = 465
 dias_aviso_previo = 14

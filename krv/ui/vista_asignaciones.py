@@ -20,7 +20,9 @@ from ..servicios import informes
 from ..servicios import programas as srv
 from ..servicios import usuarios as srv_usuarios
 from . import estilo
-from .comunes import avisar_error, campo_fecha, desplegable, etiqueta, leer_fecha
+from .comunes import (
+    avisar_error, campo_fecha, desplegable, etiqueta, leer_fecha, preseleccionar,
+)
 from .vista_valoraciones import VistaValoraciones
 
 COLUMNAS = ["ID", "Usuario", "Programa", "Inicio", "Fin", "Estado", "Fase actual", "Quedan"]
@@ -247,6 +249,7 @@ class VistaAsignaciones(QWidget):
                     item.setToolTip("Toca generar el cuestionario de renovación")
                 self.tabla.setItem(fila, columna, item)
         self.tabla.blockSignals(False)
+        preseleccionar(self.tabla)
         self._actualizar_botones()
 
     def seleccionada(self) -> str | None:

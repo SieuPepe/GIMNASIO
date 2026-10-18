@@ -18,7 +18,7 @@ from ..nucleo.config import RAIZ
 from ..servicios import ejercicios as srv
 from ..servicios.importacion import importar_ejercicios
 from . import estilo
-from .comunes import avisar_error, confirmar, desplegable, etiqueta
+from .comunes import avisar_error, confirmar, desplegable, etiqueta, preseleccionar
 from .ficha_ejercicio import FichaEjercicio, texto_patron
 
 COLUMNAS = ["ID", "Nombre", "Patrón", "Grupo", "Material", "Nivel", "Básico", "Estado"]
@@ -218,6 +218,7 @@ class VistaEjercicios(QWidget):
                     item.setForeground(QColor("#9AA5AD"))
                 self.tabla.setItem(fila, columna, item)
         self.tabla.blockSignals(False)
+        preseleccionar(self.tabla)
         self._actualizar_botones()
 
     def seleccionado(self) -> str | None:

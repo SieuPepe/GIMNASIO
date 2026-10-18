@@ -70,12 +70,11 @@ cuando queramos. Candidatos: `qwen2.5:7b-instruct`, `llama3.1:8b-instruct`,
 `mistral:7b-instruct`. La pantalla de diagnóstico de la aplicación dará velocidad
 y porcentaje de respuestas válidas de cada uno con los mismos casos de prueba.
 
-### 5. Datos de contacto
+### 5. Equipo de destino final
 
-El logotipo ya está en `assets/marca/` y la paleta sale de él
-(ver [12](12-marca.md)). Faltan los datos de contacto que van en el pie de los
-informes y en la firma de los correos: teléfono, correo y dirección si procede.
-Se ponen en `config.toml`, clave `contacto` de `[negocio]`.
+Repetido aquí porque es lo único que bloquea la fase 7: el PC donde va a
+trabajar la aplicación sigue sin decidirse, y de eso depende qué modelo de IA
+puede moverse en local.
 
 ### 6. Datos existentes
 

@@ -5,7 +5,9 @@ from __future__ import annotations
 from datetime import date
 
 from PySide6.QtCore import QDate, Qt
-from PySide6.QtWidgets import QComboBox, QDateEdit, QLabel, QMessageBox, QWidget
+from PySide6.QtWidgets import (
+    QComboBox, QDateEdit, QLabel, QMessageBox, QTableWidget, QWidget,
+)
 
 from ..datos.libro import LibroBloqueado, LibroModificadoFuera
 from ..datos.repositorio import ErrorValidacion
@@ -75,3 +77,14 @@ def confirmar(padre: QWidget, titulo: str, pregunta: str) -> bool:
     return QMessageBox.question(
         padre, titulo, pregunta,
         QMessageBox.Yes | QMessageBox.No, QMessageBox.No) == QMessageBox.Yes
+
+
+def preseleccionar(tabla: QTableWidget) -> None:
+    """Deja elegida la primera fila de la tabla.
+
+    Los botones que necesitan una fila nacen apagados, y eso se lee como que
+    el programa no responde. Con una fila ya elegida, al entrar en la vista
+    todos los botones hacen algo.
+    """
+    if tabla.rowCount() and not tabla.selectionModel().selectedRows():
+        tabla.selectRow(0)
