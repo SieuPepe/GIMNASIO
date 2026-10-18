@@ -10,7 +10,7 @@ from PySide6.QtWidgets import QApplication, QMessageBox
 
 from .datos import libro as mod_libro
 from .nucleo import config, log
-from .ui import asistente, estilo
+from .ui import asistente, encaje, estilo
 from .ui.principal import VentanaPrincipal
 
 
@@ -63,6 +63,7 @@ def comprobar() -> int:
 
         app = QApplication.instance() or QApplication(sys.argv)
         app.setStyleSheet(estilo.HOJA)
+        encaje.instalar(app)
 
         with tempfile.TemporaryDirectory() as temporal:
             cfg = config.Config()
@@ -115,6 +116,9 @@ def main() -> int:
     if estilo.ICONO.exists():
         app.setWindowIcon(QIcon(str(estilo.ICONO)))
     app.setStyleSheet(estilo.HOJA)
+    # Que ninguna ventana se salga de la pantalla: el programa se escribe en un
+    # monitor grande y luego se usa en un portátil, o con el escalado al 125 %.
+    encaje.instalar(app)
 
     if not cfg.datos.libro.exists():
         # Instalado como programa no hay consola a la que mandar a nadie: si no

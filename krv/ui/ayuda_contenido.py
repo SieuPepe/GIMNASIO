@@ -1497,6 +1497,14 @@ el apartado <b>«Tu marca, tal y como la está usando el programa»</b> en la
 portada de este manual. Si borras una línea de <tt>config.toml</tt>, el programa
 usa su valor de fábrica, que ya es el correcto.</p>
 
+<p><b>Una ventana se sale de la pantalla</b> y no puedes ni moverla. El
+programa encoge y recoloca cada ventana al abrirla para que quepa entera, así
+que esto no debería pasar; si pasa, cuéntamelo. Mientras tanto hay dos salidas
+de emergencia que funcionan siempre: <b>Alt+F4</b> cierra la ventana que esté
+delante, y con <b>Alt + flechas</b> —tras pulsar Alt+Espacio y elegir
+«Mover»— se arrastra con el teclado una ventana cuya barra de título no se
+alcanza.</p>
+
 <p><b>Un botón parece no hacer nada.</b> Mírale el color: los botones de borde
 azul que necesitan una fila elegida se ven en <b>gris claro</b> cuando no hay
 ninguna. Elige una fila de la tabla y vuelve a probar.</p>
