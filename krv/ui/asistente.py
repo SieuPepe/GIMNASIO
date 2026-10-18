@@ -83,16 +83,51 @@ class _Correo(QWizardPage):
 
         self.resultado = etiqueta("", ajustar=True)
         caja.addWidget(self.resultado)
+        self.pista = etiqueta("", "subtitulo", ajustar=True)
+        caja.addWidget(self.pista)
         caja.addStretch()
 
-        self.setButtonText(QWizard.CustomButton1, "Probar la conexión")
-        self.registerField("cuenta*", self.cuenta)
-        self.registerField("clave*", self.clave)
+        # Nada de campos «obligatorios» de Qt: esos se dan por cumplidos solo
+        # cuando el texto cambia respecto al que tenían al registrarse, así que
+        # un campo que ya viene relleno nunca cuenta como completo y el botón
+        # Siguiente se queda apagado para siempre. Aquí se decide a mano, y de
+        # paso se puede decir qué falta en vez de dejar el botón muerto.
+        self.registerField("cuenta", self.cuenta)
+        self.registerField("clave", self.clave)
+        for campo in (self.cuenta, self.clave):
+            campo.textChanged.connect(self._revisar)
+        self._revisar()
+
+    def clave_limpia(self) -> str:
+        """Google la enseña en grupos de cuatro; se pega con espacios."""
+        return self.clave.text().strip().replace(" ", "")
+
+    def isComplete(self) -> bool:
+        return "@" in self.cuenta.text().strip() and len(self.clave_limpia()) >= 8
+
+    def _revisar(self) -> None:
+        cuenta = self.cuenta.text().strip()
+        clave = self.clave_limpia()
+        if "@" not in cuenta:
+            self.pista.setText("Falta la cuenta de correo.")
+        elif not clave:
+            self.pista.setText("Falta la contraseña de aplicación.")
+        elif len(clave) < 8:
+            self.pista.setText("Esa contraseña es muy corta: la de Google tiene "
+                               "16 letras.")
+        elif len(clave) != 16:
+            self.pista.setText("Aviso: la contraseña de aplicación de Google "
+                               f"tiene 16 letras y has escrito {len(clave)}. "
+                               "Puedes seguir, pero compruébala.")
+        else:
+            self.pista.setText("Listo. Conviene pulsar «Probar la conexión» "
+                               "antes de seguir.")
+        self.completeChanged.emit()
 
     def probar(self) -> None:
         """Intenta conectar de verdad con lo que se ha escrito."""
         cuenta = self.cuenta.text().strip()
-        clave = self.clave.text().strip().replace(" ", "")
+        clave = self.clave_limpia()
         if not cuenta or not clave:
             self.resultado.setText("Escribe la cuenta y la contraseña primero.")
             self.resultado.setObjectName("aviso")
@@ -208,7 +243,11 @@ class Asistente(QWizard):
 
         self.setOption(QWizard.HaveCustomButton1, True)
         self.setButtonText(QWizard.CustomButton1, "Probar la conexión")
-        self.customButtonClicked.connect(self._boton_extra)
+        # Conectado al botón y no a customButtonClicked: esa señal entrega un
+        # número entero y en PySide6 un entero no es igual a la constante del
+        # botón, así que la comparación fallaba en silencio y el botón no hacía
+        # nada.
+        self.button(QWizard.CustomButton1).clicked.connect(self.pagina_correo.probar)
         self.currentIdChanged.connect(self._cambio_pagina)
 
     def _cambio_pagina(self, _=None) -> None:
@@ -216,15 +255,11 @@ class Asistente(QWizard):
         self.button(QWizard.CustomButton1).setVisible(
             self.currentPage() is self.pagina_correo)
 
-    def _boton_extra(self, cual: int) -> None:
-        if cual == QWizard.CustomButton1:
-            self.pagina_correo.probar()
-
     def accept(self) -> None:
         """Escribe los dos ficheros y guarda las URL en el libro."""
         try:
             escribir_env(self.pagina_correo.cuenta.text().strip(),
-                         self.pagina_correo.clave.text().strip().replace(" ", ""))
+                         self.pagina_correo.clave_limpia())
             escribir_config(self.cfg, self.pagina_correo.cuenta.text().strip(),
                             self.pagina_negocio.nombre.text().strip(),
                             self.pagina_negocio.lema.text().strip(),

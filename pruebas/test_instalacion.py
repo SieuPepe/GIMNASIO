@@ -257,5 +257,108 @@ class AsistenteDePrimeraVez(unittest.TestCase):
             importlib.reload(asistente)
 
 
+class BotonesDelAsistente(unittest.TestCase):
+    """Los dos botones que no respondían, y por qué.
+
+    «Siguiente» se quedaba apagado aunque los dos campos estuvieran llenos, y
+    «Probar la conexión» no hacía nada. Dos causas distintas, las dos mudas.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        from PySide6.QtWidgets import QApplication
+        cls.app = QApplication.instance() or QApplication([])
+
+    def _asistente(self):
+        from PySide6.QtWidgets import QWizard
+        from krv.ui import asistente
+        cfg = config.Config()
+        paso = asistente.Asistente(cfg, None)
+        paso.show()
+        paso.next()                       # hasta la página del correo
+        self.app.processEvents()
+        return paso, QWizard
+
+    def test_siguiente_se_enciende_al_rellenar(self):
+        # Con los campos «obligatorios» de Qt, un campo que ya viene relleno
+        # nunca cuenta como completo: comparan contra el texto que tenían al
+        # registrarse. El correo venía puesto, así que Siguiente no se encendía
+        # jamás por mucho que se escribiera la contraseña.
+        paso, QWizard = self._asistente()
+        try:
+            pagina = paso.pagina_correo
+            self.assertTrue(pagina.cuenta.text(), "el correo viene relleno")
+            self.assertFalse(pagina.isComplete())
+            pagina.clave.setText("abcdefghijklmnop")
+            self.app.processEvents()
+            self.assertTrue(pagina.isComplete())
+            self.assertTrue(paso.button(QWizard.NextButton).isEnabled())
+        finally:
+            paso.close()
+
+    def test_sin_correo_no_deja_seguir(self):
+        paso, _ = self._asistente()
+        try:
+            pagina = paso.pagina_correo
+            pagina.cuenta.setText("esto no es un correo")
+            pagina.clave.setText("abcdefghijklmnop")
+            self.app.processEvents()
+            self.assertFalse(pagina.isComplete())
+        finally:
+            paso.close()
+
+    def test_la_pista_dice_que_falta(self):
+        # Un botón apagado sin explicación es lo que llevó a esto.
+        paso, _ = self._asistente()
+        try:
+            pagina = paso.pagina_correo
+            pagina.clave.setText("")
+            self.app.processEvents()
+            self.assertIn("contraseña", pagina.pista.text().lower())
+            pagina.clave.setText("abcdefghijklmnop")
+            self.app.processEvents()
+            self.assertIn("probar", pagina.pista.text().lower())
+        finally:
+            paso.close()
+
+    def test_el_boton_de_probar_llama_a_probar(self):
+        # customButtonClicked entrega un entero, y en PySide6 un entero no es
+        # igual a la constante del botón: la comparación fallaba en silencio.
+        paso, QWizard = self._asistente()
+        try:
+            llamadas = []
+            paso.pagina_correo.probar = lambda: llamadas.append(1)
+            boton = paso.button(QWizard.CustomButton1)
+            self.assertIsNotNone(boton)
+            self.assertEqual(boton.text(), "Probar la conexión")
+            boton.click()
+            self.app.processEvents()
+            self.assertEqual(len(llamadas), 1, "el botón no ha hecho nada")
+        finally:
+            paso.close()
+
+    def test_la_contrasena_pierde_los_espacios(self):
+        # Google la enseña en grupos de cuatro y se pega tal cual.
+        paso, _ = self._asistente()
+        try:
+            paso.pagina_correo.clave.setText("abcd efgh ijkl mnop")
+            self.assertEqual(paso.pagina_correo.clave_limpia(), "abcdefghijklmnop")
+            self.assertTrue(paso.pagina_correo.isComplete())
+        finally:
+            paso.close()
+
+    def test_el_boton_solo_sale_en_su_pagina(self):
+        from PySide6.QtWidgets import QWizard
+        paso, _ = self._asistente()
+        try:
+            self.assertTrue(paso.button(QWizard.CustomButton1).isVisible())
+            paso.pagina_correo.clave.setText("abcdefghijklmnop")
+            paso.next()
+            self.app.processEvents()
+            self.assertFalse(paso.button(QWizard.CustomButton1).isVisible())
+        finally:
+            paso.close()
+
+
 if __name__ == "__main__":
     unittest.main()
